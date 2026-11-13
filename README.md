@@ -1,6 +1,6 @@
 # ChurchTools Gruppenhierarchie API v10 - Release Candidate
 
-Projekt: https://github.com/tihohub/ctgrouphierarchy_API_PY
+Projekt: https://github.com/tihohub/ctgrouphierarchypython
 
 ## Release-Ergaenzungen
 - Erster-Start-Hinweis mit Read-only-, Datenschutz- und Unabhaengigkeits-Hinweis.
