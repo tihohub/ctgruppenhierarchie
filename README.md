@@ -1,6 +1,13 @@
-# CT Gruppenhierarchie v14 - Release Candidate
+# CT Gruppenhierarchie v15 - Release Candidate
 
 Projekt: https://github.com/tihohub/ctgruppenhierarchie
+
+## Aenderungen in v15
+- Gruppen mit mehreren Obergruppen: Hinweis "🔗 auch unter: …" in Uebersicht und Visualisierung, mit den Namen der anderen Obergruppen.
+- Neuer Filter "Mehrfachzuordnung" und Anzahl in der Statistik.
+- Neuer Reiter "Mehrfachzuordnungen" als Arbeitsliste: pro Gruppe alle Wege vom Gruppenstamm, Link zur Gruppe in CT.
+- Gruppen, die nur wegen einer mehrfach zugeordneten Obergruppe doppelt erscheinen, sind mit "↻ mehrfach ueber …" gekennzeichnet.
+- Nicht sichtbare Obergruppen (🔒) zaehlen bei der Mehrfachzuordnung mit.
 
 ## Aenderungen in v14
 - Die Visualisierung zeigt alleinstehende Gruppen (ohne Ober- und Untergruppen) in einem eigenen Bereich unter den Gruppenstaemmen, im gleichen Kartenstil.
@@ -19,7 +26,7 @@ Projekt: https://github.com/tihohub/ctgruppenhierarchie
 - Der lokale Server nimmt nur noch Anfragen von der eigenen Seite an (`127.0.0.1` / `localhost`).
 - "Daten aktualisieren" zeigt Fehler (z. B. abgelaufener Token) verstaendlich an.
 - Einheitliche Bezeichnung "CT", Projekt-Links auf https://github.com/tihohub/ctgruppenhierarchie.
-- Dateinamen ohne "API": `ct_gruppenhierarchie_v14.py`, `START_CT_GRUPPENHIERARCHIE_V14.bat`.
+- Dateinamen ohne "API": `ct_gruppenhierarchie_v15.py`, `START_CT_GRUPPENHIERARCHIE_V15.bat`.
 - CT-Adresse ist nicht mehr mit einer bestimmten Gemeinde vorbelegt, sondern zeigt einen Platzhalter.
 
 ## Release-Ergaenzungen v10
@@ -33,8 +40,8 @@ Projekt: https://github.com/tihohub/ctgruppenhierarchie
 - Alle Fachfunktionen der eigenstaendigen v9 bleiben erhalten.
 
 ## Dateien fuer die Quellversion
-- `ct_gruppenhierarchie_v14.py`
-- `START_CT_GRUPPENHIERARCHIE_V14.bat`
+- `ct_gruppenhierarchie_v15.py`
+- `START_CT_GRUPPENHIERARCHIE_V15.bat`
 - `LICENSE.txt`
 - `PRIVACY.txt`
 - `THIRD_PARTY_LICENSES.txt`
