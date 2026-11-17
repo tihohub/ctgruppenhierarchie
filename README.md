@@ -1,13 +1,15 @@
-# CT Gruppenhierarchie API v11 - Release Candidate
+# CT Gruppenhierarchie v12 - Release Candidate
 
 Projekt: https://github.com/tihohub/ctgruppenhierarchie
 
-## Aenderungen in v11
+## Aenderungen in v12
 - Gruppen, deren Obergruppe der Nutzer nicht sehen darf, verschwinden nicht mehr. Die nicht sichtbare Obergruppe wird ausgegraut mit 🔒 angezeigt (mit Namen, falls CT ihn liefert, sonst mit ID).
 - Ausgegraute Kontextgruppen dunkeln nur noch ihre eigene Zeile ab, nicht ihren ganzen Unterbaum.
 - Der lokale Server nimmt nur noch Anfragen von der eigenen Seite an (`127.0.0.1` / `localhost`).
 - "Daten aktualisieren" zeigt Fehler (z. B. abgelaufener Token) verstaendlich an.
 - Einheitliche Bezeichnung "CT", Projekt-Links auf https://github.com/tihohub/ctgruppenhierarchie.
+- Dateinamen ohne "API": `ct_gruppenhierarchie_v12.py`, `START_CT_GRUPPENHIERARCHIE_V12.bat`.
+- CT-Adresse ist nicht mehr mit einer bestimmten Gemeinde vorbelegt, sondern zeigt einen Platzhalter.
 
 ## Release-Ergaenzungen v10
 - Erster-Start-Hinweis mit Read-only-, Datenschutz- und Unabhaengigkeits-Hinweis.
@@ -20,8 +22,8 @@ Projekt: https://github.com/tihohub/ctgruppenhierarchie
 - Alle Fachfunktionen der eigenstaendigen v9 bleiben erhalten.
 
 ## Dateien fuer die Quellversion
-- `ct_gruppenhierarchie_api_v11.py`
-- `START_CT_GRUPPENHIERARCHIE_API_V11.bat`
+- `ct_gruppenhierarchie_v12.py`
+- `START_CT_GRUPPENHIERARCHIE_V12.bat`
 - `LICENSE.txt`
 - `PRIVACY.txt`
 - `THIRD_PARTY_LICENSES.txt`
