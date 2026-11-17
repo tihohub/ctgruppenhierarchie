@@ -1,4 +1,4 @@
-# CT Gruppenhierarchie v17
+# CT Gruppenhierarchie v18
 
 Eine kleine lokale Anwendung, die die Gruppenstruktur einer CT-Instanz übersichtlich darstellt: als aufklappbaren Baum, als Visualisierung der Gruppenstämme und als Arbeitsliste für Gruppen mit mehreren Obergruppen.
 
@@ -23,15 +23,15 @@ Weitere Pakete oder eine Installation sind nicht nötig. Das Programm verwendet 
 
 Beide Dateien in denselben Ordner legen:
 
-- `ct_gruppenhierarchie_v17.py`
-- `START_CT_GRUPPENHIERARCHIE_V17.bat` (nur für Windows)
+- `ct_gruppenhierarchie_v18.py`
+- `START_CT_GRUPPENHIERARCHIE_V18.bat` (nur für Windows)
 
-**Windows:** Doppelklick auf `START_CT_GRUPPENHIERARCHIE_V17.bat`.
+**Windows:** Doppelklick auf `START_CT_GRUPPENHIERARCHIE_V18.bat`.
 
 **macOS / Linux:** Im Terminal in den Ordner wechseln und starten:
 
 ```bash
-python3 ct_gruppenhierarchie_v17.py
+python3 ct_gruppenhierarchie_v18.py
 ```
 
 Der Browser öffnet sich automatisch mit `http://127.0.0.1:8765/`. Falls nicht, diese Adresse innerhalb von 3 Minuten von Hand im Browser öffnen.
@@ -68,7 +68,7 @@ Die Anwendung sieht genau das, was der Benutzer in CT sehen darf. Gruppen ohne B
 - Klick auf einen Gruppennamen öffnet die Gruppe in CT.
 
 **Visualisierung**
-- Gruppenstämme als Karten, wahlweise horizontal (Stämme nebeneinander) oder vertikal (Stämme untereinander).
+- Gruppenstämme als Karten, wahlweise horizontal (Stämme nebeneinander) oder vertikal (Stämme untereinander). Nach dem Verbinden ist alles aufgeklappt.
 - Alleinstehende Gruppen in einem eigenen Bereich im gleichen Kartenstil.
 
 **Mehrfachzuordnungen**
@@ -114,8 +114,8 @@ Details: `PRIVACY.txt`
 
 ## Dateien
 
-- `ct_gruppenhierarchie_v17.py`: die Anwendung
-- `START_CT_GRUPPENHIERARCHIE_V17.bat`: Startdatei für Windows
+- `ct_gruppenhierarchie_v18.py`: die Anwendung
+- `START_CT_GRUPPENHIERARCHIE_V18.bat`: Startdatei für Windows
 - `LICENSE.txt`: Lizenz
 - `PRIVACY.txt`: Datenschutzhinweis
 - `THIRD_PARTY_LICENSES.txt`: Hinweise zu Drittkomponenten
