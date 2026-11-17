@@ -1,10 +1,10 @@
-Datenschutzhinweis - ChurchTools Gruppenhierarchie
-Stand: 13. November 2026
+Datenschutzhinweis - CT Gruppenhierarchie
+Stand: 17. November 2026
 
-Die Anwendung wird lokal auf dem Geraet des Nutzers ausgefuehrt. ChurchTools-Daten werden vom lokalen Programm direkt von der vom Nutzer angegebenen ChurchTools-Instanz abgerufen. Der Entwickler betreibt keinen Server zur Verarbeitung dieser ChurchTools-Daten.
+Die Anwendung wird lokal auf dem Geraet des Nutzers ausgefuehrt. CT-Daten werden vom lokalen Programm direkt von der vom Nutzer angegebenen CT-Instanz abgerufen. Der Entwickler betreibt keinen Server zur Verarbeitung dieser CT-Daten.
 
-Der eingegebene Login-Token wird nicht dauerhaft gespeichert. Er wird nur fuer die laufende Anwendungssitzung verwendet. Gespeichert werden ausschliesslich lokale Oberflaecheneinstellungen wie ChurchTools-Adresse, Filter, Suche und Darstellungsoptionen.
+Der eingegebene Login-Token wird nicht dauerhaft gespeichert. Er wird nur fuer die laufende Anwendungssitzung verwendet. Gespeichert werden ausschliesslich lokale Oberflaecheneinstellungen wie CT-Adresse, Filter, Suche und Darstellungsoptionen.
 
 Die Anwendung enthaelt keine vom Entwickler betriebene Telemetrie und kein Tracking.
 
-Projekt: https://github.com/tihohub/ctgrouphierarchy
+Projekt: https://github.com/tihohub/ctgruppenhierarchie

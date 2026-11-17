@@ -1,4 +1,4 @@
-ChurchTools Gruppenhierarchie - License Notice
+CT Gruppenhierarchie - License Notice
 Copyright (c) 2026 Tim Hofmann. All rights reserved.
 
 Permission is granted to use this software free of charge for non-commercial purposes.
@@ -8,4 +8,4 @@ Redistribution for non-commercial purposes must retain this copyright notice and
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM THE SOFTWARE OR ITS USE.
 
-This software is an independent community tool and is not an official product of ChurchTools Innovations GmbH. ChurchTools and related product names and marks belong to their respective rights holders.
+This software is an independent community tool and is not an official product of ChurchTools Innovations GmbH. Product names and marks belong to their respective rights holders.
