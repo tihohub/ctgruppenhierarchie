@@ -1,5 +1,5 @@
 Third-party notices
 
-CT Gruppenhierarchie v16 itself uses Python standard-library modules and browser platform APIs. No third-party Python runtime dependency is required by the source version.
+CT Gruppenhierarchie v17 itself uses Python standard-library modules and browser platform APIs. No third-party Python runtime dependency is required by the source version.
 
 For a later packaged Desktop build, the licenses of the actual packaging/runtime dependencies included in that executable must be reviewed and this file updated before publication.

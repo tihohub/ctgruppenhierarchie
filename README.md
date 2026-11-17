@@ -1,4 +1,4 @@
-# CT Gruppenhierarchie v16
+# CT Gruppenhierarchie v17
 
 Eine kleine lokale Anwendung, die die Gruppenstruktur einer CT-Instanz übersichtlich darstellt: als aufklappbaren Baum, als Visualisierung der Gruppenstämme und als Arbeitsliste für Gruppen mit mehreren Obergruppen.
 
@@ -23,19 +23,26 @@ Weitere Pakete oder eine Installation sind nicht nötig. Das Programm verwendet 
 
 Beide Dateien in denselben Ordner legen:
 
-- `ct_gruppenhierarchie_v16.py`
-- `START_CT_GRUPPENHIERARCHIE_V16.bat` (nur für Windows)
+- `ct_gruppenhierarchie_v17.py`
+- `START_CT_GRUPPENHIERARCHIE_V17.bat` (nur für Windows)
 
-**Windows:** Doppelklick auf `START_CT_GRUPPENHIERARCHIE_V16.bat`.
+**Windows:** Doppelklick auf `START_CT_GRUPPENHIERARCHIE_V17.bat`.
 
 **macOS / Linux:** Im Terminal in den Ordner wechseln und starten:
 
 ```bash
-python3 ct_gruppenhierarchie_v16.py
+python3 ct_gruppenhierarchie_v17.py
 ```
 
-Der Browser öffnet sich automatisch mit `http://127.0.0.1:8765/`. Falls nicht, diese Adresse von Hand im Browser öffnen.
-Beenden: im Konsolenfenster `Strg+C` drücken oder das Fenster schließen.
+Der Browser öffnet sich automatisch mit `http://127.0.0.1:8765/`. Falls nicht, diese Adresse innerhalb von 3 Minuten von Hand im Browser öffnen.
+
+## Beenden
+
+- **Automatisch:** Wird der letzte Browser-Tab der App geschlossen, beendet sich das Programm nach etwa 10 Sekunden von selbst, und das Konsolenfenster schließt sich. Neuladen mit F5 beendet das Programm nicht.
+- Stürzt der Browser ab, beendet sich das Programm spätestens nach 3 Minuten.
+- **Sofort:** im Konsolenfenster `Strg+C` drücken oder das Fenster schließen.
+- **Neue Version starten:** Läuft noch eine andere Version (ab v17), wird sie beim Start der neuen automatisch beendet. Ein noch offener Tab der alten Version zeigt dann einen Hinweis und kann geschlossen werden.
+- Bei einem Fehler bleibt das Konsolenfenster offen, damit die Meldung lesbar ist.
 
 ## Erste Verbindung
 
@@ -69,7 +76,7 @@ Die Anwendung sieht genau das, was der Benutzer in CT sehen darf. Gruppen ohne B
 - Die Namen in „auch unter“ sind Sprung-Links: Ein Klick springt in der App zu dieser Obergruppe, klappt den Weg dorthin auf und hebt sie kurz hervor.
 - Gruppen, die nur wegen einer mehrfach zugeordneten Obergruppe doppelt erscheinen, tragen „↻ mehrfach über …“.
 - Eigener Reiter „🔗 Mehrfachzuordnungen“ als Arbeitsliste: pro Gruppe alle Wege vom Gruppenstamm. Jeder Name im Weg springt in die Übersicht, der Gruppenname in der Kopfzeile öffnet die Gruppe zum Bereinigen in CT.
-- Nach einem Sprung führt der Knopf **„↩ zurück“** unten rechts zur vorherigen Stelle zurück (Reiter, Scrollposition, Suche und Filter), auch schrittweise über mehrere Sprünge.
+- Nach einem Sprung steht direkt an der angesprungenen Gruppe der Knopf **„↩ zurück zu …“**. Er führt genau an die Stelle zurück, von der aus gesprungen wurde (Reiter, Suche und Filter werden wiederhergestellt, die Gruppe wird hervorgehoben). Mehrere Sprünge lassen sich schrittweise zurückgehen. Der Knopf verschwindet, sobald man selbst sucht, filtert oder auf- und zuklappt.
 - Nicht sichtbare Obergruppen (🔒) zählen bei der Mehrfachzuordnung mit.
 
 **Suche, Filter, Statistik**
@@ -80,6 +87,7 @@ Die Anwendung sieht genau das, was der Benutzer in CT sehen darf. Gruppen ohne B
 - Jede Gruppe wird nur einmal gezählt, auch wenn sie unter mehreren Obergruppen erscheint.
 
 **Weiteres**
+- **↻** oben rechts neben ⚙ lädt die Daten neu aus CT (sichtbar, solange eine Verbindung besteht).
 - Alles auf- und zuklappen, Drucken.
 - Beschreibungen der Gruppen als Tooltip (💬).
 
@@ -90,6 +98,7 @@ Die Anwendung sieht genau das, was der Benutzer in CT sehen darf. Gruppen ohne B
 - Der **Login-Token wird nicht gespeichert.** Er existiert nur während der laufenden Sitzung.
 - Im Browser gespeichert werden nur Oberflächeneinstellungen: CT-Adresse, Suche, Filter, aufgeklappte Gruppen und Darstellungsart.
 - **„Trennen“** löscht alle geladenen Daten, den Token, Suche, Filter und aufgeklappte Gruppen. Eine neue Verbindung löscht zuerst alle Daten der vorherigen. Auf gemeinsam genutzten Rechnern nach dem Trennen zusätzlich den Browser-Tab schließen.
+- **Sitzungs-Timeout:** Nach 58 Minuten ohne Benutzung (Maus, Tastatur, Scrollen) erscheint eine Warnung mit dem Knopf „Weiterarbeiten“. Nach 60 Minuten werden geladene Daten und Token automatisch gelöscht, wie bei „Trennen“.
 - Der lokale Server ist nur vom eigenen Rechner aus erreichbar (`127.0.0.1`) und nimmt nur Anfragen der eigenen Seite an.
 
 Details: `PRIVACY.txt`
@@ -99,13 +108,14 @@ Details: `PRIVACY.txt`
 - **„Anmeldung fehlgeschlagen“:** Login-Token prüfen bzw. neu erzeugen.
 - **„Zugriff verweigert“:** Dem Benutzer fehlen in CT Rechte.
 - **„CT-Instanz nicht erreichbar“:** CT-Adresse und Internetverbindung prüfen.
-- **Programm startet nicht / Port belegt:** Läuft die Anwendung schon in einem anderen Fenster? Dieses schließen und neu starten. Die Anwendung verwendet Port 8765.
+- **„Port 8765 ist bereits belegt“:** Es läuft noch eine ältere Version (v16 oder älter) oder ein anderes Programm auf diesem Port. Dessen Konsolenfenster schließen und neu starten. Versionen ab v17 werden automatisch abgelöst.
+- **„Programm beendet“ im Browser:** Das Programm läuft nicht mehr (Tab war geschlossen, neue Version gestartet oder Rechner im Ruhezustand). Programm neu starten.
 - **„python“ wird nicht gefunden (Windows):** Python installieren und dabei „Add python.exe to PATH“ anhaken.
 
 ## Dateien
 
-- `ct_gruppenhierarchie_v16.py`: die Anwendung
-- `START_CT_GRUPPENHIERARCHIE_V16.bat`: Startdatei für Windows
+- `ct_gruppenhierarchie_v17.py`: die Anwendung
+- `START_CT_GRUPPENHIERARCHIE_V17.bat`: Startdatei für Windows
 - `LICENSE.txt`: Lizenz
 - `PRIVACY.txt`: Datenschutzhinweis
 - `THIRD_PARTY_LICENSES.txt`: Hinweise zu Drittkomponenten
