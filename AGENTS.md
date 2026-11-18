@@ -52,8 +52,8 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
 - Projekt-Link: https://github.com/tihohub/ctgruppenhierarchie
 
 ## Lizenz
-- Nicht-kommerziell (siehe `LICENSE.txt`). Kommerzielle Nutzung nur mit Zustimmung
-  des Inhabers. Keine Abhängigkeiten aufnehmen, deren Lizenz das verbietet; neue
+- PolyForm Noncommercial 1.0.0 (siehe `LICENSE.txt`, Text dort unverändert lassen).
+  Kommerzielle Nutzung nur mit gesonderter Zustimmung des Inhabers. Keine Abhängigkeiten aufnehmen, deren Lizenz das verbietet; neue
   Abhängigkeiten in `THIRD_PARTY_LICENSES.txt` eintragen. Ändert sich
   `desktop/src-tauri/Cargo.lock`, die Lizenztexte `desktop/THIRD_PARTY_RUST_LICENSES.txt` neu
   erzeugen: `cargo install cargo-about` (einmalig), dann in `desktop/src-tauri`:

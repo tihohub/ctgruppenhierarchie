@@ -3,7 +3,7 @@ name = "ct-gruppenhierarchie"
 version = "0.1.0"
 description = "CT Gruppenhierarchie – Desktop-App"
 authors = ["Tim Hofmann"]
-license-file = "../../LICENSE.txt"
+license = "PolyForm-Noncommercial-1.0.0"
 edition = "2021"
 publish = false
 

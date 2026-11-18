@@ -185,6 +185,10 @@ Auf GitHub laufen die Tests bei jedem Pull Request automatisch.
 
 ## Lizenz
 
-© 2026 Tim Hofmann. Kostenlose Nutzung für nicht-kommerzielle Zwecke. Kommerzielle Nutzung nur mit vorheriger schriftlicher Zustimmung. Vollständiger Text: `LICENSE.txt`.
+© 2026 Tim Hofmann. Lizenz: [PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0) – vollständiger Text in `LICENSE.txt`.
 
-Vor einem späteren Desktop-EXE-Release müssen die tatsächlich eingebetteten Laufzeit- und Packaging-Abhängigkeiten erneut lizenzrechtlich geprüft werden.
+- Nutzung, Weitergabe und Änderung für nicht-kommerzielle Zwecke sind erlaubt, ausdrücklich auch für gemeinnützige Organisationen wie Kirchengemeinden.
+- Kommerzielle Nutzung ist nicht erlaubt; eine Erlaubnis kann auf Anfrage über das GitHub-Projekt gesondert erteilt werden.
+- Bei Weitergabe den Lizenztext und die Zeile „Required Notice“ aus `LICENSE.txt` mitgeben.
+
+Hinweise zu eingebauten Fremdbestandteilen: `THIRD_PARTY_LICENSES.txt`.
