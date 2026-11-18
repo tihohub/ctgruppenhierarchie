@@ -1,0 +1,47 @@
+# Erstellt ein GitHub Release, sobald ein Versions-Tag (z. B. v19) gesetzt wird:
+# Tests ausführen, Download-Pakete bauen und an das Release hängen.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
+
+  python-paket:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python-Version bauen
+        run: python3 tools/build_python.py "${GITHUB_REF_NAME}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-paket
+          path: dist/*.zip
+
+  release:
+    needs: python-paket
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Release anlegen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" dist/* \
+            --title "CT Gruppenhierarchie ${GITHUB_REF_NAME}" \
+            --notes-file .github/release-notes.md \
+            --generate-notes

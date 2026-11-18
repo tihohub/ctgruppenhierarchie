@@ -21,14 +21,14 @@ Weitere Pakete oder eine Installation sind nicht nötig. Das Programm verwendet 
 
 ## Starten
 
-Den ganzen Projektordner herunterladen (auf GitHub „Code → Download ZIP“) und entpacken.
+Die aktuelle Version unter [Releases](https://github.com/tihohub/ctgruppenhierarchie/releases/latest) herunterladen: `ct-gruppenhierarchie-python-….zip`. Die ZIP-Datei entpacken.
 
 **Windows:** Doppelklick auf `start_windows.bat`.
 
 **macOS / Linux:** Im Terminal in den entpackten Ordner wechseln und starten:
 
 ```bash
-python3 python/ct_gruppenhierarchie.py
+python3 ct_gruppenhierarchie.py
 ```
 
 Der Browser öffnet sich automatisch mit `http://127.0.0.1:8765/`. Falls nicht, diese Adresse innerhalb von 3 Minuten von Hand im Browser öffnen.
@@ -114,6 +114,7 @@ Details: `PRIVACY.txt`
 - `web/`: die Oberfläche (`index.html`, `style.css`, `app.js`)
 - `python/ct_gruppenhierarchie.py`: der lokale Server, der die Oberfläche ausliefert und die Daten aus CT abruft
 - `start_windows.bat`: Startdatei für Windows
+- `tools/build_python.py`: baut das Download-Paket (wird beim Release automatisch ausgeführt)
 - `AGENTS.md`: Arbeitsregeln für KI-Agenten
 - `LICENSE.txt`: Lizenz
 - `PRIVACY.txt`: Datenschutzhinweis
@@ -130,6 +131,8 @@ npm test
 ```
 
 Auf GitHub laufen die Tests bei jedem Pull Request automatisch.
+
+**Neue Version veröffentlichen:** Einen Tag setzen, z. B. `v20`. GitHub führt dann die Tests aus, baut die Download-Pakete und legt das Release an. Direkt aus dem Repo starten (ohne Release) geht mit `python3 python/ct_gruppenhierarchie.py`; die App zeigt dann „Entwicklungsversion“.
 
 ## Lizenz
 
