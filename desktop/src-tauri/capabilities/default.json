@@ -8,7 +8,12 @@
     "opener:default",
     {
       "identifier": "http:default",
-      "allow": [{ "url": "https://*" }, { "url": "http://*" }]
+      "allow": [
+        { "url": "https://*" },
+        { "url": "https://*:*" },
+        { "url": "http://*" },
+        { "url": "http://*:*" }
+      ]
     }
   ]
 }
