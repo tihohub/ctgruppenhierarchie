@@ -92,7 +92,10 @@ function resetPrefs(base) {
   P = { base, mode };
   try {
     localStorage.setItem("ctv10", JSON.stringify(P));
-  } catch {}
+  } catch {
+    // Speichern nicht möglich (z. B. privates Fenster): Einstellungen gelten dann nur bis zum
+    // Schließen, die App funktioniert trotzdem
+  }
 }
 async function load(fresh) {
   let base = $("base").value.trim(),

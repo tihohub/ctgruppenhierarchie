@@ -1,5 +1,18 @@
-Third-party notices
+Hinweise zu Fremdbestandteilen / Third-party notices
 
-CT Gruppenhierarchie itself uses Python standard-library modules and browser platform APIs. No third-party Python runtime dependency is required by the source version.
+Webseite und Python-Version
+  Die Oberflaeche (web/) verwendet nur die Funktionen des Browsers, die Python-Version nur die
+  Standardbibliothek von Python. Es werden keine fremden Bibliotheken mitgeliefert.
 
-For a later packaged Desktop build, the licenses of the actual packaging/runtime dependencies included in that executable must be reviewed and this file updated before publication.
+Desktop-App (Windows, Linux)
+  Die Desktop-App wird mit Tauri (https://tauri.app, Lizenz MIT oder Apache-2.0) gebaut und
+  enthaelt die von Tauri benoetigten Rust-Bibliotheken. Die vollstaendige Liste mit Versionen,
+  Lizenzen und Quellen steht in desktop/RUST_LIBRARIES.txt.
+  Die Bibliotheken stehen ganz ueberwiegend unter MIT und/oder Apache-2.0, einzelne unter BSD,
+  ISC, Zlib, Unicode-3.0, MPL-2.0 (unveraendert verwendet), CC0 bzw. CDLA-Permissive-2.0.
+  Alle diese Lizenzen erlauben die Weitergabe als Teil dieses Programms.
+  Der Windows-Installer kann bei Bedarf die Microsoft Edge WebView2 Runtime nachladen
+  (Microsoft-Lizenzbedingungen).
+
+Nur fuer die Entwicklung (nicht Teil der ausgelieferten Programme)
+  Playwright (Apache-2.0) fuer die automatischen Tests; Tauri CLI (MIT oder Apache-2.0) zum Bauen.
