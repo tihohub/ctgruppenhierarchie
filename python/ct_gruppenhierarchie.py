@@ -452,7 +452,8 @@ if __name__ == "__main__":
     print("Das Programm beendet sich automatisch, wenn der Browser-Tab geschlossen wird.")
     print("Sofort beenden: Strg+C oder dieses Fenster schließen.")
     threading.Thread(target=watchdog, daemon=True).start()
-    threading.Timer(0.7, lambda: webbrowser.open(u)).start()
+    if not os.environ.get("CTG_NO_BROWSER"):  # für automatische Tests
+        threading.Timer(0.7, lambda: webbrowser.open(u)).start()
     try:
         SERVER.serve_forever()
     except KeyboardInterrupt:
