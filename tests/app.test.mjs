@@ -138,7 +138,9 @@ test("Trennen löscht alle geladenen Daten und den Token", async () => {
   await page.click("#disconnect");
   assert.equal(await page.inputValue("#token"), "");
   const leer = await page.evaluate(() =>
-    ["tree", "forest", "multiList", "user", "stats"].every((id) => document.getElementById(id).innerHTML === ""),
+    ["tree", "forest", "multiList", "user", "stats"].every(
+      (id) => document.getElementById(id).innerHTML === "",
+    ),
   );
   assert.ok(leer, "Anzeigen geleert");
   assert.equal(await page.isVisible("#refresh"), false);
@@ -161,13 +163,17 @@ test("Sitzungs-Timeout: Warnung nach 58 Minuten, Löschen nach 60 Minuten", asyn
 });
 
 test("Lokaler Server lehnt Anfragen fremder Webseiten ab", async () => {
-  const r = await fetch(APP + "data", {
+  const r = await fetch(APP + "ct", {
     method: "POST",
     headers: { "Content-Type": "application/json", Origin: "https://evil.example" },
     body: "{}",
   });
   assert.equal(r.status, 403);
-  const r2 = await fetch(APP + "data", { method: "POST", headers: { "Content-Type": "text/plain" }, body: "{}" });
+  const r2 = await fetch(APP + "ct", {
+    method: "POST",
+    headers: { "Content-Type": "text/plain" },
+    body: "{}",
+  });
   assert.equal(r2.status, 403);
 });
 

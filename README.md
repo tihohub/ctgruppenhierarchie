@@ -111,8 +111,8 @@ Details: `PRIVACY.txt`
 
 ## Dateien
 
-- `web/`: die Oberfläche (`index.html`, `style.css`, `app.js`)
-- `python/ct_gruppenhierarchie.py`: der lokale Server, der die Oberfläche ausliefert und die Daten aus CT abruft
+- `web/`: die Oberfläche (`index.html`, `style.css`, `app.js`) und die Datenaufbereitung (`ct-daten.js`)
+- `python/ct_gruppenhierarchie.py`: der lokale Server, der die Oberfläche ausliefert und Leseanfragen an CT weiterreicht
 - `start_windows.bat`: Startdatei für Windows
 - `tools/build_python.py`: baut das Download-Paket (wird beim Release automatisch ausgeführt)
 - `AGENTS.md`: Arbeitsregeln für KI-Agenten

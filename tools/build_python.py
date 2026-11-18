@@ -20,7 +20,7 @@ def main(version):
         sys.exit(f"Ungültige Version: {version!r} (erwartet z. B. v19)")
     web = {
         name: (ROOT / "web" / name).read_text(encoding="utf-8").replace(PLACEHOLDER, version)
-        for name in ("index.html", "style.css", "app.js")
+        for name in ("index.html", "style.css", "ct-daten.js", "app.js")
     }
     server = (ROOT / "python" / "ct_gruppenhierarchie.py").read_text(encoding="utf-8")
     if server.count("EMBEDDED = {}") != 1 or PLACEHOLDER not in server:

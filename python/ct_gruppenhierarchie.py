@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 """CT Gruppenhierarchie – lokaler Server.
 
-Liefert die Weboberfläche aus dem Ordner web/ aus, ruft Gruppendaten nur lesend aus CT ab
-und beendet sich automatisch, wenn kein Browser-Tab der App mehr offen ist.
+Liefert die Weboberfläche aus dem Ordner web/ aus und reicht deren Leseanfragen an CT
+weiter (Umweg um die CORS-Regel des Browsers). Die Datenaufbereitung steckt in
+web/ct-daten.js. Beendet sich automatisch, wenn kein Browser-Tab der App mehr offen ist.
 Start: python3 python/ct_gruppenhierarchie.py
 """
 
-import json, os, sys, threading, time, urllib.error, urllib.parse, urllib.request, webbrowser
+import json, os, re, sys, threading, time, urllib.error, urllib.request, webbrowser
 from pathlib import Path
-from collections import defaultdict
-from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 HOST = "127.0.0.1"
@@ -24,6 +23,7 @@ WEB_FILES = {
     "/": ("index.html", "text/html; charset=utf-8"),
     "/index.html": ("index.html", "text/html; charset=utf-8"),
     "/style.css": ("style.css", "text/css; charset=utf-8"),
+    "/ct-daten.js": ("ct-daten.js", "text/javascript; charset=utf-8"),
     "/app.js": ("app.js", "text/javascript; charset=utf-8"),
 }
 
@@ -60,205 +60,13 @@ def req(base, path, token):
         raise RuntimeError(f"Verbindungsfehler: {e.reason}")
 
 
-def paged(base, path, token):
-    out = []
-    page = 1
-    while True:
-        sep = "&" if "?" in path else "?"
-        j = req(base, path + sep + urllib.parse.urlencode({"limit": 100, "page": page}), token)
-        d = j.get("data", [])
-        if not isinstance(d, list):
-            raise RuntimeError(path + ": data ist kein Array")
-        out += d
-        p = (j.get("meta") or {}).get("pagination") or {}
-        last = int(p.get("lastPage", page) or page)
-        if page >= last:
-            return out
-        page += 1
-
-
-def name(x):
-    return (x.get("name") or x.get("title") or "") if isinstance(x, dict) else ""
-
-
-def ref(x, hn):
-    # Gruppenverweis in der Hierarchie: entweder reine ID oder Objekt mit ID und ggf. Namen
-    if isinstance(x, dict):
-        i = x.get("domainIdentifier") or x.get("id")
-        try:
-            i = int(i)
-        except:
-            return None
-        if name(x):
-            hn[i] = name(x)
-        return i
-    try:
-        return int(x)
-    except:
-        return None
-
-
-def pname(p):
-    if not isinstance(p, dict):
-        return ""
-    p = p.get("data", p) if isinstance(p.get("data"), dict) else p
-    for k in ("displayName", "fullName", "name"):
-        v = p.get(k)
-        if isinstance(v, str) and v.strip() and not v.lower().startswith("benutzer-id"):
-            return v.strip()
-    return " ".join(
-        str(p.get(k, "")).strip() for k in ("firstName", "lastName") if p.get(k)
-    ).strip()
-
-
-def normalize(base, token):
-    who = req(base, "/whoami", token)
-    wd = who.get("data") if isinstance(who.get("data"), dict) else who
-    uid = wd.get("id", "") if isinstance(wd, dict) else ""
-    un = pname(wd)
-    if uid:
-        try:
-            un = pname(req(base, f"/persons/{uid}", token)) or un
-        except:
-            pass
-    master = req(base, "/masterdata/person", token)
-    md = master.get("data", master) if isinstance(master, dict) else {}
-    statuses = md.get("groupStatuses", []) if isinstance(md, dict) else []
-    sq = urllib.parse.urlencode(
-        [("group_status_ids[]", str(x["id"])) for x in statuses if x.get("id") is not None]
-    )
-    suffix = ("?" + sq) if sq else ""
-    groups = paged(base, "/groups" + suffix, token)
-    hs = paged(base, "/groups/hierarchies" + suffix, token)
-    types = paged(base, "/group/grouptypes", token)
-    tn = {int(x["id"]): name(x) for x in types if x.get("id") is not None}
-    sn = {
-        int(x["id"]): x.get("nameTranslated") or x.get("name") or f"Status {x['id']}"
-        for x in statuses
-        if x.get("id") is not None
-    }
-    pa = defaultdict(set)
-    ch = defaultdict(set)
-    urls = {}
-    hn = {}
-    for h in hs:
-        go = h.get("group") or {}
-        gid = (
-            h.get("id")
-            or h.get("groupId")
-            or (go.get("domainIdentifier") if isinstance(go, dict) else go)
-        )
-        try:
-            gid = int(gid)
-        except:
-            continue
-        if isinstance(go, dict) and go.get("frontendUrl"):
-            urls[gid] = go["frontendUrl"]
-        if isinstance(go, dict) and name(go):
-            hn[gid] = name(go)
-        for p in h.get("parents") or []:
-            p = ref(p, hn)
-            if p is not None:
-                pa[gid].add(p)
-                ch[p].add(gid)
-        for c in h.get("children") or []:
-            c = ref(c, hn)
-            if c is not None:
-                ch[gid].add(c)
-                pa[c].add(gid)
-    pn = set(pa)
-    rel = pn | set(ch)
-    base = base.strip().rstrip("/")
-    base = base[:-4] if base.endswith("/api") else base
-    data = []
-    for g in groups:
-        i = g.get("information") or {}
-        s = g.get("settings") or {}
-        gid = int(g["id"])
-        tid = i.get("groupTypeId")
-        st = i.get("groupStatusId")
-        vis = s.get("visibility") or i.get("visibility") or ""
-        t = tn.get(tid, "Unbekannt")
-        ss = sn.get(st, f"Status {st}")
-        description = i.get("note", "") or ""
-        search_fields = {
-            "name": g.get("name", ""),
-            "description": description,
-            "groupType": t,
-            "status": ss,
-            "visibility": vis,
-            "homepage": i.get("groupHomepageUrl", "") or "",
-            "category": str(i.get("groupCategoryId") or ""),
-            "campus": str(i.get("campusId") or ""),
-            "meetingTime": str(i.get("meetingTime") or ""),
-        }
-        search = " ".join(map(str, search_fields.values())).lower()
-        data.append(
-            {
-                "id": gid,
-                "name": g.get("name", ""),
-                "description": description,
-                "searchFields": search_fields,
-                "groupTypeId": tid,
-                "groupTypeName": t,
-                "groupStatusId": st,
-                "groupStatusName": ss,
-                "visibility": vis,
-                "parentIds": sorted(pa.get(gid, set())),
-                "childIds": sorted(ch.get(gid, set())),
-                "frontendUrl": urls.get(gid, f"{base}/groups/{gid}"),
-                "search": search,
-            }
-        )
-    ids = {g["id"] for g in data}
-    hidden = set()
-    st = list(ids)
-    while st:
-        for p in pa.get(st.pop(), ()):
-            if p not in ids and p not in hidden:
-                hidden.add(p)
-                st.append(p)
-    known = ids | hidden
-    ph = [
-        {
-            "id": i,
-            "name": hn.get(i) or f"Nicht sichtbare Gruppe (ID {i})",
-            "placeholder": True,
-            "description": "",
-            "searchFields": {},
-            "parentIds": sorted(pa.get(i, set()) & known),
-            "childIds": sorted(ch.get(i, set()) & known),
-            "frontendUrl": "",
-        }
-        for i in hidden
-    ]
-    by = {g["id"]: g for g in data + ph}
-    key = lambda x: by[x]["name"].lower()
-    ct = defaultdict(int)
-    cv = defaultdict(int)
-    cs = defaultdict(int)
-    for g in data:
-        ct[g["groupTypeId"]] += 1
-        cv[g["visibility"]] += 1
-        cs[str(g["groupStatusId"])] += 1
-    return {
-        "ok": True,
-        "userId": uid,
-        "userName": un,
-        "updatedAt": datetime.now().strftime("%d.%m.%Y %H:%M"),
-        "groups": data,
-        "byId": {str(k): g for k, g in by.items()},
-        "roots": sorted((x for x in rel & known if not pa.get(x, set()) & known), key=key),
-        "standalone": sorted(ids - rel, key=key),
-        "hierarchieIds": sorted(rel & ids),
-        "edges": sum(map(len, ch.values())),
-        "groupTypes": [
-            {"id": k, "name": tn.get(k, "Unbekannt"), "count": v}
-            for k, v in sorted(ct.items(), key=lambda z: (z[0] is None, z[0] or 0))
-        ],
-        "counts": {"visibility": dict(sorted(cv.items())), "status": dict(sorted(cs.items()))},
-        "statusNames": {str(k): v for k, v in sn.items()},
-    }
+def ct_get(base, path, token):
+    """Leitet eine Leseanfrage der Oberfläche an CT weiter (nur GET)."""
+    if not re.match(r"^https?://[^/\s]+", base.strip()):
+        raise RuntimeError("Ungültige CT-Adresse. Bitte mit https:// angeben.")
+    if not path.startswith("/") or ".." in path:
+        raise RuntimeError("Ungültiger Pfad")
+    return req(base, path, token)
 
 
 ALLOWED_HOSTS = {f"{HOST}:{PORT}", f"localhost:{PORT}"}
@@ -371,11 +179,16 @@ class H(BaseHTTPRequestHandler):
             self.send_json({"ok": True})
             stop("Eine neue Version wurde gestartet. Dieses Programm wird beendet.")
             return
-        if self.path != "/data":
+        if self.path != "/ct":
             self.send_error(404)
             return
         try:
-            o = normalize(q.get("base", ""), q.get("token", ""))
+            o = {
+                "ok": True,
+                "data": ct_get(
+                    str(q.get("base", "")), str(q.get("path", "")), str(q.get("token", ""))
+                ),
+            }
         except Exception as e:
             o = {"ok": False, "error": str(e)}
         self.send_json(o)
