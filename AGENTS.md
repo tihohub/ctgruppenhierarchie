@@ -64,7 +64,8 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
 - `tests/` – automatische Tests: `fake_ct.py` (Schein-CT-Server mit Testdaten) und
   `app.test.mjs` (Browser-Tests). Ausführen mit `npm install` und `npm test`.
 - `.github/workflows/` – GitHub Actions: `tests.yml` (bei jedem Pull Request),
-  `release.yml` (bei jedem Tag `v*`: Tests, Pakete bauen, Release anlegen)
+  `release.yml` (per „Run workflow“ mit Versionsnummer oder bei Tag `v*`: Tests, Pakete
+  bauen, Tag und Release anlegen)
 - `tools/build_python.py` – baut das Python-Paket (eine Datei mit eingebetteter Oberfläche)
 - Platzhalter `__CT_VERSION__` in `app.js` und im Python-Server wird beim Release durch
   den Tag ersetzt.

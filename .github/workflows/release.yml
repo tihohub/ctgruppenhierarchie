@@ -1,10 +1,19 @@
-# Erstellt ein GitHub Release, sobald ein Versions-Tag (z. B. v19) gesetzt wird:
-# Tests ausführen, Download-Pakete bauen und an das Release hängen.
+# Erstellt ein GitHub Release: Tests ausführen, Download-Pakete bauen, Release mit Tag anlegen.
+# Start entweder per Knopf (Actions → Release → „Run workflow“, Versionsnummer eingeben)
+# oder durch Setzen eines Tags (z. B. v20).
 name: Release
 
 on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versionsnummer, z. B. v20"
+        required: true
   push:
     tags: ["v*"]
+
+env:
+  VERSION: ${{ inputs.version || github.ref_name }}
 
 permissions:
   contents: write
@@ -22,7 +31,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Python-Version bauen
-        run: python3 tools/build_python.py "${GITHUB_REF_NAME}"
+        run: python3 tools/build_python.py "${VERSION}"
       - uses: actions/upload-artifact@v4
         with:
           name: python-paket
@@ -41,7 +50,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" dist/* \
-            --title "CT Gruppenhierarchie ${GITHUB_REF_NAME}" \
+          gh release create "${VERSION}" dist/* \
+            --target "${GITHUB_SHA}" \
+            --title "CT Gruppenhierarchie ${VERSION}" \
             --notes-file .github/release-notes.md \
             --generate-notes

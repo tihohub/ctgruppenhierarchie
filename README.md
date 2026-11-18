@@ -132,7 +132,7 @@ npm test
 
 Auf GitHub laufen die Tests bei jedem Pull Request automatisch.
 
-**Neue Version veröffentlichen:** Einen Tag setzen, z. B. `v20`. GitHub führt dann die Tests aus, baut die Download-Pakete und legt das Release an. Direkt aus dem Repo starten (ohne Release) geht mit `python3 python/ct_gruppenhierarchie.py`; die App zeigt dann „Entwicklungsversion“.
+**Neue Version veröffentlichen:** Auf GitHub unter *Actions → Release → Run workflow* die neue Versionsnummer eingeben (z. B. `v20`) und starten. GitHub führt dann die Tests aus, baut die Download-Pakete und legt Tag und Release an. Alternativ einen Tag `v…` setzen. Direkt aus dem Repo starten (ohne Release) geht mit `python3 python/ct_gruppenhierarchie.py`; die App zeigt dann „Entwicklungsversion“.
 
 ## Lizenz
 
