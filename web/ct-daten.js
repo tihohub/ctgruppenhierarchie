@@ -32,6 +32,9 @@ async function ctGetDirect(base, token, path) {
   const get = tauri ? globalThis.__TAURI__.http.fetch : fetch;
   const opts = { headers: { Accept: "application/json", Authorization: "Login " + token } };
   if (!tauri) Object.assign(opts, { credentials: "omit", cache: "no-store" });
+  // Desktop-App: als Absender die CT-Adresse selbst angeben, damit CT die Anfrage nicht als
+  // fremde Webseite behandelt (sonst stünde dort z. B. „tauri://localhost“)
+  else opts.headers.Origin = new URL(base).origin;
   let r;
   try {
     r = await get(base + "/api" + path, opts);
