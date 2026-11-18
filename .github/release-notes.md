@@ -14,5 +14,3 @@
 Ausführliche Anleitung: siehe `README.md` im Paket.
 
 Die App greift nur lesend auf CT zu, speichert keine Login-Tokens und sendet keine Daten an Dritte.
-
-## Änderungen
