@@ -1,0 +1,24 @@
+[package]
+name = "ct-gruppenhierarchie"
+version = "0.1.0"
+description = "CT Gruppenhierarchie – Desktop-App"
+authors = ["Tim Hofmann"]
+license-file = "../../LICENSE.txt"
+edition = "2021"
+publish = false
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+# "unsafe-headers": erlaubt, den Absender (Origin) auf die CT-Adresse zu setzen
+tauri-plugin-http = { version = "2", features = ["unsafe-headers"] }
+tauri-plugin-opener = "2"
+
+[profile.release]
+# kleineres Programm
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

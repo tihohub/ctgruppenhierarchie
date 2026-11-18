@@ -9,9 +9,12 @@
 //             (Umweg um die CORS-Regel des Browsers)
 // - "direct": Webseite; der Browser fragt CT direkt. Dafür muss ein CT-Admin die Adresse
 //             dieser Seite unter CORS freigegeben haben.
+// - "tauri":  Desktop-App; Anfragen laufen über das HTTP-Plugin von Tauri, für das die
+//             CORS-Regel nicht gilt.
 
-const CT_MODE =
-  ["127.0.0.1", "localhost"].includes(location.hostname) && location.port === "8765"
+const CT_MODE = globalThis.__TAURI__
+  ? "tauri"
+  : ["127.0.0.1", "localhost"].includes(location.hostname) && location.port === "8765"
     ? "proxy"
     : "direct";
 
@@ -23,16 +26,20 @@ async function ctGet(base, token, path) {
   return CT_MODE === "proxy" ? ctGetProxy(base, token, path) : ctGetDirect(base, token, path);
 }
 
-// Direkt aus dem Browser (Webseite)
+// Direkt aus dem Browser (Webseite) bzw. über Tauri (Desktop-App)
 async function ctGetDirect(base, token, path) {
+  const tauri = CT_MODE === "tauri";
+  const get = tauri ? globalThis.__TAURI__.http.fetch : fetch;
+  const opts = { headers: { Accept: "application/json", Authorization: "Login " + token } };
+  if (!tauri) Object.assign(opts, { credentials: "omit", cache: "no-store" });
+  // Desktop-App: als Absender die CT-Adresse selbst angeben, damit CT die Anfrage nicht als
+  // fremde Webseite behandelt (sonst stünde dort z. B. „tauri://localhost“)
+  else opts.headers.Origin = new URL(base).origin;
   let r;
   try {
-    r = await fetch(base + "/api" + path, {
-      headers: { Accept: "application/json", Authorization: "Login " + token },
-      credentials: "omit",
-      cache: "no-store",
-    });
+    r = await get(base + "/api" + path, opts);
   } catch (e) {
+    if (tauri) throw new Error("Verbindungsfehler: " + e);
     // Der Browser verrät aus Sicherheitsgründen nicht, ob die Adresse falsch ist oder die
     // CORS-Freigabe fehlt; beides sieht gleich aus.
     throw new Error("Verbindungsfehler (CORS): " + location.origin);

@@ -1,0 +1,73 @@
+# Baut die Desktop-App (Tauri) für Windows und Linux.
+# Wird vom Release-Ablauf aufgerufen; außerdem zur Probe bei Änderungen an desktop/.
+name: Desktop-App
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+  pull_request:
+    paths: ["desktop/**", ".github/workflows/desktop.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            name: windows
+          - os: ubuntu-22.04
+            name: linux
+    runs-on: ${{ matrix.os }}
+    env:
+      VERSION: ${{ inputs.version || 'v0.1' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri
+      - name: Linux-Bibliotheken installieren
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+      - name: Oberfläche bauen
+        shell: bash
+        run: python tools/build_web.py "$VERSION"
+      - name: Desktop-App bauen
+        shell: bash
+        working-directory: desktop
+        run: |
+          # Tauri erwartet eine Version wie 19.0.0
+          IFS=. read -r a b c <<< "${VERSION#v}"
+          npx -y @tauri-apps/cli@2.12.5 build --config "{\"version\":\"${a}.${b:-0}.${c:-0}\"}"
+      - name: Dateien einsammeln
+        shell: bash
+        run: |
+          B=desktop/src-tauri/target/release/bundle
+          mkdir -p dist-desktop
+          if [ "${{ matrix.name }}" = windows ]; then
+            cp "$B"/nsis/*.exe "dist-desktop/ct-gruppenhierarchie-windows-$VERSION-setup.exe"
+          else
+            cp "$B"/appimage/*.AppImage "dist-desktop/ct-gruppenhierarchie-linux-$VERSION.AppImage"
+            cp "$B"/deb/*.deb "dist-desktop/ct-gruppenhierarchie-linux-$VERSION.deb"
+          fi
+          ls -l dist-desktop
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.name }}
+          path: dist-desktop/*

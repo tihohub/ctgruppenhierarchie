@@ -71,8 +71,12 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
   bauen, Tag und Release anlegen)
 - `tools/build_python.py` – baut das Python-Paket (eine Datei mit eingebetteter Oberfläche)
 - `tools/build_web.py` – baut die Webseite für GitHub Pages (Job `webseite` in `release.yml`)
-- `ct-daten.js` erkennt die Variante selbst (`CT_MODE`): `proxy` (Python-Version, Port 8765)
-  oder `direct` (Webseite, CORS-Freigabe nötig)
+- `desktop/src-tauri/` – Desktop-App (Tauri v2, Rust-Gerüst, wird kaum angefasst). Zeigt
+  `dist/webseite` an; Anfragen an CT über das HTTP-Plugin. Gebaut für Windows und Linux in
+  `.github/workflows/desktop.yml` (bei jedem Release und bei Änderungen an `desktop/`).
+  Lokal: `python3 tools/build_web.py v0.1 && cd desktop && npx @tauri-apps/cli@2 build`
+- `ct-daten.js` erkennt die Variante selbst (`CT_MODE`): `proxy` (Python-Version, Port 8765),
+  `direct` (Webseite, CORS-Freigabe nötig) oder `tauri` (Desktop-App)
 - Platzhalter `__CT_VERSION__` in `app.js` und im Python-Server wird beim Release durch
   den Tag ersetzt.
 
