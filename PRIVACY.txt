@@ -1,10 +1,31 @@
 Datenschutzhinweis - CT Gruppenhierarchie
-Stand: 17. November 2026
+Stand: 18. November 2026
 
-Die Anwendung wird lokal auf dem Geraet des Nutzers ausgefuehrt. CT-Daten werden vom lokalen Programm direkt von der vom Nutzer angegebenen CT-Instanz abgerufen. Der Entwickler betreibt keinen Server zur Verarbeitung dieser CT-Daten.
+Grundsatz
+Die Anwendung liest Gruppendaten nur lesend aus der vom Nutzer angegebenen CT-Instanz und
+verarbeitet sie ausschliesslich im Browser bzw. Programm auf dem Geraet des Nutzers. Der
+Entwickler betreibt keinen Server, der CT-Daten oder Login-Tokens empfaengt oder verarbeitet.
+Es gibt keine Telemetrie und kein Tracking.
 
-Der eingegebene Login-Token wird nicht dauerhaft gespeichert. Er wird nur fuer die laufende Anwendungssitzung verwendet. Gespeichert werden ausschliesslich lokale Oberflaecheneinstellungen wie CT-Adresse, Filter, Suche und Darstellungsoptionen.
+Login-Token
+Der eingegebene Login-Token wird nicht dauerhaft gespeichert. Er liegt nur im Arbeitsspeicher
+der laufenden Sitzung und wird beim Trennen, nach 60 Minuten Inaktivitaet oder beim Schliessen
+verworfen. Er wird ausschliesslich an die angegebene CT-Instanz gesendet.
 
-Die Anwendung enthaelt keine vom Entwickler betriebene Telemetrie und kein Tracking.
+Gespeicherte Einstellungen
+Im Browser bzw. in der Desktop-App gespeichert werden nur Oberflaecheneinstellungen:
+CT-Adresse, Filter, Suche, aufgeklappte Gruppen und Darstellungsart. Sie verlassen das Geraet
+nicht.
+
+Varianten
+- Webseite (https://tihohub.github.io/ctgruppenhierarchie/): Die Seite selbst (HTML, CSS,
+  JavaScript) wird von GitHub Pages ausgeliefert. Dabei erhaelt GitHub wie bei jedem
+  Webseitenaufruf technische Verbindungsdaten (z. B. IP-Adresse). CT-Daten und Login-Token
+  gehen nicht an GitHub, sondern vom Browser direkt an die CT-Instanz. Datenschutzerklaerung
+  von GitHub: https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement
+- Desktop-App: Das Programm fragt die CT-Instanz direkt. Weitere Verbindungen baut es nicht
+  auf. Links zu Gruppen werden im Standardbrowser geoeffnet.
+- Python-Version: Ein lokaler Server auf dem eigenen Rechner (127.0.0.1) reicht die
+  Leseanfragen an die CT-Instanz weiter. Er ist nur vom eigenen Rechner aus erreichbar.
 
 Projekt: https://github.com/tihohub/ctgruppenhierarchie

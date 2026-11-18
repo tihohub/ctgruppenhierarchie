@@ -94,7 +94,7 @@ Der Login-Token gewährt Zugriff mit den Rechten des Benutzers. **Nicht an ander
 
 ### Welche Rechte werden benötigt?
 
-Die Anwendung sieht genau das, was der Benutzer in CT sehen darf. Gruppen ohne Berechtigung erscheinen nicht. Ist eine Obergruppe nicht sichtbar, wird sie ausgegraut mit 🔒 angezeigt (mit Namen, falls CT ihn liefert, sonst mit ID), damit die sichtbaren Untergruppen an ihrem ursprünglichen Stamm bleiben.
+Die Anwendung sieht genau das, was der Benutzer in CT sehen darf. Empfehlung: einen eigenen CT-Benutzer anlegen, der Gruppen nur **sehen** darf, und dessen Login-Token verwenden. Der Token hat nämlich alle Rechte seines Benutzers, nicht nur Leserechte – auch wenn die App selbst nur liest. Gruppen ohne Berechtigung erscheinen nicht. Ist eine Obergruppe nicht sichtbar, wird sie ausgegraut mit 🔒 angezeigt (mit Namen, falls CT ihn liefert, sonst mit ID), damit die sichtbaren Untergruppen an ihrem ursprünglichen Stamm bleiben.
 
 ## Funktionen
 
@@ -129,13 +129,14 @@ Die Anwendung sieht genau das, was der Benutzer in CT sehen darf. Gruppen ohne B
 
 ## Datenschutz und Sicherheit
 
-- Die Anwendung läuft **lokal** auf dem eigenen Rechner. Sie kommuniziert ausschließlich mit der eingetragenen CT-Instanz. Es gibt keinen Server des Entwicklers, kein Tracking und keine Telemetrie.
+- Die Daten werden **auf dem eigenen Gerät** aufbereitet. Abgerufen wird ausschließlich von der eingetragenen CT-Instanz. Es gibt keinen Server des Entwicklers, kein Tracking und keine Telemetrie.
+- **Webseite:** Die Seite selbst wird von GitHub Pages geladen; GitHub sieht dabei wie bei jedem Webseitenaufruf technische Verbindungsdaten. CT-Daten und Login-Token gehen nicht an GitHub, sondern direkt an CT.
 - **Nur lesend:** An CT werden ausschließlich Leseabfragen gesendet.
 - Der **Login-Token wird nicht gespeichert.** Er existiert nur während der laufenden Sitzung.
 - Im Browser gespeichert werden nur Oberflächeneinstellungen: CT-Adresse, Suche, Filter, aufgeklappte Gruppen und Darstellungsart.
 - **„Trennen“** löscht alle geladenen Daten, den Token, Suche, Filter und aufgeklappte Gruppen. Eine neue Verbindung löscht zuerst alle Daten der vorherigen. Auf gemeinsam genutzten Rechnern nach dem Trennen zusätzlich den Browser-Tab schließen.
 - **Sitzungs-Timeout:** Nach 58 Minuten ohne Benutzung (Maus, Tastatur, Scrollen) erscheint eine Warnung mit dem Knopf „Weiterarbeiten“. Nach 60 Minuten werden geladene Daten und Token automatisch gelöscht, wie bei „Trennen“.
-- Der lokale Server ist nur vom eigenen Rechner aus erreichbar (`127.0.0.1`) und nimmt nur Anfragen der eigenen Seite an.
+- **Python-Version:** Der lokale Server ist nur vom eigenen Rechner aus erreichbar (`127.0.0.1`) und nimmt nur Anfragen der eigenen Seite an.
 
 Details: `PRIVACY.txt`
 
@@ -144,15 +145,18 @@ Details: `PRIVACY.txt`
 - **„Anmeldung fehlgeschlagen“:** Login-Token prüfen bzw. neu erzeugen.
 - **„Zugriff verweigert“:** Dem Benutzer fehlen in CT Rechte.
 - **„CT-Instanz nicht erreichbar“:** CT-Adresse und Internetverbindung prüfen.
+- **„Keine Verbindung zu CT …“ (Webseite):** Die CORS-Freigabe fehlt oder die CT-Adresse ist falsch, siehe [Webseite](#webseite-ohne-installation).
+- **„Der Computer wurde durch Windows geschützt“ (Desktop-App):** Weitere Informationen → Trotzdem ausführen (Programm ist nicht signiert).
 - **„Port 8765 ist bereits belegt“:** Es läuft noch eine ältere Version (v16 oder älter) oder ein anderes Programm auf diesem Port. Dessen Konsolenfenster schließen und neu starten. Versionen ab v17 werden automatisch abgelöst.
-- **„Programm beendet“ im Browser:** Das Programm läuft nicht mehr (Tab war geschlossen, neue Version gestartet oder Rechner im Ruhezustand). Programm neu starten.
-- **„python“ wird nicht gefunden (Windows):** Python installieren und dabei „Add python.exe to PATH“ anhaken.
+- **„Programm beendet“ im Browser (Python-Version):** Das Programm läuft nicht mehr (Tab war geschlossen, neue Version gestartet oder Rechner im Ruhezustand). Programm neu starten.
+- **„python“ wird nicht gefunden (Python-Version unter Windows):** Python installieren und dabei „Add python.exe to PATH“ anhaken.
 
 ## Dateien
 
 - `web/`: die Oberfläche (`index.html`, `style.css`, `app.js`) und die Datenaufbereitung (`ct-daten.js`)
 - `python/ct_gruppenhierarchie.py`: der lokale Server, der die Oberfläche ausliefert und Leseanfragen an CT weiterreicht
 - `start_windows.bat`: Startdatei für Windows
+- `desktop/`: die Desktop-App (Tauri)
 - `tools/build_python.py`, `tools/build_web.py`: bauen Download-Paket und Webseite (beim Release automatisch)
 - `AGENTS.md`: Arbeitsregeln für KI-Agenten
 - `LICENSE.txt`: Lizenz
