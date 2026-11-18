@@ -110,12 +110,7 @@ async function load(fresh) {
   $("msg").textContent = "Daten werden geladen …";
   $("msg").className = "note";
   try {
-    let r = await fetch("/data", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ base, token }),
-    });
-    j = await r.json();
+    j = await loadGroupData(base, token);
   } catch (e) {
     if (my !== REQ) return;
     throw e;

@@ -57,12 +57,14 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
   Abhängigkeiten in `THIRD_PARTY_LICENSES.txt` eintragen.
 
 ## Aufbau des Repos
-- `web/` – Oberfläche: `index.html`, `style.css`, `app.js`
-- `python/ct_gruppenhierarchie.py` – lokaler Server: liefert `web/` aus, ruft CT ab,
-  beendet sich automatisch, wenn kein Tab mehr offen ist
+- `web/` – Oberfläche: `index.html`, `style.css`, `app.js` (Anzeige und Bedienung),
+  `ct-daten.js` (Abruf aus CT und Datenaufbereitung – einzige Stelle dafür)
+- `python/ct_gruppenhierarchie.py` – schlanker lokaler Server: liefert `web/` aus, reicht
+  Leseanfragen an CT weiter (Endpunkt `/ct`, nur GET), beendet sich automatisch, wenn
+  kein Tab mehr offen ist
 - `start_windows.bat` – Startdatei für Windows
 - `tests/` – automatische Tests: `fake_ct.py` (Schein-CT-Server mit Testdaten) und
-  `app.test.mjs` (Browser-Tests). Ausführen mit `npm install` und `npm test`.
+  `app.test.mjs` (Browser-Tests), `ct-daten.test.mjs` (Datenaufbereitung). Ausführen mit `npm install` und `npm test`.
 - `.github/workflows/` – GitHub Actions: `tests.yml` (bei jedem Pull Request),
   `release.yml` (per „Run workflow“ mit Versionsnummer oder bei Tag `v*`: Tests, Pakete
   bauen, Tag und Release anlegen)
