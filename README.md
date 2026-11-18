@@ -88,7 +88,13 @@ Der Browser öffnet sich automatisch mit `http://127.0.0.1:8765/`. Falls nicht, 
 
 ### Wo finde ich den Login-Token?
 
-In CT im eigenen Personenprofil unter den Berechtigungen bzw. Sicherheitseinstellungen („Login-Token“). Je nach CT-Version und Einstellungen der Gemeinde kann die Stelle abweichen. Im Zweifel hilft der CT-Administrator der Gemeinde.
+1. In CT anmelden.
+2. Oben rechts auf das eigene **Nutzerbild** klicken.
+3. **Mein Profil** wählen.
+4. **Login-Token anzeigen** anklicken.
+5. Den langen Token-Text kopieren und in der App im Feld „Login-Token“ einfügen.
+
+Tipp: Für die App am besten mit einem eigenen CT-Benutzer anmelden, der Gruppen nur sehen darf, und dessen Login-Token verwenden (siehe unten).
 
 Der Login-Token gewährt Zugriff mit den Rechten des Benutzers. **Nicht an andere Personen weitergeben.**
 
