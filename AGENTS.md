@@ -63,7 +63,9 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
 - `start_windows.bat` – Startdatei für Windows
 - `tests/` – automatische Tests: `fake_ct.py` (Schein-CT-Server mit Testdaten) und
   `app.test.mjs` (Browser-Tests). Ausführen mit `npm install` und `npm test`.
-- `.github/workflows/` – GitHub Actions (Tests bei jedem Pull Request)
+- `.github/workflows/` – GitHub Actions: `tests.yml` (bei jedem Pull Request),
+  `release.yml` (bei jedem Tag `v*`: Tests, Pakete bauen, Release anlegen)
+- `tools/build_python.py` – baut das Python-Paket (eine Datei mit eingebetteter Oberfläche)
 - Platzhalter `__CT_VERSION__` in `app.js` und im Python-Server wird beim Release durch
   den Tag ersetzt.
 
