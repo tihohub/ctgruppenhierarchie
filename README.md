@@ -119,6 +119,18 @@ Details: `PRIVACY.txt`
 - `PRIVACY.txt`: Datenschutzhinweis
 - `THIRD_PARTY_LICENSES.txt`: Hinweise zu Drittkomponenten
 
+## Entwicklung
+
+Für die Nutzung der App nicht nötig. Die automatischen Tests prüfen die Oberfläche gegen einen Schein-CT-Server mit Testdaten:
+
+```bash
+npm install
+npx playwright install chromium
+npm test
+```
+
+Auf GitHub laufen die Tests bei jedem Pull Request automatisch.
+
 ## Lizenz
 
 © 2026 Tim Hofmann. Kostenlose Nutzung für nicht-kommerzielle Zwecke. Kommerzielle Nutzung nur mit vorheriger schriftlicher Zustimmung. Vollständiger Text: `LICENSE.txt`.

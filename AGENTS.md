@@ -24,6 +24,7 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
 - Die PR-Beschreibung erklärt in einfachen Worten, was sich ändert und wie es
   getestet wurde.
 - Die automatischen Tests müssen grün sein, bevor ein PR übernommen wird.
+- Wer Verhalten ändert oder ergänzt, passt die Tests in `tests/` mit an.
 - Übernommen wird als ein zusammengefasster Commit („Squash“).
 
 ### Versionen und Releases
@@ -60,6 +61,9 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
 - `python/ct_gruppenhierarchie.py` – lokaler Server: liefert `web/` aus, ruft CT ab,
   beendet sich automatisch, wenn kein Tab mehr offen ist
 - `start_windows.bat` – Startdatei für Windows
+- `tests/` – automatische Tests: `fake_ct.py` (Schein-CT-Server mit Testdaten) und
+  `app.test.mjs` (Browser-Tests). Ausführen mit `npm install` und `npm test`.
+- `.github/workflows/` – GitHub Actions (Tests bei jedem Pull Request)
 - Platzhalter `__CT_VERSION__` in `app.js` und im Python-Server wird beim Release durch
   den Tag ersetzt.
 
