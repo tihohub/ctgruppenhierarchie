@@ -20,7 +20,12 @@ before(async () => {
     }
   }
   // ct-daten.js laden; Anfragen gehen hier direkt an den Schein-CT statt über den lokalen Server
-  const ctx = { fetch, URLSearchParams, console };
+  const ctx = {
+    fetch,
+    URLSearchParams,
+    console,
+    location: { hostname: "test", port: "", origin: "" },
+  };
   vm.createContext(ctx);
   vm.runInContext(readFileSync("web/ct-daten.js", "utf8"), ctx);
   vm.runInContext(

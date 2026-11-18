@@ -1,6 +1,6 @@
 # CT Gruppenhierarchie
 
-Eine kleine lokale Anwendung, die die Gruppenstruktur einer CT-Instanz übersichtlich darstellt: als aufklappbaren Baum, als Visualisierung der Gruppenstämme und als Arbeitsliste für Gruppen mit mehreren Obergruppen.
+Eine kleine Anwendung, die die Gruppenstruktur einer CT-Instanz übersichtlich darstellt: als aufklappbaren Baum, als Visualisierung der Gruppenstämme und als Arbeitsliste für Gruppen mit mehreren Obergruppen.
 
 Die Anwendung **liest nur** und verändert keine Daten in CT.
 
@@ -10,7 +10,32 @@ Projekt: https://github.com/tihohub/ctgruppenhierarchie
 
 ---
 
-## Voraussetzungen
+## Welche Variante passt?
+
+| Variante | Wann | Was nötig ist |
+|---|---|---|
+| **Webseite** | Empfohlen, wenn ein CT-Admin einmal mithilft | Browser, CORS-Freigabe durch den Admin, Login-Token |
+| **Python-Version** | Ohne Admin, z. B. auf dem Mac | Python, Login-Token |
+
+### Webseite (ohne Installation)
+
+Adresse: **https://tihohub.github.io/ctgruppenhierarchie/**
+
+Der Browser fragt CT direkt. Damit CT das erlaubt, muss ein **CT-Admin einmalig** diese Webseite freigeben:
+
+1. In CT: **System-Einstellungen → Integrationen → Cross-Origin-Ressource-Sharing**
+2. Neuen Eintrag anlegen: `https://tihohub.github.io` (genau so, ohne Pfad und ohne Schrägstrich am Ende)
+3. Speichern.
+
+Danach die Webseite öffnen, CT-Adresse und Login-Token eingeben. Erscheint „Keine Verbindung zu CT …“, fehlt die Freigabe oder die Adresse ist falsch.
+
+*Was ist CORS?* Eine Schutzregel im Browser: Eine Webseite darf Daten von einer anderen Adresse (hier: eurer CT-Instanz) nur abrufen, wenn diese es ausdrücklich erlaubt. Die Freigabe erlaubt nur dieser Webseite den Zugriff, und nur mit dem Login-Token des jeweiligen Nutzers.
+
+---
+
+## Python-Version
+
+### Voraussetzungen
 
 - **Python 3.7 oder neuer.** Download: https://www.python.org/downloads/
   Unter Windows bei der Installation „Add python.exe to PATH“ anhaken.
@@ -19,7 +44,7 @@ Projekt: https://github.com/tihohub/ctgruppenhierarchie
 
 Weitere Pakete oder eine Installation sind nicht nötig. Das Programm verwendet nur die Standardbibliothek von Python.
 
-## Starten
+### Starten
 
 Die aktuelle Version unter [Releases](https://github.com/tihohub/ctgruppenhierarchie/releases/latest) herunterladen: `ct-gruppenhierarchie-python-….zip`. Die ZIP-Datei entpacken.
 
@@ -33,7 +58,7 @@ python3 ct_gruppenhierarchie.py
 
 Der Browser öffnet sich automatisch mit `http://127.0.0.1:8765/`. Falls nicht, diese Adresse innerhalb von 3 Minuten von Hand im Browser öffnen.
 
-## Beenden
+### Beenden
 
 - **Automatisch:** Wird der letzte Browser-Tab der App geschlossen, beendet sich das Programm nach etwa 10 Sekunden von selbst, und das Konsolenfenster schließt sich. Neuladen mit F5 beendet das Programm nicht.
 - Stürzt der Browser ab, beendet sich das Programm spätestens nach 3 Minuten.
@@ -114,7 +139,7 @@ Details: `PRIVACY.txt`
 - `web/`: die Oberfläche (`index.html`, `style.css`, `app.js`) und die Datenaufbereitung (`ct-daten.js`)
 - `python/ct_gruppenhierarchie.py`: der lokale Server, der die Oberfläche ausliefert und Leseanfragen an CT weiterreicht
 - `start_windows.bat`: Startdatei für Windows
-- `tools/build_python.py`: baut das Download-Paket (wird beim Release automatisch ausgeführt)
+- `tools/build_python.py`, `tools/build_web.py`: bauen Download-Paket und Webseite (beim Release automatisch)
 - `AGENTS.md`: Arbeitsregeln für KI-Agenten
 - `LICENSE.txt`: Lizenz
 - `PRIVACY.txt`: Datenschutzhinweis

@@ -4,14 +4,48 @@
 // Hierarchie, Gruppenstämme, alleinstehende Gruppen, Platzhalter für nicht sichtbare
 // Obergruppen, Zähler für die Filter.
 //
-// Wie die Anfragen zu CT gelangen, entscheidet ctGet():
-// - Python-Version: über den lokalen Server (Umweg um die CORS-Regel des Browsers)
+// Wie die Anfragen zu CT gelangen, entscheidet ctGet() anhand von CT_MODE:
+// - "proxy":  Python-Version; der lokale Server reicht die Anfragen weiter
+//             (Umweg um die CORS-Regel des Browsers)
+// - "direct": Webseite; der Browser fragt CT direkt. Dafür muss ein CT-Admin die Adresse
+//             dieser Seite unter CORS freigegeben haben.
+
+const CT_MODE =
+  ["127.0.0.1", "localhost"].includes(location.hostname) && location.port === "8765"
+    ? "proxy"
+    : "direct";
 
 // ---- Anfragen an CT ----
 
 // Eine GET-Anfrage an die CT-API. path beginnt mit "/", z. B. "/whoami".
 // Liefert die Antwort als Objekt oder wirft einen Fehler mit verständlicher Ursache.
 async function ctGet(base, token, path) {
+  return CT_MODE === "proxy" ? ctGetProxy(base, token, path) : ctGetDirect(base, token, path);
+}
+
+// Direkt aus dem Browser (Webseite)
+async function ctGetDirect(base, token, path) {
+  let r;
+  try {
+    r = await fetch(base + "/api" + path, {
+      headers: { Accept: "application/json", Authorization: "Login " + token },
+      credentials: "omit",
+      cache: "no-store",
+    });
+  } catch (e) {
+    // Der Browser verrät aus Sicherheitsgründen nicht, ob die Adresse falsch ist oder die
+    // CORS-Freigabe fehlt; beides sieht gleich aus.
+    throw new Error("Verbindungsfehler (CORS): " + location.origin);
+  }
+  if (!r.ok) {
+    const t = await r.text().catch(() => "");
+    throw new Error(`HTTP ${r.status} ${r.statusText}: ${t.slice(0, 300)}`);
+  }
+  return r.json();
+}
+
+// Über den lokalen Python-Server
+async function ctGetProxy(base, token, path) {
   let r;
   try {
     r = await fetch("/ct", {

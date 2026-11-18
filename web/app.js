@@ -541,7 +541,15 @@ function closeModal() {
 }
 function friendly(e) {
   let m = e.message || String(e);
-  if (/401|unauthor/i.test(m)) m = "Anmeldung fehlgeschlagen. Bitte prüfe deinen CT Login-Token.";
+  if (/Verbindungsfehler \(CORS\)/.test(m))
+    m =
+      "Keine Verbindung zu CT. Entweder ist die CT-Adresse falsch, oder ein CT-Admin muss diese " +
+      "Webseite erst freigeben: System-Einstellungen → Integrationen → Cross-Origin-Ressource-" +
+      "Sharing, Eintrag „" +
+      location.origin +
+      "“.";
+  else if (/401|unauthor/i.test(m))
+    m = "Anmeldung fehlgeschlagen. Bitte prüfe deinen CT Login-Token.";
   else if (/403|forbidden/i.test(m))
     m = "Zugriff verweigert. Bitte prüfe die Berechtigungen des verwendeten CT-Benutzers.";
   else if (
@@ -789,14 +797,17 @@ async function beat() {
     );
   }
 }
-HB = setInterval(beat, 20000);
-beat();
-addEventListener("pagehide", () => {
-  if (!ENDED) srv("/bye", true);
-});
-addEventListener("pageshow", (e) => {
-  if (e.persisted) beat();
-});
+// Nur die Python-Version hat einen lokalen Server, der Lebenszeichen braucht
+if (CT_MODE === "proxy") {
+  HB = setInterval(beat, 20000);
+  beat();
+  addEventListener("pagehide", () => {
+    if (!ENDED) srv("/bye", true);
+  });
+  addEventListener("pageshow", (e) => {
+    if (e.persisted) beat();
+  });
+}
 
 // ---- Sitzungs-Timeout bei Inaktivität ----
 const IDLE_WARN = 58 * 60e3,
