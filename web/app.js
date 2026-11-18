@@ -797,6 +797,16 @@ async function beat() {
     );
   }
 }
+// Desktop-App: Links (z. B. zu Gruppen in CT) im normalen Browser öffnen
+if (CT_MODE === "tauri") {
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest("a[href^='http']");
+    if (!a) return;
+    e.preventDefault();
+    globalThis.__TAURI__.opener.openUrl(a.href);
+  });
+}
+
 // Nur die Python-Version hat einen lokalen Server, der Lebenszeichen braucht
 if (CT_MODE === "proxy") {
   HB = setInterval(beat, 20000);

@@ -37,8 +37,14 @@ jobs:
           name: python-paket
           path: dist/*.zip
 
+  desktop:
+    needs: tests
+    uses: ./.github/workflows/desktop.yml
+    with:
+      version: ${{ inputs.version || github.ref_name }}
+
   release:
-    needs: python-paket
+    needs: [python-paket, desktop]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

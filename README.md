@@ -15,7 +15,8 @@ Projekt: https://github.com/tihohub/ctgruppenhierarchie
 | Variante | Wann | Was nötig ist |
 |---|---|---|
 | **Webseite** | Empfohlen, wenn ein CT-Admin einmal mithilft | Browser, CORS-Freigabe durch den Admin, Login-Token |
-| **Python-Version** | Ohne Admin, z. B. auf dem Mac | Python, Login-Token |
+| **Desktop-App** | Ohne Admin, unter Windows oder Linux | Programm herunterladen, Login-Token |
+| **Python-Version** | Ohne Admin, auf dem Mac (oder überall, wo Python installiert ist) | Python, Login-Token |
 
 ### Webseite (ohne Installation)
 
@@ -30,6 +31,19 @@ Der Browser fragt CT direkt. Damit CT das erlaubt, muss ein **CT-Admin einmalig*
 Danach die Webseite öffnen, CT-Adresse und Login-Token eingeben. Erscheint „Keine Verbindung zu CT …“, fehlt die Freigabe oder die Adresse ist falsch.
 
 *Was ist CORS?* Eine Schutzregel im Browser: Eine Webseite darf Daten von einer anderen Adresse (hier: eurer CT-Instanz) nur abrufen, wenn diese es ausdrücklich erlaubt. Die Freigabe erlaubt nur dieser Webseite den Zugriff, und nur mit dem Login-Token des jeweiligen Nutzers.
+
+### Desktop-App (Windows, Linux)
+
+Unter [Releases](https://github.com/tihohub/ctgruppenhierarchie/releases/latest) herunterladen:
+
+- **Windows:** `ct-gruppenhierarchie-windows-…-setup.exe` ausführen. Das Programm wird nur für den eigenen Benutzer installiert, Admin-Rechte sind nicht nötig.
+- **Linux:** `….AppImage` (ausführbar machen und starten) oder `….deb` (unter Debian/Ubuntu installieren).
+
+Eine CORS-Freigabe ist nicht nötig, das Programm fragt CT direkt.
+
+**Hinweis zur Windows-Warnung:** Das Programm ist nicht digital signiert, denn eine Signatur kostet jährlich Geld. Beim ersten Start meldet Windows deshalb „Der Computer wurde durch Windows geschützt“. Auf **Weitere Informationen → Trotzdem ausführen** klicken. Das ist nur beim ersten Mal nötig.
+
+Eine Mac-Version gibt es nicht: Ohne kostenpflichtige Apple-Signatur meldet macOS solche Programme als „beschädigt“. Mac-Nutzer verwenden die Webseite oder die Python-Version.
 
 ---
 
