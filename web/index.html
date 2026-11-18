@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>CT Gruppenhierarchie</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>CT Gruppenhierarchie <span class="app-version"></span></h1>
+      <div class="row">
+        <button id="aboutBtn" class="light">ⓘ Über</button
+        ><button
+          id="refresh"
+          class="gear hidden"
+          title="Daten aktualisieren"
+          aria-label="Daten aktualisieren"
+        >
+          ↻</button
+        ><button id="settingsBtn" class="gear" title="Einstellungen" aria-label="Einstellungen">
+          ⚙
+        </button>
+      </div>
+    </header>
+    <main>
+      <div id="modal" class="modal">
+        <div class="modalbox">
+          <div class="modalhead">
+            <h2>⚙ Einstellungen</h2>
+            <button id="close" class="close">×</button>
+          </div>
+          <div class="settings">
+            <div>
+              <label>CT-Adresse</label
+              ><input id="base" value="" placeholder="https://deine-gemeinde.church.tools" />
+            </div>
+            <div>
+              <label>Login-Token</label
+              ><input
+                id="token"
+                type="password"
+                autocomplete="off"
+                placeholder="Wird nicht gespeichert"
+              />
+              <p class="note">
+                🔒 Der Login-Token wird nur im Arbeitsspeicher gehalten und beim Beenden verworfen.
+                Teile den Token nicht mit anderen Personen.
+              </p>
+            </div>
+            <div class="row">
+              <button id="connect">Verbindung testen und laden</button
+              ><button id="disconnect" class="sec">Trennen</button>
+            </div>
+            <p id="msg" class="note">Noch nicht verbunden.</p>
+            <p id="user" class="note"></p>
+          </div>
+        </div>
+      </div>
+      <div id="welcome" class="modal hidden">
+        <div class="modalbox welcome">
+          <div class="modalhead"><h2>Willkommen bei CT Gruppenhierarchie</h2></div>
+          <p>
+            Diese unabhängige Anwendung visualisiert die Gruppenstruktur einer vom Nutzer
+            angegebenen CT-Instanz.
+          </p>
+          <p><b>Read-only:</b> Die Anwendung verändert keine Daten in CT.</p>
+          <p>
+            Der Login-Token wird nicht dauerhaft gespeichert. Es gibt keine Telemetrie und keinen
+            vom Entwickler betriebenen Server für CT-Daten.
+          </p>
+          <div class="notice">
+            Unabhängiges Community-Tool. Keine offizielle Anwendung von ChurchTools Innovations
+            GmbH.
+          </div>
+          <div class="legal-links">
+            <button data-legal="privacy">Datenschutz</button
+            ><button data-legal="license">Lizenz</button>
+          </div>
+          <p><button id="welcomeGo">Los geht's</button></p>
+        </div>
+      </div>
+      <div id="about" class="modal hidden">
+        <div class="modalbox legaltext">
+          <div class="modalhead">
+            <h2>Über / Rechtliches</h2>
+            <button id="aboutClose" class="close">×</button>
+          </div>
+          <p>
+            <b>CT Gruppenhierarchie <span class="app-version"></span></b><br />© 2026 Tim Hofmann.
+            Nutzung gemäß Lizenzbedingungen.
+          </p>
+          <p>
+            Unabhängiges Community-Tool. Keine offizielle Anwendung von ChurchTools Innovations
+            GmbH. Produkt- und Markenbezeichnungen gehören den jeweiligen Rechteinhabern.
+          </p>
+          <p>
+            <b>Datenschutz:</b> Die Anwendung verarbeitet CT-Daten lokal auf dem Gerät und
+            kommuniziert ausschließlich mit der vom Nutzer angegebenen CT-Instanz. Der Entwickler
+            betreibt keinen Server zur Verarbeitung dieser Daten. Kein Tracking, keine Telemetrie.
+            Der Login-Token wird nicht dauerhaft gespeichert.
+          </p>
+          <p>
+            <b>Lizenz:</b> Kostenlose Nutzung für nicht-kommerzielle Zwecke. Kommerzielle Nutzung
+            bedarf der vorherigen schriftlichen Zustimmung von Tim Hofmann. Der vollständige
+            Lizenztext ist Bestandteil der Veröffentlichung.
+          </p>
+          <p>
+            <b>Projekt:</b>
+            <a
+              href="https://github.com/tihohub/ctgruppenhierarchie"
+              target="_blank"
+              rel="noopener noreferrer"
+              >https://github.com/tihohub/ctgruppenhierarchie</a
+            >
+          </p>
+          <div class="notice">Hinweis: Diese Informationen ersetzen keine Rechtsberatung.</div>
+        </div>
+      </div>
+      <div id="app" class="hidden">
+        <div class="card">
+          <div class="tools">
+            <button id="expand" class="green">＋ Alle maximieren</button
+            ><button id="collapse" class="red">− Alle minimieren</button
+            ><button id="print" class="light">🖨 Drucken</button>
+          </div>
+          <p id="conn" class="ok"></p>
+          <div id="stats" class="stats"></div>
+        </div>
+        <div class="card filters-card">
+          <div class="filters">
+            <div>
+              <label>Suche</label
+              ><input
+                id="search"
+                type="search"
+                placeholder="Name, Notiz, Typ, Status, Kategorie …"
+              />
+            </div>
+            <div>
+              <label>Gruppentyp</label
+              ><select id="type"></select>
+            </div>
+            <div>
+              <label>Sichtbarkeit</label
+              ><select id="visibility"></select>
+            </div>
+            <div>
+              <label>Gruppenstatus</label
+              ><select id="status"></select>
+            </div>
+            <div>
+              <label>Mehrfachzuordnung</label
+              ><select id="multiF"></select>
+            </div>
+          </div>
+          <div id="chips" class="chips"></div>
+        </div>
+        <div class="tabs">
+          <button id="tabList" class="tab active">☷ Übersicht</button
+          ><button id="tabVis" class="tab">⌘ Visualisierung</button
+          ><button id="tabMulti" class="tab">🔗 Mehrfachzuordnungen</button>
+        </div>
+        <div id="listPane">
+          <div class="card">
+            <div class="sectionhead">
+              <h2>Gruppenhierarchie</h2>
+              <span id="treeCount"></span>
+            </div>
+            <ul id="tree" class="tree"></ul>
+            <p class="note">* Kontextgruppen werden für den Hierarchiepfad eingeblendet.</p>
+          </div>
+          <div class="card">
+            <div class="sectionhead">
+              <h2>Alleinstehende Gruppen</h2>
+              <span id="soloCount"></span>
+            </div>
+            <div id="stand" class="stand"></div>
+          </div>
+        </div>
+        <div id="visPane" class="hidden">
+          <div class="card">
+            <div class="sectionhead">
+              <h2>Gruppenstämme</h2>
+              <span id="visCount"></span>
+            </div>
+            <div class="visual-tools">
+              <span>Stammdarstellung:</span
+              ><button id="modeH" class="mode active" title="Stämme horizontal nebeneinander">
+                ↔ Horizontal</button
+              ><button id="modeV" class="mode" title="Stämme vertikal untereinander">
+                ↕ Vertikal
+              </button>
+            </div>
+            <div class="visual-area"><div id="forest" class="forest horizontal"></div></div>
+            <p class="note">
+              Horizontal: Gruppenstämme nebeneinander, Untergruppen untereinander. Vertikal:
+              Gruppenstämme untereinander, direkte Untergruppen nebeneinander.
+            </p>
+          </div>
+          <div class="card">
+            <div class="sectionhead">
+              <h2>Alleinstehende Gruppen</h2>
+              <span id="visSoloCount"></span>
+            </div>
+            <div class="visual-area solo-area"><div id="soloForest" class="forest solo"></div></div>
+            <p class="note">Gruppen ohne Ober- und Untergruppen.</p>
+          </div>
+        </div>
+        <div id="multiPane" class="hidden">
+          <div class="card">
+            <div class="sectionhead">
+              <h2>Gruppen mit mehreren Obergruppen</h2>
+              <span id="multiCount"></span>
+            </div>
+            <div id="multiList"></div>
+            <p class="note">
+              Pro Gruppe sind alle Wege von einem Gruppenstamm zur Gruppe aufgeführt. Ein Klick auf
+              einen Namen im Weg springt in der Übersicht zu dieser Gruppe. Der Gruppenname in der
+              Kopfzeile öffnet die Gruppe zum Bereinigen in CT. 🔒 = Obergruppe ohne Berechtigung.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div id="idleWarn" class="modal hidden">
+        <div class="modalbox">
+          <h2>Sitzung läuft ab</h2>
+          <p>
+            Die Sitzung endet in 2 Minuten wegen Inaktivität. Danach werden die geladenen Daten und
+            der Login-Token gelöscht.
+          </p>
+          <p><button id="idleGo">Weiterarbeiten</button></p>
+        </div>
+      </div>
+      <div id="ended" class="modal hidden">
+        <div class="modalbox">
+          <h2>Programm beendet</h2>
+          <p id="endedText"></p>
+        </div>
+      </div>
+      <div id="tooltip" class="tooltip hidden"></div>
+      <footer class="footer">
+        CT Gruppenhierarchie · <span class="app-version"></span> · © 2026 Tim Hofmann ·
+        <a
+          href="https://github.com/tihohub/ctgruppenhierarchie"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Projekt auf GitHub</a
+        >
+      </footer>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

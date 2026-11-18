@@ -1,4 +1,4 @@
-# CT Gruppenhierarchie v18
+# CT Gruppenhierarchie
 
 Eine kleine lokale Anwendung, die die Gruppenstruktur einer CT-Instanz übersichtlich darstellt: als aufklappbaren Baum, als Visualisierung der Gruppenstämme und als Arbeitsliste für Gruppen mit mehreren Obergruppen.
 
@@ -21,17 +21,14 @@ Weitere Pakete oder eine Installation sind nicht nötig. Das Programm verwendet 
 
 ## Starten
 
-Beide Dateien in denselben Ordner legen:
+Den ganzen Projektordner herunterladen (auf GitHub „Code → Download ZIP“) und entpacken.
 
-- `ct_gruppenhierarchie_v18.py`
-- `START_CT_GRUPPENHIERARCHIE_V18.bat` (nur für Windows)
+**Windows:** Doppelklick auf `start_windows.bat`.
 
-**Windows:** Doppelklick auf `START_CT_GRUPPENHIERARCHIE_V18.bat`.
-
-**macOS / Linux:** Im Terminal in den Ordner wechseln und starten:
+**macOS / Linux:** Im Terminal in den entpackten Ordner wechseln und starten:
 
 ```bash
-python3 ct_gruppenhierarchie_v18.py
+python3 python/ct_gruppenhierarchie.py
 ```
 
 Der Browser öffnet sich automatisch mit `http://127.0.0.1:8765/`. Falls nicht, diese Adresse innerhalb von 3 Minuten von Hand im Browser öffnen.
@@ -114,8 +111,10 @@ Details: `PRIVACY.txt`
 
 ## Dateien
 
-- `ct_gruppenhierarchie_v18.py`: die Anwendung
-- `START_CT_GRUPPENHIERARCHIE_V18.bat`: Startdatei für Windows
+- `web/`: die Oberfläche (`index.html`, `style.css`, `app.js`)
+- `python/ct_gruppenhierarchie.py`: der lokale Server, der die Oberfläche ausliefert und die Daten aus CT abruft
+- `start_windows.bat`: Startdatei für Windows
+- `AGENTS.md`: Arbeitsregeln für KI-Agenten
 - `LICENSE.txt`: Lizenz
 - `PRIVACY.txt`: Datenschutzhinweis
 - `THIRD_PARTY_LICENSES.txt`: Hinweise zu Drittkomponenten

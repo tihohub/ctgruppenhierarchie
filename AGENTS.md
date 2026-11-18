@@ -55,6 +55,14 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
   des Inhabers. Keine Abhängigkeiten aufnehmen, deren Lizenz das verbietet; neue
   Abhängigkeiten in `THIRD_PARTY_LICENSES.txt` eintragen.
 
+## Aufbau des Repos
+- `web/` – Oberfläche: `index.html`, `style.css`, `app.js`
+- `python/ct_gruppenhierarchie.py` – lokaler Server: liefert `web/` aus, ruft CT ab,
+  beendet sich automatisch, wenn kein Tab mehr offen ist
+- `start_windows.bat` – Startdatei für Windows
+- Platzhalter `__CT_VERSION__` in `app.js` und im Python-Server wird beim Release durch
+  den Tag ersetzt.
+
 ## Zielbild (wird schrittweise umgesetzt)
 Oberfläche und Datenaufbereitung gibt es nur einmal (HTML/CSS/JavaScript). Drei
 Varianten unterscheiden sich nur darin, wie die Anfragen zu CT gelangen:
