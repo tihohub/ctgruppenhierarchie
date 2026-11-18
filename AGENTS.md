@@ -55,8 +55,9 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
 - Nicht-kommerziell (siehe `LICENSE.txt`). Kommerzielle Nutzung nur mit Zustimmung
   des Inhabers. Keine Abhängigkeiten aufnehmen, deren Lizenz das verbietet; neue
   Abhängigkeiten in `THIRD_PARTY_LICENSES.txt` eintragen. Ändert sich
-  `desktop/src-tauri/Cargo.lock`, die Liste `desktop/RUST_LIBRARIES.txt` neu erzeugen
-  (aus `cargo metadata`).
+  `desktop/src-tauri/Cargo.lock`, die Lizenztexte `desktop/THIRD_PARTY_RUST_LICENSES.txt` neu
+  erzeugen: `cargo install cargo-about` (einmalig), dann in `desktop/src-tauri`:
+  `cargo about generate about.hbs -o ../THIRD_PARTY_RUST_LICENSES.txt`.
 
 ## Aufbau des Repos
 - `web/` – Oberfläche: `index.html`, `style.css`, `app.js` (Anzeige und Bedienung),

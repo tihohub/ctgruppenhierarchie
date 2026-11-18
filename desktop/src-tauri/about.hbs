@@ -1,0 +1,25 @@
+Lizenztexte der Rust-Bibliotheken in der Desktop-App von CT Gruppenhierarchie
+=============================================================================
+
+Diese Datei wird automatisch mit cargo-about erzeugt (siehe about.toml).
+Sie enthält die Lizenztexte aller Bibliotheken, die in die Desktop-App
+(Windows, Linux) eingebaut sind. Webseite und Python-Version enthalten
+keine dieser Bibliotheken.
+
+Übersicht der Lizenzen
+----------------------
+{{#each overview}}
+- {{{name}}}: {{count}} Bibliothek(en)
+{{/each}}
+
+{{#each licenses}}
+==============================================================================
+{{{name}}} ({{id}})
+Verwendet von:
+{{#each used_by}}
+  - {{crate.name}} {{crate.version}}{{#if crate.repository}} ({{crate.repository}}){{/if}}
+{{/each}}
+------------------------------------------------------------------------------
+{{{text}}}
+
+{{/each}}

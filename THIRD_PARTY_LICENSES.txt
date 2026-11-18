@@ -6,13 +6,18 @@ Webseite und Python-Version
 
 Desktop-App (Windows, Linux)
   Die Desktop-App wird mit Tauri (https://tauri.app, Lizenz MIT oder Apache-2.0) gebaut und
-  enthaelt die von Tauri benoetigten Rust-Bibliotheken. Die vollstaendige Liste mit Versionen,
-  Lizenzen und Quellen steht in desktop/RUST_LIBRARIES.txt.
+  enthaelt die von Tauri benoetigten Rust-Bibliotheken. Die vollstaendigen Lizenztexte mit der
+  Liste aller Bibliotheken stehen in desktop/THIRD_PARTY_RUST_LICENSES.txt; die Datei liegt
+  auch jedem Release bei und wird mit der Desktop-App im Ordner "lizenzen" installiert.
   Die Bibliotheken stehen ganz ueberwiegend unter MIT und/oder Apache-2.0, einzelne unter BSD,
   ISC, Zlib, Unicode-3.0, MPL-2.0 (unveraendert verwendet), CC0 bzw. CDLA-Permissive-2.0.
   Alle diese Lizenzen erlauben die Weitergabe als Teil dieses Programms.
   Der Windows-Installer kann bei Bedarf die Microsoft Edge WebView2 Runtime nachladen
   (Microsoft-Lizenzbedingungen).
+  Die Linux-Datei .AppImage enthaelt zusaetzlich Linux-Systembibliotheken (u. a. WebKitGTK,
+  GTK, GLib) unter ihren eigenen Lizenzen, ueberwiegend LGPL. Sie werden unveraendert
+  mitgeliefert; ihre Quelltexte sind ueber die Ubuntu-Paketquellen erhaeltlich. Das .deb-Paket
+  verwendet stattdessen die bereits installierten Bibliotheken des Systems.
 
 Nur fuer die Entwicklung (nicht Teil der ausgelieferten Programme)
   Playwright (Apache-2.0) fuer die automatischen Tests; Tauri CLI (MIT oder Apache-2.0) zum Bauen.
