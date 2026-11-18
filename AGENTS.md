@@ -64,11 +64,15 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
   kein Tab mehr offen ist
 - `start_windows.bat` – Startdatei für Windows
 - `tests/` – automatische Tests: `fake_ct.py` (Schein-CT-Server mit Testdaten) und
-  `app.test.mjs` (Browser-Tests), `ct-daten.test.mjs` (Datenaufbereitung). Ausführen mit `npm install` und `npm test`.
+  `app.test.mjs` (Browser-Tests), `ct-daten.test.mjs` (Datenaufbereitung),
+  `webseite.test.mjs` (Webseiten-Variante ohne lokalen Server). Ausführen mit `npm install` und `npm test`.
 - `.github/workflows/` – GitHub Actions: `tests.yml` (bei jedem Pull Request),
   `release.yml` (per „Run workflow“ mit Versionsnummer oder bei Tag `v*`: Tests, Pakete
   bauen, Tag und Release anlegen)
 - `tools/build_python.py` – baut das Python-Paket (eine Datei mit eingebetteter Oberfläche)
+- `tools/build_web.py` – baut die Webseite für GitHub Pages (Job `webseite` in `release.yml`)
+- `ct-daten.js` erkennt die Variante selbst (`CT_MODE`): `proxy` (Python-Version, Port 8765)
+  oder `direct` (Webseite, CORS-Freigabe nötig)
 - Platzhalter `__CT_VERSION__` in `app.js` und im Python-Server wird beim Release durch
   den Tag ersetzt.
 

@@ -55,3 +55,25 @@ jobs:
             --title "CT Gruppenhierarchie ${VERSION}" \
             --notes-file .github/release-notes.md \
             --generate-notes
+
+  # Webseite auf GitHub Pages aktualisieren. Voraussetzung (einmalig in den Repo-Einstellungen):
+  # Repo öffentlich und Settings → Pages → Source: „GitHub Actions“.
+  webseite:
+    needs: tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Webseite bauen
+        run: python3 tools/build_web.py "${VERSION}"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/webseite
+      - id: deploy
+        uses: actions/deploy-pages@v4
