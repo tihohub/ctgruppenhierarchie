@@ -52,6 +52,9 @@ jobs:
         with:
           path: dist
           merge-multiple: true
+      - name: Nur Download-Pakete behalten
+        # Das Webseiten-Paket (artifact.tar) gehört nicht ins Release
+        run: rm -f dist/*.tar && ls -l dist
       - name: Release anlegen
         env:
           GH_TOKEN: ${{ github.token }}
