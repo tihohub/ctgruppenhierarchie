@@ -21,16 +21,33 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis", "appimage", "deb"],
+    "targets": [
+      "nsis",
+      "appimage",
+      "deb"
+    ],
     "category": "Utility",
     "shortDescription": "Gruppenhierarchie einer CT-Instanz anzeigen (nur lesend)",
     "copyright": "© 2026 Tim Hofmann",
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.ico", "icons/icon.png"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico",
+      "icons/icon.png"
+    ],
     "windows": {
       "nsis": {
         "installMode": "currentUser",
-        "languages": ["German"]
+        "languages": [
+          "German"
+        ]
       }
+    },
+    "resources": {
+      "../THIRD_PARTY_RUST_LICENSES.txt": "lizenzen/THIRD_PARTY_RUST_LICENSES.txt",
+      "../../LICENSE.txt": "lizenzen/LICENSE.txt",
+      "../../THIRD_PARTY_LICENSES.txt": "lizenzen/THIRD_PARTY_LICENSES.txt"
     }
   }
 }
