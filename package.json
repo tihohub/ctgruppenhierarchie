@@ -2,7 +2,7 @@
   "name": "ct-gruppenhierarchie",
   "private": true,
   "description": "CT Gruppenhierarchie – Entwicklungswerkzeuge (Tests). Für die Nutzung der App nicht nötig.",
-  "license": "SEE LICENSE IN LICENSE.txt",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "scripts": {
     "test": "node --test --test-concurrency=1 tests/*.test.mjs"
   },
