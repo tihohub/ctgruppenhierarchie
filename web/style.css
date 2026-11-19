@@ -273,11 +273,17 @@ select {
 }
 .stem-title {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  align-content: center;
   gap: 7px;
   padding: 8px;
   background: #e8f1ff;
   border-radius: 8px;
+}
+.stem-title > .vmeta {
+  flex-basis: 100%;
+  margin-top: 0;
 }
 .stem-title a {
   font-size: 16px;
