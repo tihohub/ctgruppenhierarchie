@@ -246,8 +246,20 @@ function render() {
     `${[...DISPLAY].filter((x) => M.hierarchieIds.includes(x)).length} dargestellt`;
   $("soloCount").textContent = `${solos.length} dargestellt`;
   let ctx = [...DISPLAY].filter((x) => !MATCH.has(x) && !M.byId[x]?.placeholder).length;
+  // Statistik: zählt nur die Treffer von Filter und Suche, nicht die ausgegraut
+  // eingeblendeten Obergruppen. Gruppenstämme = angezeigte Stämme mit mindestens einem Treffer.
+  const hits = [...MATCH],
+    inHier = new Set(M.hierarchieIds),
+    alone = new Set(M.standalone),
+    st = {
+      hier: hits.filter((x) => inHier.has(x)).length,
+      solo: hits.filter((x) => alone.has(x)).length,
+      stems: M.roots.filter((x) => DISPLAY.has(x)).length,
+      multi: hits.filter((x) => isMulti(M.byId[x])).length,
+      links: hits.reduce((n, x) => n + (M.byId[x].parentIds || []).length, 0),
+    };
   $("stats").innerHTML =
-    `<span><b>${MATCH.size}${ctx ? "*" : ""} / ${M.groups.length}</b> Gruppen</span><span><b>${M.hierarchieIds.length}</b> hierarchisch</span><span><b>${M.standalone.length}</b> alleinstehend</span><span><b>${M.roots.length}</b> Gruppenstämme</span><span><b>${M.groups.filter(isMulti).length}</b> mit mehreren Obergruppen</span><span><b>${M.edges}</b> Beziehungen</span>`;
+    `<span><b>${MATCH.size}${ctx ? "*" : ""} / ${M.groups.length}</b> Gruppen</span><span><b>${st.hier}</b> hierarchisch</span><span><b>${st.solo}</b> alleinstehend</span><span><b>${st.stems}</b> Gruppenstämme</span><span><b>${st.multi}</b> mit mehreren Obergruppen</span><span><b>${st.links}</b> Beziehungen</span>`;
   chips();
   renderForest();
   renderMulti();
