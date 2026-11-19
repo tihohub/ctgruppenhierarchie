@@ -140,6 +140,24 @@ test("Visualisierung ist aufgeklappt und zeigt alleinstehende Gruppen", async ()
   assert.equal(await text(page, "#visSoloCount"), "1 Gruppe");
 });
 
+test("Gruppenstämme und alleinstehende Gruppen zeigen Typ, Status und Sichtbarkeit", async () => {
+  const page = await openApp();
+  await connected(page);
+  await page.click("#tabVis");
+  assert.match(
+    await text(page, '#forest .stem-title[data-gid="1"] .vmeta'),
+    /Kleingruppe · aktiv · Intern/,
+  );
+  assert.match(
+    await text(page, '#forest .stem-title[data-gid="99"] .vmeta'),
+    /Keine Berechtigung · ID 99/,
+  );
+  assert.match(
+    await text(page, '#soloForest .stem-title[data-gid="4"] .vmeta'),
+    /Kleingruppe · aktiv · Intern/,
+  );
+});
+
 test("Trennen löscht alle geladenen Daten und den Token", async () => {
   const page = await openApp();
   await connected(page);

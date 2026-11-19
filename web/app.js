@@ -525,7 +525,11 @@ function stem(id) {
   let g = M.byId[id],
     kids = g.childIds.filter((x) => DISPLAY.has(x)),
     open = vExpanded.has(id);
-  return `<section class="stem"><div class="stem-title ${MATCH.has(id) ? "" : "context"} ${searchHits(g).length ? "search-row" : ""}" data-gid="${id}" data-pid=""${tipAttrs(g)}>${kids.length ? `<button class="vtoggle" data-v="${id}">${open ? "−" : "+"}</button>` : ""}${nameEl(g)}${descIcon(g)}${hitInfo(g)}</div><div class="stem-body">${open && kids.length ? `<div class="vchildren">${kids.map((x) => vitem(x, new Set([id]), id, 0)).join("")}</div>` : ""}</div></section>`;
+  return `<section class="stem"><div class="stem-title ${MATCH.has(id) ? "" : "context"} ${searchHits(g).length ? "search-row" : ""}" data-gid="${id}" data-pid=""${tipAttrs(g)}>${kids.length ? `<button class="vtoggle" data-v="${id}">${open ? "−" : "+"}</button>` : ""}${nameEl(g)}${descIcon(g)}${hitInfo(g)}${metaLine(g)}</div><div class="stem-body">${open && kids.length ? `<div class="vchildren">${kids.map((x) => vitem(x, new Set([id]), id, 0)).join("")}</div>` : ""}</div></section>`;
+}
+// Zeile mit Gruppentyp, Status und Sichtbarkeit (bzw. Hinweis bei 🔒-Platzhaltern)
+function metaLine(g) {
+  return `<div class="vmeta">${g.placeholder ? `Keine Berechtigung · ID ${esc(g.id)}` : `${mark(g.groupTypeName)} · ${mark(g.groupStatusName)} · ${mark(lv(g.visibility))}`}</div>`;
 }
 function vitem(id, path, parent, via) {
   let g = M.byId[id];
@@ -535,7 +539,7 @@ function vitem(id, path, parent, via) {
   np.add(id);
   let kids = g.childIds.filter((x) => DISPLAY.has(x)),
     open = vExpanded.has(id);
-  return `<div class="vitem"><div class="vcard ${MATCH.has(id) ? "" : "context"} ${searchHits(g).length ? "search-row" : ""}" data-gid="${id}" data-pid="${parent ?? ""}"${tipAttrs(g)}>${kids.length ? `<button class="vtoggle" data-v="${id}">${open ? "−" : "+"}</button>` : ""}${nameEl(g, "vname")}${descIcon(g)}${hitInfo(g)}<div class="vmeta">${g.placeholder ? `Keine Berechtigung · ID ${esc(g.id)}` : `${mark(g.groupTypeName)} · ${mark(g.groupStatusName)} · ${mark(lv(g.visibility))}`}</div>${isMulti(g) || (via && !isMulti(g)) ? `<div class="vmeta">${multiHint(g, parent)}${dupHint(g, via)}</div>` : ""}</div>${open && kids.length ? `<div class="vchildren">${kids.map((x) => vitem(x, np, id, nv)).join("")}</div>` : ""}</div>`;
+  return `<div class="vitem"><div class="vcard ${MATCH.has(id) ? "" : "context"} ${searchHits(g).length ? "search-row" : ""}" data-gid="${id}" data-pid="${parent ?? ""}"${tipAttrs(g)}>${kids.length ? `<button class="vtoggle" data-v="${id}">${open ? "−" : "+"}</button>` : ""}${nameEl(g, "vname")}${descIcon(g)}${hitInfo(g)}${metaLine(g)}${isMulti(g) || (via && !isMulti(g)) ? `<div class="vmeta">${multiHint(g, parent)}${dupHint(g, via)}</div>` : ""}</div>${open && kids.length ? `<div class="vchildren">${kids.map((x) => vitem(x, np, id, nv)).join("")}</div>` : ""}</div>`;
 }
 
 // ---- Bedienelemente und Ereignisse ----
