@@ -97,6 +97,40 @@ test("Falscher Token zeigt eine verständliche Meldung und keine Daten", async (
   assert.equal(await page.isVisible("#app"), false);
 });
 
+test("Statistik richtet sich nach Filter und Suche", async () => {
+  const page = await openApp();
+  await connected(page);
+  const stats = () =>
+    page.evaluate(() => [...document.querySelectorAll("#stats span")].map((s) => s.textContent));
+  assert.deepEqual(await stats(), [
+    "47 / 47 Gruppen",
+    "46 hierarchisch",
+    "1 alleinstehend",
+    "3 Gruppenstämme",
+    "2 mit mehreren Obergruppen",
+    "46 Beziehungen",
+  ]);
+  await page.fill("#search", "Füll01");
+  assert.deepEqual(await stats(), [
+    "1* / 47 Gruppen",
+    "1 hierarchisch",
+    "0 alleinstehend",
+    "1 Gruppenstämme",
+    "0 mit mehreren Obergruppen",
+    "1 Beziehungen",
+  ]);
+  await page.fill("#search", "");
+  await page.selectOption("#multiF", "multi");
+  assert.deepEqual(await stats(), [
+    "2* / 47 Gruppen",
+    "2 hierarchisch",
+    "0 alleinstehend",
+    "3 Gruppenstämme",
+    "2 mit mehreren Obergruppen",
+    "4 Beziehungen",
+  ]);
+});
+
 test("Nicht sichtbare Obergruppe erscheint als ausgegrauter 🔒-Platzhalter ohne Link", async () => {
   const page = await openApp();
   await connected(page);

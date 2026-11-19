@@ -125,7 +125,7 @@ Die Anwendung sieht genau das, was der Benutzer in CT sehen darf. Empfehlung: ei
 - Volltextsuche über Name, Beschreibung, Typ, Status, Sichtbarkeit, Homepage, Kategorie, Campus und Treffzeit, mit Hervorhebung der Treffer.
 - Filter nach Gruppentyp, Sichtbarkeit, Gruppenstatus und Mehrfachzuordnung, jeweils mit Anzahl.
 - Obergruppen eines Treffers werden ausgegraut als Kontext eingeblendet.
-- Statistik: Anzahl Gruppen, hierarchische und alleinstehende Gruppen, Gruppenstämme, Gruppen mit mehreren Obergruppen, Beziehungen.
+- Statistik: Anzahl Gruppen, hierarchische und alleinstehende Gruppen, Gruppenstämme, Gruppen mit mehreren Obergruppen, Beziehungen. Alle Zahlen beziehen sich auf die aktuelle Suche und die Filter; ausgegraut eingeblendete Obergruppen zählen nicht mit.
 - Jede Gruppe wird nur einmal gezählt, auch wenn sie unter mehreren Obergruppen erscheint.
 
 **Weiteres**
