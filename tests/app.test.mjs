@@ -80,6 +80,15 @@ test("Verbindung lädt alle Gruppen und zeigt die Statistik", async () => {
   assert.deepEqual(page.errors, []);
 });
 
+test("Anmeldefenster zeigt die Anleitung zum Login-Token", async () => {
+  const page = await openApp();
+  assert.ok(await page.isVisible("#tokenHelp"));
+  const t = await text(page, "#tokenHelp");
+  assert.match(t, /Mein Profil/);
+  assert.match(t, /Login-Token anzeigen/);
+  assert.doesNotMatch(t, /ChurchTools/);
+});
+
 test("Falscher Token zeigt eine verständliche Meldung und keine Daten", async () => {
   const page = await openApp();
   await connect(page, "falsch");
