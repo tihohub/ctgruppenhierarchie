@@ -87,8 +87,12 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
   bauen, Tag und Release anlegen)
 - `tools/build_python.py` – baut das Python-Paket (eine Datei mit eingebetteter Oberfläche)
 - `tools/build_web.py` – baut die Webseite für GitHub Pages (Job `webseite` in `release.yml`)
-- `tools/build_extension.py` – baut das ZIP der CT-Extension: `index.html` mit Rahmen (iframe),
-  Oberfläche im Unterordner `app/`. Das Kürzel `gruppenhierarchie` ist fest eingebaut.
+- `tools/build_extension.py` – baut das ZIP der CT-Extension. CT übernimmt nur den INHALT der
+  `index.html` in die eigene Seite und setzt `<base href>` auf die Startseite: deshalb
+  absolute Pfade `/ccm/gruppenhierarchie/assets/…`, kein `<style>`/Inline-Skript, alle
+  CSS-Regeln auf den Bereich `#ctgh` beschränkt (sonst ändern sie das CT-Menü), Element-ID
+  `app` → `ctgh-app`. Das Kürzel `gruppenhierarchie` ist fest eingebaut. Der Schein-CT
+  (`tests/fake_ct.py`) ahmt diese Einbettung nach.
 - `desktop/src-tauri/` – Desktop-App (Tauri v2, Rust-Gerüst, wird kaum angefasst). Zeigt
   `dist/webseite` an; Anfragen an CT über das HTTP-Plugin. Gebaut für Windows und Linux in
   `.github/workflows/desktop.yml` (bei jedem Release und bei Änderungen an `desktop/`).

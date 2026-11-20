@@ -1,5 +1,5 @@
-// Tests der CT-Extension: gebautes ZIP-Verzeichnis, ausgeliefert vom Schein-CT unter
-// /ccm/gruppenhierarchie/, Anmeldung über ein Sitzungs-Cookie statt Login-Token.
+// Tests der CT-Extension: Der Schein-CT bettet die gebaute index.html so ein wie CT
+// (nur der Inhalt, <base href="/">, eigene Menüleiste); Anmeldung über ein Sitzungs-Cookie.
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { spawn, execFileSync } from "node:child_process";
@@ -43,11 +43,10 @@ async function openExtension(angemeldet = true) {
     if (/Content Security Policy/i.test(m.text())) errors.push(m.text());
   });
   await page.goto(EXT);
-  const frame = page.frameLocator("iframe");
-  return { page, frame, errors };
+  return { page, errors };
 }
 
-test("ZIP enthält Rahmen und Oberfläche direkt im Wurzelverzeichnis", () => {
+test("ZIP enthält index.html und assets/ direkt im Wurzelverzeichnis, mit absoluten Pfaden", () => {
   const names = execFileSync("python3", [
     "-c",
     "import zipfile,sys;print('\\n'.join(zipfile.ZipFile(sys.argv[1]).namelist()))",
@@ -56,27 +55,52 @@ test("ZIP enthält Rahmen und Oberfläche direkt im Wurzelverzeichnis", () => {
     .toString()
     .trim()
     .split("\n");
-  assert.ok(names.includes("index.html"));
-  assert.ok(names.includes("app/index.html"));
-  assert.ok(names.includes("app/ct-daten.js"));
-  assert.ok(!names.some((n) => n.startsWith("dist/") || n.includes("\\")));
-  assert.match(readFileSync("dist/extension/app/app.js", "utf8"), /v0\.1/);
+  assert.deepEqual(names.sort(), ["assets/app.js", "assets/style.css", "index.html"]);
+  const index = readFileSync("dist/extension/index.html", "utf8");
+  assert.match(index, /href="\/ccm\/gruppenhierarchie\/assets\/style\.css"/);
+  assert.match(index, /src="\/ccm\/gruppenhierarchie\/assets\/app\.js"/);
+  assert.doesNotMatch(index, /<iframe|<style/);
+  assert.match(readFileSync("dist/extension/assets/app.js", "utf8"), /v0\.1/);
 });
 
 test("Extension lädt sofort mit der CT-Anmeldung, ohne Token", async () => {
-  const { frame, errors } = await openExtension();
-  await frame.locator("#app:not(.hidden)").waitFor();
-  assert.match(await frame.locator("#stats").textContent(), /47 \/ 47 Gruppen/);
-  assert.equal(await frame.locator("#token").isVisible(), false);
-  assert.equal(await frame.locator("#settingsBtn").isVisible(), false);
-  assert.equal(await frame.locator("#welcome").isVisible(), false);
+  const { page, errors } = await openExtension();
+  await page.locator("#ctgh-app:not(.hidden)").waitFor();
+  assert.match(await page.locator("#ctgh #stats").textContent(), /47 \/ 47 Gruppen/);
+  assert.equal(await page.locator("#token").isVisible(), false);
+  assert.equal(await page.locator("#settingsBtn").isVisible(), false);
+  assert.equal(await page.locator("#welcome").isVisible(), false);
+  // Gestaltung der App ist geladen (Knöpfe in der App sind blau hinterlegt)
+  const appBtn = await page
+    .locator("#ctgh #tabList")
+    .evaluate((b) => getComputedStyle(b).backgroundColor);
+  assert.equal(appBtn, "rgb(9, 105, 218)");
   assert.deepEqual(errors, []);
 });
 
-test("Ohne CT-Anmeldung erscheint ein verständlicher Hinweis", async () => {
-  const { frame } = await openExtension(false);
-  await frame.locator("#msg.bad").waitFor();
-  assert.match(await frame.locator("#msg").textContent(), /in CT neu anmelden/);
+test("Gestaltung der App verändert die CT-Seite nicht", async () => {
+  const { page } = await openExtension();
+  await page.locator("#ctgh-app:not(.hidden)").waitFor();
+  const ct = await page.evaluate(() => {
+    const cs = (sel) => getComputedStyle(document.querySelector(sel));
+    return {
+      btn: cs("#ct-nav .ct-btn").backgroundColor,
+      h1: cs("#ct-nav .ct-title").fontSize,
+      body: cs("body").backgroundColor,
+      bodyMargin: cs("body").margin,
+    };
+  });
+  assert.notEqual(ct.btn, "rgb(9, 105, 218)", "CT-Knopf darf nicht unsere Farbe bekommen");
+  assert.equal(ct.h1, "32px", "CT-Überschrift behält die Standardgröße");
+  assert.equal(ct.body, "rgba(0, 0, 0, 0)", "CT-Seitenhintergrund unverändert");
+  assert.equal(ct.bodyMargin, "8px", "CT-Seitenrand unverändert");
+});
+
+test("Ohne CT-Anmeldung (Anonymous) erscheint ein verständlicher Hinweis", async () => {
+  const { page } = await openExtension(false);
+  await page.locator("#msg.bad").waitFor();
+  assert.match(await page.locator("#msg").textContent(), /in CT neu anmelden/);
+  assert.equal(await page.locator("#modal").isVisible(), true);
 });
 
 test("Die Extension greift nur lesend auf CT zu", async () => {
