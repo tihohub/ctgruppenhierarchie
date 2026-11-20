@@ -875,7 +875,8 @@ setInterval(idleCheck, 5000);
 
 // ---- CT-Extension: sofort mit der Anmeldung des Nutzers in CT laden ----
 if (CT_MODE === "extension") {
-  document.body.classList.add("extension");
+  // In CT sitzt die App in einem eigenen Bereich (#ctgh); dort die Kennzeichnung setzen
+  (document.getElementById("ctgh") || document.body).classList.add("extension");
   $("welcome").classList.add("hidden");
   $("modal").classList.add("hidden");
   runLoad($("refresh"), true);

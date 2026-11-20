@@ -176,6 +176,9 @@ async function loadGroupData(base, token) {
   const who = await ctGet(base, token, "/whoami");
   const wd = isObj(who.data) ? who.data : who;
   const userId = isObj(wd) && wd.id !== undefined ? wd.id : "";
+  // In CT ohne Anmeldung meldet /whoami keinen Fehler, sondern „Anonymous“ (id -1)
+  if (CT_MODE === "extension" && !(Number(userId) > 0))
+    throw new Error("HTTP 401 Nicht angemeldet");
   let userName = personName(wd);
   if (userId) {
     try {

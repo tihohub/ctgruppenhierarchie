@@ -12,7 +12,7 @@ Testdaten:
   99 „Leitung geheim“    nicht in /groups enthalten (keine Berechtigung)
   D                      alleinstehend
 """
-import json, os, sys
+import json, os, re, sys
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -99,15 +99,40 @@ class Handler(BaseHTTPRequestHandler):
         path = self._record()
         if path == "/_test/requests":
             return self._send(200, REQUESTS)
-        if EXT_DIR and path.startswith("/ccm/gruppenhierarchie/"):
-            return self._file(path[len("/ccm/gruppenhierarchie/") :] or "index.html")
+        if EXT_DIR and path.startswith("/ccm/gruppenhierarchie/assets/"):
+            return self._file(path[len("/ccm/gruppenhierarchie/") :])
+        if EXT_DIR and path.startswith("/ccm/gruppenhierarchie"):
+            return self._ct_page()
         token_ok = self.headers.get("Authorization") == "Login " + TOKEN
         session_ok = SESSION_COOKIE in (self.headers.get("Cookie") or "")
+        if path == "/api/whoami" and not self.headers.get("Authorization") and not session_ok:
+            # wie CT: ohne Anmeldung kein Fehler, sondern ein anonymer Benutzer
+            return self._send(200, {"data": {"id": -1, "lastName": "Anonymous"}})
         if not (token_ok or session_ok):
             return self._send(401, {"message": "Unauthorized"})
         if path in ROUTES:
             return self._send(200, ROUTES[path])
         self._send(404, {"message": "Not found"})
+
+    def _ct_page(self):
+        """Ahmt nach, wie CT eine Extension einbettet: eigene Seite mit CT-Menüleiste,
+        <base href> auf die Startseite, nur der INHALT der index.html der Extension
+        (ohne <style>-Blöcke) wird eingefügt."""
+        html = (Path(EXT_DIR) / "index.html").read_text(encoding="utf-8")
+        body = html[html.index("<body>") + 6 : html.index("</body>")]
+        body = re.sub(r"<style.*?</style>", "", body, flags=re.S)
+        page = (
+            '<!doctype html><html lang="de"><head><meta charset="utf-8"><base href="/">'
+            "<title>CT</title></head><body>"
+            '<nav id="ct-nav"><h1 class="ct-title">Gemeinde</h1>'
+            '<button class="ct-btn">Gruppen</button><input class="ct-input"></nav>'
+            '<div id="app">' + body + "</div></body></html>"
+        ).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(page)))
+        self.end_headers()
+        self.wfile.write(page)
 
     def _file(self, rel):
         base = Path(EXT_DIR).resolve()
