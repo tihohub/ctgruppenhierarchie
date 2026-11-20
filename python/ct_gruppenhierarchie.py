@@ -62,8 +62,11 @@ def req(base, path, token):
 
 def ct_get(base, path, token):
     """Leitet eine Leseanfrage der Oberfläche an CT weiter (nur GET)."""
-    if not re.match(r"^https?://[^/\s]+", base.strip()):
-        raise RuntimeError("Ungültige CT-Adresse. Bitte mit https:// angeben.")
+    # Nur verschlüsselt (https); Ausnahme: der eigene Rechner, z. B. für Tests
+    if not re.match(
+        r"^(https://[^/\s]+|http://(localhost|127\.0\.0\.1)(:\d+)?)(/|$)", base.strip(), re.I
+    ):
+        raise RuntimeError("Bitte die CT-Adresse mit https:// angeben.")
     if not path.startswith("/") or ".." in path:
         raise RuntimeError("Ungültiger Pfad")
     return req(base, path, token)

@@ -11,8 +11,8 @@
       "allow": [
         { "url": "https://*" },
         { "url": "https://*:*" },
-        { "url": "http://*" },
-        { "url": "http://*:*" }
+        { "url": "http://localhost:*" },
+        { "url": "http://127.0.0.1:*" }
       ]
     }
   ]
