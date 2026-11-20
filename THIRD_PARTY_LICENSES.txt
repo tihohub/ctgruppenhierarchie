@@ -1,6 +1,6 @@
 Hinweise zu Fremdbestandteilen / Third-party notices
 
-Webseite und Python-Version
+Webseite, CT-Extension und Python-Version
   Die Oberflaeche (web/) verwendet nur die Funktionen des Browsers, die Python-Version nur die
   Standardbibliothek von Python. Es werden keine fremden Bibliotheken mitgeliefert.
 

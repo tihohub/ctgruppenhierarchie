@@ -1,5 +1,5 @@
 Datenschutzhinweis - CT Gruppenhierarchie
-Stand: 18. November 2026
+Stand: 20. November 2026
 
 Grundsatz
 Die Anwendung liest Gruppendaten nur lesend aus der vom Nutzer angegebenen CT-Instanz und
@@ -10,12 +10,13 @@ Es gibt keine Telemetrie und kein Tracking.
 Login-Token
 Der eingegebene Login-Token wird nicht dauerhaft gespeichert. Er liegt nur im Arbeitsspeicher
 der laufenden Sitzung und wird beim Trennen, nach 60 Minuten Inaktivitaet oder beim Schliessen
-verworfen. Er wird ausschliesslich an die angegebene CT-Instanz gesendet.
+verworfen. Er wird ausschliesslich an die angegebene CT-Instanz gesendet. Die CT-Extension
+verwendet keinen Login-Token, sondern die bestehende Anmeldung in CT.
 
 Gespeicherte Einstellungen
 Im Browser bzw. in der Desktop-App gespeichert werden nur Oberflaecheneinstellungen:
-CT-Adresse, Filter, Suche, aufgeklappte Gruppen und Darstellungsart. Sie verlassen das Geraet
-nicht.
+CT-Adresse, Filter, Suche, aufgeklappte Gruppen und Darstellungsart, in der Desktop-App
+zusaetzlich die Einstellung zur Update-Suche. Sie verlassen das Geraet nicht.
 
 Varianten
 - CT-Extension: Die App wird von der eigenen CT-Instanz ausgeliefert und laeuft innerhalb

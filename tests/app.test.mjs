@@ -148,6 +148,13 @@ test("Content-Security-Policy ist gesetzt und blockiert nichts im normalen Ablau
   assert.deepEqual(page.errors, []);
 });
 
+test("Außerhalb der Extension erscheint kein Beta-Hinweis", async () => {
+  const page = await openApp();
+  await page.evaluate(() => document.getElementById("aboutBtn").click());
+  assert.equal(await page.locator("#about").isVisible(), true);
+  assert.equal(await page.locator("#betaNote").isVisible(), false);
+});
+
 test("Unverschlüsselte Adressen (http://) werden abgelehnt", async () => {
   const page = await openApp();
   await page.fill("#base", "http://example.org");

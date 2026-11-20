@@ -102,7 +102,7 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
 - Platzhalter `__CT_VERSION__` in `app.js` und im Python-Server wird beim Release durch
   den Tag ersetzt.
 
-## Zielbild (wird schrittweise umgesetzt)
+## Varianten
 Oberfläche und Datenaufbereitung gibt es nur einmal (HTML/CSS/JavaScript). Vier
 Varianten unterscheiden sich nur darin, wie die Anfragen zu CT gelangen:
 
@@ -113,4 +113,12 @@ Varianten unterscheiden sich nur darin, wie die Anfragen zu CT gelangen:
 | Python-Version (macOS und alle mit Python) | kleiner lokaler Server reicht Anfragen weiter |
 | CT-Extension (Kürzel `gruppenhierarchie`) | läuft in CT unter `/ccm/gruppenhierarchie/`, nutzt die CT-Sitzung (kein Token) |
 
-Entfallen: CSV-Import.
+Entfallen: CSV-Import. Keine native Mac-App: ohne kostenpflichtiges Apple Developer Program
+(Developer ID, Notarisierung) blockiert macOS weitergegebene Apps; Mac-Nutzer verwenden
+Extension, Webseite oder Python-Version.
+
+**CT-Extension ist Beta:** CT kennzeichnet Erweiterungen als Beta-Funktion ohne Support. Die
+Einbettung (nur Inhalt der index.html, `<base href>`, Entfernen von `<style>`) ist nicht
+offiziell dokumentiert, sondern beobachtet. Funktioniert die Extension nach einem CT-Update
+nicht mehr, zuerst prüfen, ob CT die Einbettung geändert hat. Der Beta-Hinweis steht im
+README, im Release-Text und im Über-Dialog der Extension.
