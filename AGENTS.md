@@ -43,7 +43,20 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
   keine fremden Server. Kommuniziert wird nur mit der vom Nutzer angegebenen
   CT-Instanz.
 - Keine kostenpflichtigen Bestandteile (z. B. keine bezahlten Code-Signaturen).
+- Einzige Verbindung außer zu CT: die Update-Suche der Desktop-App bei GitHub (abschaltbar,
+  im Datenschutzhinweis genannt).
 - Die App muss ohne Anpassung auf beliebigen Rechnern laufen.
+
+## Auto-Updater der Desktop-App
+- Updates werden mit einem eigenen Schlüssel signiert. Der öffentliche Teil steht in
+  `desktop/src-tauri/tauri.conf.json` (`plugins.updater.pubkey`), der private Teil nur als
+  Repo-Secret `TAURI_SIGNING_PRIVATE_KEY` (ohne Passwort). Der private Schlüssel darf nie ins
+  Repo, in Logs oder in den Chat.
+- Ohne dieses Secret schlägt der Bau der Desktop-App fehl.
+- Der Release-Ablauf erzeugt `latest.json` (`tools/make_update_json.py`); die App fragt
+  `releases/latest/download/latest.json` ab.
+- Wird der Schlüssel ersetzt, können bestehende Installationen nicht mehr automatisch
+  aktualisieren (neue Version einmal von Hand installieren).
 
 ## Bezeichnungen
 - Produktname immer „CT“, nie „ChurchTools“ (auch nicht in Dateinamen).

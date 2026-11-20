@@ -62,6 +62,8 @@ Eine CORS-Freigabe ist nicht nötig, das Programm fragt CT direkt.
 
 **Hinweis zur Windows-Warnung:** Das Programm ist nicht digital signiert, denn eine Signatur kostet jährlich Geld. Beim ersten Start meldet Windows deshalb „Der Computer wurde durch Windows geschützt“. Auf **Weitere Informationen → Trotzdem ausführen** klicken. Das ist nur beim ersten Mal nötig.
 
+**Updates:** Die Desktop-App sucht beim Start nach neuen Versionen und fragt, bevor sie etwas installiert. Updates sind mit einem eigenen Schlüssel unterschrieben; die App installiert nur Versionen mit gültiger Unterschrift. Abschalten lässt sich die Suche im Dialog **ⓘ Über** („Beim Start nach neuen Versionen suchen“); dort gibt es auch „Jetzt nach Updates suchen“. Automatisch aktualisiert werden der Windows-Installer und das Linux-AppImage, das `.deb`-Paket nicht.
+
 Eine Mac-Version gibt es nicht: Ohne kostenpflichtige Apple-Signatur meldet macOS solche Programme als „beschädigt“. Mac-Nutzer verwenden die Webseite oder die Python-Version.
 
 ---

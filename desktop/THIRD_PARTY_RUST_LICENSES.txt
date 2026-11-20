@@ -8,9 +8,9 @@ keine dieser Bibliotheken.
 
 Übersicht der Lizenzen
 ----------------------
-- MIT License: 345 Bibliothek(en)
+- MIT License: 359 Bibliothek(en)
 - Unicode License v3: 19 Bibliothek(en)
-- Apache License 2.0: 7 Bibliothek(en)
+- Apache License 2.0: 8 Bibliothek(en)
 - BSD 3-Clause "New" or "Revised" License: 5 Bibliothek(en)
 - Mozilla Public License 2.0: 5 Bibliothek(en)
 - ISC License: 3 Bibliothek(en)
@@ -663,6 +663,7 @@ Apache License
 ==============================================================================
 Apache License 2.0 (Apache-2.0)
 Verwendet von:
+  - constant_time_eq 0.6.1 (https://codeberg.org/cesarb/constant_time_eq)
   - dunce 1.0.5 (https://gitlab.com/kornelski/dunce)
   - ryu 1.0.23 (https://github.com/dtolnay/ryu)
   - sync_wrapper 1.0.2 (https://github.com/Actyx/sync_wrapper)
@@ -1169,7 +1170,9 @@ MIT License (MIT)
 Verwendet von:
   - cc 1.11.2 (https://github.com/rust-lang/cc-rs)
   - cfg-if 1.0.5 (https://github.com/rust-lang/cfg-if)
+  - filetime 0.2.30 (https://github.com/alexcrichton/filetime)
   - find-msvc-tools 0.1.15 (https://github.com/rust-lang/cc-rs)
+  - openssl-probe 0.2.2 (https://github.com/rustls/openssl-probe)
   - pkg-config 0.3.34 (https://github.com/rust-lang/pkg-config-rs)
   - socket2 0.6.5 (https://github.com/rust-lang/socket2)
   - toml_datetime 0.6.3 (https://github.com/toml-rs/toml)
@@ -1627,6 +1630,7 @@ DEALINGS IN THE SOFTWARE.
 MIT License (MIT)
 Verwendet von:
   - tempfile 3.27.0 (https://github.com/Stebalien/tempfile)
+  - xattr 1.7.0 (https://github.com/Stebalien/xattr)
 ------------------------------------------------------------------------------
 Copyright (c) 2015 Steven Allen
 
@@ -1719,6 +1723,20 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
+
+
+==============================================================================
+MIT License (MIT)
+Verwendet von:
+  - schannel 0.1.30 (https://github.com/steffengy/schannel-rs)
+------------------------------------------------------------------------------
+Copyright (c) 2015 steffengy
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 ==============================================================================
@@ -1935,6 +1953,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 MIT License (MIT)
 Verwendet von:
   - hyper-rustls 0.27.10 (https://github.com/rustls/hyper-rustls)
+  - rustls-native-certs 0.8.5 (https://github.com/rustls/rustls-native-certs)
   - rustls 0.23.46 (https://github.com/rustls/rustls)
 ------------------------------------------------------------------------------
 Copyright (c) 2016 Joseph Birr-Pixton <jpixton@gmail.com>
@@ -2102,6 +2121,33 @@ Verwendet von:
   - reqwest 0.12.28 (https://github.com/seanmonstar/reqwest)
 ------------------------------------------------------------------------------
 Copyright (c) 2016-2025 Sean McArthur
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+
+
+==============================================================================
+MIT License (MIT)
+Verwendet von:
+  - reqwest 0.13.5 (https://github.com/seanmonstar/reqwest)
+------------------------------------------------------------------------------
+Copyright (c) 2016-2026 Sean McArthur
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -3129,6 +3175,38 @@ DEALINGS IN THE SOFTWARE.
 ==============================================================================
 MIT License (MIT)
 Verwendet von:
+  - zeroize_derive 1.5.0 (https://github.com/RustCrypto/utils)
+------------------------------------------------------------------------------
+Copyright (c) 2019-2026 The RustCrypto Project Developers
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
+
+==============================================================================
+MIT License (MIT)
+Verwendet von:
   - document-features 0.2.12 (https://github.com/slint-ui/document-features)
 ------------------------------------------------------------------------------
 Copyright (c) 2020 Olivier Goffart <ogoffart@sixtyfps.io>
@@ -3619,6 +3697,38 @@ Verwendet von:
   - idna_adapter 1.2.2 (https://github.com/hsivonen/idna_adapter)
 ------------------------------------------------------------------------------
 Copyright (c) The rust-url developers
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
+
+==============================================================================
+MIT License (MIT)
+Verwendet von:
+  - tar 0.4.46 (https://github.com/composefs/tar-rs)
+------------------------------------------------------------------------------
+Copyright (c) The tar-rs Project Contributors
 
 Permission is hereby granted, free of charge, to any
 person obtaining a copy of this software and associated
@@ -4326,6 +4436,34 @@ SOFTWARE.
 ==============================================================================
 MIT License (MIT)
 Verwendet von:
+  - rustls-platform-verifier 0.7.1 (https://github.com/rustls/rustls-platform-verifier)
+------------------------------------------------------------------------------
+MIT License
+
+Copyright (c) 2022 1Password
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+==============================================================================
+MIT License (MIT)
+Verwendet von:
   - jsonptr 0.7.1 (https://github.com/chanced/jsonptr)
 ------------------------------------------------------------------------------
 MIT License
@@ -4477,9 +4615,12 @@ Verwendet von:
   - dlopen2 0.8.2 (https://github.com/OpenByteDev/dlopen2)
   - dlopen2_derive 0.4.3 (https://github.com/OpenByteDev/dlopen2)
   - dpi 0.1.2 (https://github.com/rust-windowing/winit)
+  - minisign-verify 0.3.0 (https://github.com/jedisct1/rust-minisign-verify)
   - tauri-plugin-fs 2.7.1 (https://github.com/tauri-apps/plugins-workspace)
   - tauri-plugin-http 2.9.0 (https://github.com/tauri-apps/plugins-workspace)
   - tauri-plugin-opener 2.7.3 (https://github.com/tauri-apps/plugins-workspace)
+  - tauri-plugin-process 2.4.0 (https://github.com/tauri-apps/plugins-workspace)
+  - tauri-plugin-updater 2.14.1 (https://github.com/tauri-apps/plugins-workspace)
   - tauri-plugin 2.7.4 (https://github.com/tauri-apps/tauri)
   - webview2-com-macros 0.8.1 (https://github.com/wravery/webview2-rs)
   - webview2-com-sys 0.39.1 (https://github.com/wravery/webview2-rs)
@@ -4780,6 +4921,7 @@ Verwendet von:
   - thiserror-impl 2.0.21 (https://github.com/dtolnay/thiserror)
   - thiserror 1.0.69 (https://github.com/dtolnay/thiserror)
   - thiserror 2.0.21 (https://github.com/dtolnay/thiserror)
+  - typed-path 0.13.0 (https://github.com/chipsenkbeil/typed-path)
   - typeid 1.0.3 (https://github.com/dtolnay/typeid)
   - unicode-ident 1.0.27 (https://github.com/dtolnay/unicode-ident)
   - x11-dl 2.21.0 (https://github.com/AltF02/x11-rs.git)
@@ -5007,6 +5149,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+
+
+==============================================================================
+MIT License (MIT)
+Verwendet von:
+  - zip 9.8.1 (https://github.com/zip-rs/zip2)
+------------------------------------------------------------------------------
+The MIT License (MIT)
+
+Copyright (c) 2014 Mathijs van de Nes
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 
 ==============================================================================
