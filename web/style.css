@@ -586,3 +586,8 @@ select {
   margin: 4px 0 0;
   padding-left: 20px;
 }
+/* CT-Extension: Anmeldung läuft über CT, daher keine Felder für Adresse und Token */
+.extension .ext-hide,
+.extension #settingsBtn {
+  display: none !important;
+}

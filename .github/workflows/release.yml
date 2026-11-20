@@ -32,6 +32,8 @@ jobs:
           python-version: "3.12"
       - name: Python-Version bauen
         run: python3 tools/build_python.py "${VERSION}"
+      - name: CT-Extension bauen
+        run: python3 tools/build_extension.py "${VERSION}"
       - uses: actions/upload-artifact@v4
         with:
           name: python-paket

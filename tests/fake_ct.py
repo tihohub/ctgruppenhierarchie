@@ -12,10 +12,16 @@ Testdaten:
   99 „Leitung geheim“    nicht in /groups enthalten (keine Berechtigung)
   D                      alleinstehend
 """
-import json, sys
+import json, os, sys
+from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 TOKEN = "test-token"
+# Simulierte CT-Anmeldung im Browser (für die Extension): dieses Cookie gilt als angemeldet
+SESSION_COOKIE = "ct_session=angemeldet"
+# Optional: Ordner einer gebauten Extension, ausgeliefert unter /ccm/gruppenhierarchie/
+EXT_DIR = os.environ.get("CTG_EXT_DIR")
+TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css"}
 GROUPS = {1: "A", 2: "B", 3: "C", 4: "D", 5: "X", 6: "Y", 7: "Z"}
 GROUPS.update({100 + i: f"Füll{i:02d}" for i in range(40)})
 HIERARCHIES = (
@@ -26,7 +32,11 @@ HIERARCHIES = (
         {"groupId": 3, "parents": [], "children": [5, 7]},
         {"groupId": 5, "parents": [2, 3], "children": [6]},
         {"groupId": 6, "parents": [5], "children": []},
-        {"groupId": 7, "parents": [3, {"domainIdentifier": "99", "title": "Leitung geheim"}], "children": []},
+        {
+            "groupId": 7,
+            "parents": [3, {"domainIdentifier": "99", "title": "Leitung geheim"}],
+            "children": [],
+        },
     ]
 )
 REQUESTS = []
@@ -46,7 +56,11 @@ ROUTES = {
             {
                 "id": i,
                 "name": n,
-                "information": {"groupTypeId": 1, "groupStatusId": 1, "note": "Beschreibung von " + n},
+                "information": {
+                    "groupTypeId": 1,
+                    "groupStatusId": 1,
+                    "note": "Beschreibung von " + n,
+                },
                 "settings": {"visibility": "intern"},
             }
             for i, n in GROUPS.items()
@@ -85,11 +99,27 @@ class Handler(BaseHTTPRequestHandler):
         path = self._record()
         if path == "/_test/requests":
             return self._send(200, REQUESTS)
-        if self.headers.get("Authorization") != "Login " + TOKEN:
+        if EXT_DIR and path.startswith("/ccm/gruppenhierarchie/"):
+            return self._file(path[len("/ccm/gruppenhierarchie/") :] or "index.html")
+        token_ok = self.headers.get("Authorization") == "Login " + TOKEN
+        session_ok = SESSION_COOKIE in (self.headers.get("Cookie") or "")
+        if not (token_ok or session_ok):
             return self._send(401, {"message": "Unauthorized"})
         if path in ROUTES:
             return self._send(200, ROUTES[path])
         self._send(404, {"message": "Not found"})
+
+    def _file(self, rel):
+        base = Path(EXT_DIR).resolve()
+        f = (base / rel).resolve()
+        if base not in f.parents or not f.is_file():
+            return self._send(404, {"message": "Not found"})
+        b = f.read_bytes()
+        self.send_response(200)
+        self.send_header("Content-Type", TYPES.get(f.suffix, "application/octet-stream"))
+        self.send_header("Content-Length", str(len(b)))
+        self.end_headers()
+        self.wfile.write(b)
 
     def do_POST(self):
         self._record()

@@ -11,19 +11,48 @@
 //             dieser Seite unter CORS freigegeben haben.
 // - "tauri":  Desktop-App; Anfragen laufen über das HTTP-Plugin von Tauri, für das die
 //             CORS-Regel nicht gilt.
+// - "extension": CT-Extension; die App läuft innerhalb von CT (Adresse /ccm/…) und nutzt die
+//             Anmeldung des Nutzers in CT. Kein Login-Token nötig.
 
 const CT_MODE = globalThis.__TAURI__
   ? "tauri"
-  : ["127.0.0.1", "localhost"].includes(location.hostname) && location.port === "8765"
-    ? "proxy"
-    : "direct";
+  : location.pathname.startsWith("/ccm/")
+    ? "extension"
+    : ["127.0.0.1", "localhost"].includes(location.hostname) && location.port === "8765"
+      ? "proxy"
+      : "direct";
 
 // ---- Anfragen an CT ----
 
 // Eine GET-Anfrage an die CT-API. path beginnt mit "/", z. B. "/whoami".
 // Liefert die Antwort als Objekt oder wirft einen Fehler mit verständlicher Ursache.
 async function ctGet(base, token, path) {
+  if (CT_MODE === "extension") return ctGetSession(path);
   return CT_MODE === "proxy" ? ctGetProxy(base, token, path) : ctGetDirect(base, token, path);
+}
+
+// Antwort von CT prüfen und auswerten
+async function ctResult(r) {
+  if (!r.ok) {
+    const t = await r.text().catch(() => "");
+    throw new Error(`HTTP ${r.status} ${r.statusText}: ${t.slice(0, 300)}`);
+  }
+  return r.json();
+}
+
+// Innerhalb von CT (Extension): gleiche Adresse, Anmeldung über die bestehende CT-Sitzung
+async function ctGetSession(path) {
+  let r;
+  try {
+    r = await fetch("/api" + path, {
+      headers: { Accept: "application/json" },
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+  } catch (e) {
+    throw new Error("Verbindungsfehler: CT nicht erreichbar");
+  }
+  return ctResult(r);
 }
 
 // Direkt aus dem Browser (Webseite) bzw. über Tauri (Desktop-App)
@@ -44,11 +73,7 @@ async function ctGetDirect(base, token, path) {
     // CORS-Freigabe fehlt; beides sieht gleich aus.
     throw new Error("Verbindungsfehler (CORS): " + location.origin);
   }
-  if (!r.ok) {
-    const t = await r.text().catch(() => "");
-    throw new Error(`HTTP ${r.status} ${r.statusText}: ${t.slice(0, 300)}`);
-  }
-  return r.json();
+  return ctResult(r);
 }
 
 // Über den lokalen Python-Server
