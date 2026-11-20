@@ -24,7 +24,7 @@ before(async () => {
     fetch,
     URLSearchParams,
     console,
-    location: { hostname: "test", port: "", origin: "" },
+    location: { hostname: "test", port: "", origin: "", pathname: "/" },
   };
   vm.createContext(ctx);
   vm.runInContext(readFileSync("web/ct-daten.js", "utf8"), ctx);

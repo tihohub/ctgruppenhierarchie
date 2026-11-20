@@ -18,6 +18,9 @@ CT-Adresse, Filter, Suche, aufgeklappte Gruppen und Darstellungsart. Sie verlass
 nicht.
 
 Varianten
+- CT-Extension: Die App wird von der eigenen CT-Instanz ausgeliefert und laeuft innerhalb
+  von CT mit der bestehenden Anmeldung des Nutzers. Es wird kein Login-Token eingegeben,
+  und es werden keine Verbindungen zu anderen Servern aufgebaut.
 - Webseite (https://tihohub.github.io/ctgruppenhierarchie/): Die Seite selbst (HTML, CSS,
   JavaScript) wird von GitHub Pages ausgeliefert. Dabei erhaelt GitHub wie bei jedem
   Webseitenaufruf technische Verbindungsdaten (z. B. IP-Adresse). CT-Daten und Login-Token

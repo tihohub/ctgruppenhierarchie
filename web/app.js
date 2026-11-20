@@ -98,10 +98,12 @@ function resetPrefs(base) {
   }
 }
 async function load(fresh) {
-  let base = $("base").value.trim(),
-    token = $("token").value.trim();
+  // Extension: CT-Adresse ist die eigene, angemeldet wird über die CT-Sitzung (kein Token)
+  const ext = CT_MODE === "extension";
+  let base = ext ? location.origin : $("base").value.trim(),
+    token = ext ? "" : $("token").value.trim();
   if (!base) throw Error("Bitte CT-Adresse eingeben, z. B. https://deine-gemeinde.church.tools");
-  if (!token) throw Error("Bitte Login-Token eingeben.");
+  if (!ext && !token) throw Error("Bitte Login-Token eingeben.");
   let prevBase = CUR ? CUR.base : prefs().base || "";
   let isNew = fresh || !CUR || CUR.base !== base || CUR.token !== token;
   if (isNew) {
@@ -567,6 +569,8 @@ function friendly(e) {
       "Sharing, Eintrag „" +
       location.origin +
       "“.";
+  else if (CT_MODE === "extension" && /401|unauthor/i.test(m))
+    m = "Nicht angemeldet. Bitte in CT neu anmelden und die Seite neu laden.";
   else if (/401|unauthor/i.test(m))
     m = "Anmeldung fehlgeschlagen. Bitte prüfe deinen CT Login-Token.";
   else if (/403|forbidden/i.test(m))
@@ -853,7 +857,8 @@ function act(e) {
 );
 $("idleGo").onclick = act;
 function idleCheck() {
-  if (!M || ENDED) return;
+  // In der Extension regelt CT selbst die Anmeldung
+  if (!M || ENDED || CT_MODE === "extension") return;
   let idle = Date.now() - lastAct;
   if (idle >= IDLE_END) {
     REQ++;
@@ -867,3 +872,11 @@ function idleCheck() {
   } else if (idle >= IDLE_WARN) $("idleWarn").classList.remove("hidden");
 }
 setInterval(idleCheck, 5000);
+
+// ---- CT-Extension: sofort mit der Anmeldung des Nutzers in CT laden ----
+if (CT_MODE === "extension") {
+  document.body.classList.add("extension");
+  $("welcome").classList.add("hidden");
+  $("modal").classList.add("hidden");
+  runLoad($("refresh"), true);
+}

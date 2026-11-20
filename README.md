@@ -14,7 +14,8 @@ Projekt: https://github.com/tihohub/ctgruppenhierarchie
 
 | Variante | Wann | Was nötig ist |
 |---|---|---|
-| **Webseite** | Empfohlen, wenn ein CT-Admin einmal mithilft | Browser, CORS-Freigabe durch den Admin, Login-Token |
+| **CT-Extension** | Am bequemsten: läuft direkt in CT, ohne Token | Ein CT-Admin installiert sie einmal (Erweiterungen müssen im CT-Paket verfügbar sein) |
+| **Webseite** | Wenn ein CT-Admin einmal mithilft | Browser, CORS-Freigabe durch den Admin, Login-Token |
 | **Desktop-App** | Ohne Admin, unter Windows oder Linux | Programm herunterladen, Login-Token |
 | **Python-Version** | Ohne Admin, auf dem Mac (oder überall, wo Python installiert ist) | Python, Login-Token |
 
@@ -33,6 +34,22 @@ Danach die Webseite öffnen, CT-Adresse und Login-Token eingeben. Erscheint „K
 *Was ist CORS?* Eine Schutzregel im Browser: Eine Webseite darf Daten von einer anderen Adresse (hier: eurer CT-Instanz) nur abrufen, wenn diese es ausdrücklich erlaubt. Abgerufen werden kann dabei nur mit dem Login-Token, den der jeweilige Nutzer selbst eingibt.
 
 **Gut zu wissen:** Die Freigabe gilt für alle Seiten unter `https://tihohub.github.io`, nicht nur für dieses Tool. Eine Freigabe nur für den Pfad `/ctgruppenhierarchie` ist technisch nicht möglich, weil der Browser CT nur die Adresse ohne Pfad mitteilt. Unter dieser Adresse kann nur der Inhaber dieses GitHub-Kontos Seiten veröffentlichen; derzeit liegt dort nur dieses Tool.
+
+### CT-Extension (direkt in CT)
+
+Die App läuft als Erweiterung innerhalb von CT. Nutzer öffnen sie wie jeden anderen Menüpunkt; es gibt **keinen Login-Token**, keine Adresse zum Eintippen und keine CORS-Freigabe. Jeder sieht genau die Gruppen, die er in CT sehen darf.
+
+**Einmalige Installation durch einen CT-Admin:**
+
+1. Unter [Releases](https://github.com/tihohub/ctgruppenhierarchie/releases/latest) die Datei `ct-gruppenhierarchie-extension-….zip` herunterladen (nicht entpacken).
+2. In CT: **Admin-Einstellungen → Erweiterungen** → **Erweiterung hinzufügen**.
+3. Name: z. B. `Gruppenhierarchie`. **Kürzel: genau `gruppenhierarchie`** (sonst bleibt die Seite leer). Bei Bedarf „im Menü anzeigen“ anhaken.
+4. Die ZIP-Datei hochladen und speichern.
+5. Aufrufen über das Menü oder unter `https://eure-gemeinde.church.tools/ccm/gruppenhierarchie/`.
+
+**Update:** Die Erweiterung in CT öffnen und die ZIP-Datei der neuen Version hochladen.
+
+Hinweis: Erweiterungen sind nicht in jedem CT-Paket verfügbar. Fehlt der Menüpunkt „Erweiterungen“, eine der anderen Varianten nutzen.
 
 ### Desktop-App (Windows, Linux)
 

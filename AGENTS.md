@@ -68,23 +68,25 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
 - `start_windows.bat` – Startdatei für Windows
 - `tests/` – automatische Tests: `fake_ct.py` (Schein-CT-Server mit Testdaten) und
   `app.test.mjs` (Browser-Tests), `ct-daten.test.mjs` (Datenaufbereitung),
-  `webseite.test.mjs` (Webseiten-Variante ohne lokalen Server). Ausführen mit `npm install` und `npm test`.
+  `webseite.test.mjs` (Webseiten-Variante ohne lokalen Server), `extension.test.mjs` (CT-Extension). Ausführen mit `npm install` und `npm test`.
 - `.github/workflows/` – GitHub Actions: `tests.yml` (bei jedem Pull Request),
   `release.yml` (per „Run workflow“ mit Versionsnummer oder bei Tag `v*`: Tests, Pakete
   bauen, Tag und Release anlegen)
 - `tools/build_python.py` – baut das Python-Paket (eine Datei mit eingebetteter Oberfläche)
 - `tools/build_web.py` – baut die Webseite für GitHub Pages (Job `webseite` in `release.yml`)
+- `tools/build_extension.py` – baut das ZIP der CT-Extension: `index.html` mit Rahmen (iframe),
+  Oberfläche im Unterordner `app/`. Das Kürzel `gruppenhierarchie` ist fest eingebaut.
 - `desktop/src-tauri/` – Desktop-App (Tauri v2, Rust-Gerüst, wird kaum angefasst). Zeigt
   `dist/webseite` an; Anfragen an CT über das HTTP-Plugin. Gebaut für Windows und Linux in
   `.github/workflows/desktop.yml` (bei jedem Release und bei Änderungen an `desktop/`).
   Lokal: `python3 tools/build_web.py v0.1 && cd desktop && npx @tauri-apps/cli@2 build`
 - `ct-daten.js` erkennt die Variante selbst (`CT_MODE`): `proxy` (Python-Version, Port 8765),
-  `direct` (Webseite, CORS-Freigabe nötig) oder `tauri` (Desktop-App)
+  `direct` (Webseite, CORS-Freigabe nötig), `tauri` (Desktop-App) oder `extension` (Adresse `/ccm/…`)
 - Platzhalter `__CT_VERSION__` in `app.js` und im Python-Server wird beim Release durch
   den Tag ersetzt.
 
 ## Zielbild (wird schrittweise umgesetzt)
-Oberfläche und Datenaufbereitung gibt es nur einmal (HTML/CSS/JavaScript). Drei
+Oberfläche und Datenaufbereitung gibt es nur einmal (HTML/CSS/JavaScript). Vier
 Varianten unterscheiden sich nur darin, wie die Anfragen zu CT gelangen:
 
 | Variante | Weg zu CT |
@@ -92,5 +94,6 @@ Varianten unterscheiden sich nur darin, wie die Anfragen zu CT gelangen:
 | Webseite (GitHub Pages) | Browser fragt CT direkt; ein CT-Admin hat die Adresse unter CORS freigegeben |
 | Desktop-App (Tauri, Windows/Linux) | Programm fragt CT direkt |
 | Python-Version (macOS und alle mit Python) | kleiner lokaler Server reicht Anfragen weiter |
+| CT-Extension (Kürzel `gruppenhierarchie`) | läuft in CT unter `/ccm/gruppenhierarchie/`, nutzt die CT-Sitzung (kein Token) |
 
-Zurückgestellt: CT-Extension (in Paket L nicht verfügbar). Entfallen: CSV-Import.
+Entfallen: CSV-Import.
