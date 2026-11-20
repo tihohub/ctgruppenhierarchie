@@ -3,6 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <!-- Sicherheitsregel: nur eigene Skripte/Stile; Verbindungen nur zur eigenen Seite, zu
+         https-Adressen (CT) und zum eigenen Rechner; ipc: für die Desktop-App -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https: http://localhost:* http://127.0.0.1:* ipc: http://ipc.localhost; object-src 'none'; base-uri 'self'; form-action 'none'"
+    />
     <title>CT Gruppenhierarchie</title>
     <link rel="stylesheet" href="style.css" />
   </head>

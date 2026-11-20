@@ -32,6 +32,10 @@ async function waitFor(url) {
 async function openApp() {
   const page = await browser.newPage({ viewport: { width: 1250, height: 800 } });
   page.errors = [];
+  // Verstöße gegen die Content-Security-Policy erscheinen als Konsolenmeldung
+  page.on("console", (m) => {
+    if (/Content Security Policy/i.test(m.text())) page.errors.push(m.text());
+  });
   page.on("pageerror", (e) => page.errors.push(e.message));
   await page.goto(APP);
   await page.evaluate(() => {
@@ -129,6 +133,19 @@ test("Statistik richtet sich nach Filter und Suche", async () => {
     "2 mit mehreren Obergruppen",
     "4 Beziehungen",
   ]);
+});
+
+test("Content-Security-Policy ist gesetzt und blockiert nichts im normalen Ablauf", async () => {
+  const page = await openApp();
+  const csp = await page.getAttribute('meta[http-equiv="Content-Security-Policy"]', "content");
+  assert.match(csp, /script-src 'self'/);
+  assert.match(csp, /object-src 'none'/);
+  await connected(page);
+  await page.click("#tabVis");
+  await page.click("#tabMulti");
+  await page.click("#tabList");
+  await page.locator('#tree li[data-gid="5"][data-pid="2"] > .multi .jump').click();
+  assert.deepEqual(page.errors, []);
 });
 
 test("Unverschlüsselte Adressen (http://) werden abgelehnt", async () => {
