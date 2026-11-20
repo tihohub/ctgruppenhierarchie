@@ -18,6 +18,8 @@ tauri-plugin-opener = "2"
 # Auto-Updater: sucht neue Versionen im GitHub-Release; Neustart nach der Installation
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
+# wird von Tauri für die Plugin-Einstellungen in tauri.conf.json gebraucht
+serde_json = "1"
 
 [profile.release]
 # kleineres Programm
