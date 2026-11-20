@@ -45,6 +45,7 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
 - Keine kostenpflichtigen Bestandteile (z. B. keine bezahlten Code-Signaturen).
 - Einzige Verbindung außer zu CT: die Update-Suche der Desktop-App bei GitHub (abschaltbar,
   im Datenschutzhinweis genannt).
+- Die App muss ohne Anpassung auf beliebigen Rechnern laufen.
 
 ## Auto-Updater der Desktop-App
 - Updates werden mit einem eigenen Schlüssel signiert. Der öffentliche Teil steht in
@@ -56,7 +57,6 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
   `releases/latest/download/latest.json` ab.
 - Wird der Schlüssel ersetzt, können bestehende Installationen nicht mehr automatisch
   aktualisieren (neue Version einmal von Hand installieren).
-- Die App muss ohne Anpassung auf beliebigen Rechnern laufen.
 
 ## Bezeichnungen
 - Produktname immer „CT“, nie „ChurchTools“ (auch nicht in Dateinamen).
