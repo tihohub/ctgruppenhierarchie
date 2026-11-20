@@ -30,7 +30,9 @@ Der Browser fragt CT direkt. Damit CT das erlaubt, muss ein **CT-Admin einmalig*
 
 Danach die Webseite öffnen, CT-Adresse und Login-Token eingeben. Erscheint „Keine Verbindung zu CT …“, fehlt die Freigabe oder die Adresse ist falsch.
 
-*Was ist CORS?* Eine Schutzregel im Browser: Eine Webseite darf Daten von einer anderen Adresse (hier: eurer CT-Instanz) nur abrufen, wenn diese es ausdrücklich erlaubt. Die Freigabe erlaubt nur dieser Webseite den Zugriff, und nur mit dem Login-Token des jeweiligen Nutzers.
+*Was ist CORS?* Eine Schutzregel im Browser: Eine Webseite darf Daten von einer anderen Adresse (hier: eurer CT-Instanz) nur abrufen, wenn diese es ausdrücklich erlaubt. Abgerufen werden kann dabei nur mit dem Login-Token, den der jeweilige Nutzer selbst eingibt.
+
+**Gut zu wissen:** Die Freigabe gilt für alle Seiten unter `https://tihohub.github.io`, nicht nur für dieses Tool. Eine Freigabe nur für den Pfad `/ctgruppenhierarchie` ist technisch nicht möglich, weil der Browser CT nur die Adresse ohne Pfad mitteilt. Unter dieser Adresse kann nur der Inhaber dieses GitHub-Kontos Seiten veröffentlichen; derzeit liegt dort nur dieses Tool.
 
 ### Desktop-App (Windows, Linux)
 
