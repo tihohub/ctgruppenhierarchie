@@ -37,6 +37,8 @@ Danach die Webseite öffnen, CT-Adresse und Login-Token eingeben. Erscheint „K
 
 ### CT-Extension (direkt in CT)
 
+> **Beta-Hinweis:** CT kennzeichnet Erweiterungen derzeit als Beta-Funktion ohne Support durch CT. Änderungen an CT können die Extension jederzeit beeinträchtigen. In diesem Fall die Webseite, die Desktop-App oder die Python-Version nutzen.
+
 Die App läuft als Erweiterung innerhalb von CT. Nutzer öffnen sie wie jeden anderen Menüpunkt; es gibt **keinen Login-Token**, keine Adresse zum Eintippen und keine CORS-Freigabe. Jeder sieht genau die Gruppen, die er in CT sehen darf.
 
 **Einmalige Installation durch einen CT-Admin:**
@@ -47,7 +49,7 @@ Die App läuft als Erweiterung innerhalb von CT. Nutzer öffnen sie wie jeden an
 4. Die ZIP-Datei hochladen und speichern.
 5. Aufrufen über das Menü oder unter `https://eure-gemeinde.church.tools/ccm/gruppenhierarchie/`.
 
-**Update:** Die Erweiterung in CT öffnen und die ZIP-Datei der neuen Version hochladen.
+**Update:** Die Erweiterung in CT über den Stift öffnen, die ZIP-Datei der neuen Version hochladen und speichern. Danach die Seite mit **Strg+Shift+R** neu laden, damit der Browser keine alten Dateien verwendet. Die Extension aktualisiert sich nicht von selbst.
 
 Hinweis: Erweiterungen sind nicht in jedem CT-Paket verfügbar. Fehlt der Menüpunkt „Erweiterungen“, eine der anderen Varianten nutzen.
 
@@ -98,10 +100,12 @@ Der Browser öffnet sich automatisch mit `http://127.0.0.1:8765/`. Falls nicht, 
 - **Automatisch:** Wird der letzte Browser-Tab der App geschlossen, beendet sich das Programm nach etwa 10 Sekunden von selbst, und das Konsolenfenster schließt sich. Neuladen mit F5 beendet das Programm nicht.
 - Stürzt der Browser ab, beendet sich das Programm spätestens nach 3 Minuten.
 - **Sofort:** im Konsolenfenster `Strg+C` drücken oder das Fenster schließen.
-- **Neue Version starten:** Läuft noch eine andere Version (ab v17), wird sie beim Start der neuen automatisch beendet. Ein noch offener Tab der alten Version zeigt dann einen Hinweis und kann geschlossen werden.
+- **Neue Version starten:** Läuft noch eine andere Version, wird sie beim Start der neuen automatisch beendet. Ein noch offener Tab der alten Version zeigt dann einen Hinweis und kann geschlossen werden.
 - Bei einem Fehler bleibt das Konsolenfenster offen, damit die Meldung lesbar ist.
 
 ## Erste Verbindung
+
+Gilt für Webseite, Desktop-App und Python-Version. Bei der CT-Extension entfällt dieser Schritt, sie nutzt die Anmeldung in CT.
 
 1. Im Einstellungsdialog (⚙) die **CT-Adresse** eintragen, z. B. `https://deine-gemeinde.church.tools`.
 2. Den **Login-Token** eintragen.
@@ -158,11 +162,13 @@ Die Anwendung sieht genau das, was der Benutzer in CT sehen darf. Empfehlung: ei
 
 - Die Daten werden **auf dem eigenen Gerät** aufbereitet. Abgerufen wird ausschließlich von der eingetragenen CT-Instanz. Es gibt keinen Server des Entwicklers, kein Tracking und keine Telemetrie.
 - **Webseite:** Die Seite selbst wird von GitHub Pages geladen; GitHub sieht dabei wie bei jedem Webseitenaufruf technische Verbindungsdaten. CT-Daten und Login-Token gehen nicht an GitHub, sondern direkt an CT.
+- **Desktop-App:** Sucht beim Start bei GitHub nach neuen Versionen (abschaltbar unter ⓘ Über). GitHub sieht dabei technische Verbindungsdaten, aber keine CT-Daten und keinen Login-Token.
+- **CT-Extension:** Läuft innerhalb von CT mit der bestehenden Anmeldung; es wird kein Login-Token eingegeben und keine Verbindung zu anderen Servern aufgebaut. Abmeldung und Sitzungsdauer regelt CT.
 - **Nur lesend:** An CT werden ausschließlich Leseabfragen gesendet.
 - Der **Login-Token wird nicht gespeichert.** Er existiert nur während der laufenden Sitzung.
 - Im Browser gespeichert werden nur Oberflächeneinstellungen: CT-Adresse, Suche, Filter, aufgeklappte Gruppen und Darstellungsart.
 - **„Trennen“** löscht alle geladenen Daten, den Token, Suche, Filter und aufgeklappte Gruppen. Eine neue Verbindung löscht zuerst alle Daten der vorherigen. Auf gemeinsam genutzten Rechnern nach dem Trennen zusätzlich den Browser-Tab schließen.
-- **Sitzungs-Timeout:** Nach 58 Minuten ohne Benutzung (Maus, Tastatur, Scrollen) erscheint eine Warnung mit dem Knopf „Weiterarbeiten“. Nach 60 Minuten werden geladene Daten und Token automatisch gelöscht, wie bei „Trennen“.
+- **Sitzungs-Timeout** (nicht in der CT-Extension): Nach 58 Minuten ohne Benutzung (Maus, Tastatur, Scrollen) erscheint eine Warnung mit dem Knopf „Weiterarbeiten“. Nach 60 Minuten werden geladene Daten und Token automatisch gelöscht, wie bei „Trennen“.
 - **Python-Version:** Der lokale Server ist nur vom eigenen Rechner aus erreichbar (`127.0.0.1`) und nimmt nur Anfragen der eigenen Seite an.
 
 Details: `PRIVACY.txt`
@@ -172,9 +178,11 @@ Details: `PRIVACY.txt`
 - **„Anmeldung fehlgeschlagen“:** Login-Token prüfen bzw. neu erzeugen.
 - **„Zugriff verweigert“:** Dem Benutzer fehlen in CT Rechte.
 - **„CT-Instanz nicht erreichbar“:** CT-Adresse und Internetverbindung prüfen.
+- **Leere Seite (CT-Extension):** Das Kürzel der Erweiterung in CT muss genau `gruppenhierarchie` lauten. Nach einem Update die Seite mit Strg+Shift+R neu laden.
+- **„Nicht angemeldet …“ (CT-Extension):** In CT neu anmelden und die Seite neu laden.
 - **„Keine Verbindung zu CT …“ (Webseite):** Die CORS-Freigabe fehlt oder die CT-Adresse ist falsch, siehe [Webseite](#webseite-ohne-installation).
 - **„Der Computer wurde durch Windows geschützt“ (Desktop-App):** Weitere Informationen → Trotzdem ausführen (Programm ist nicht signiert).
-- **„Port 8765 ist bereits belegt“:** Es läuft noch eine ältere Version (v16 oder älter) oder ein anderes Programm auf diesem Port. Dessen Konsolenfenster schließen und neu starten. Versionen ab v17 werden automatisch abgelöst.
+- **„Port 8765 ist bereits belegt“ (Python-Version):** Es läuft noch eine sehr alte Version oder ein anderes Programm auf diesem Port. Dessen Konsolenfenster schließen und neu starten. Neuere Versionen werden automatisch abgelöst.
 - **„Programm beendet“ im Browser (Python-Version):** Das Programm läuft nicht mehr (Tab war geschlossen, neue Version gestartet oder Rechner im Ruhezustand). Programm neu starten.
 - **„python“ wird nicht gefunden (Python-Version unter Windows):** Python installieren und dabei „Add python.exe to PATH“ anhaken.
 
@@ -183,9 +191,10 @@ Details: `PRIVACY.txt`
 - `web/`: die Oberfläche (`index.html`, `style.css`, `app.js`) und die Datenaufbereitung (`ct-daten.js`)
 - `python/ct_gruppenhierarchie.py`: der lokale Server, der die Oberfläche ausliefert und Leseanfragen an CT weiterreicht
 - `start_windows.bat`: Startdatei für Windows
-- `desktop/`: die Desktop-App (Tauri)
-- `tools/build_python.py`, `tools/build_web.py`: bauen Download-Paket und Webseite (beim Release automatisch)
-- `AGENTS.md`: Arbeitsregeln für KI-Agenten
+- `desktop/`: die Desktop-App (Tauri); `desktop/THIRD_PARTY_RUST_LICENSES.txt`: Lizenztexte der eingebauten Bibliotheken
+- `tools/`: Bauskripte für Python-Paket, Webseite, CT-Extension und die Update-Datei der Desktop-App (beim Release automatisch)
+- `tests/`: automatische Tests mit einem Schein-CT-Server
+- `AGENTS.md`, `CLAUDE.md`: Arbeitsregeln für KI-Agenten
 - `LICENSE.txt`: Lizenz
 - `PRIVACY.txt`: Datenschutzhinweis
 - `THIRD_PARTY_LICENSES.txt`: Hinweise zu Drittkomponenten
@@ -202,7 +211,7 @@ npm test
 
 Auf GitHub laufen die Tests bei jedem Pull Request automatisch.
 
-**Neue Version veröffentlichen:** Auf GitHub unter *Actions → Release → Run workflow* die neue Versionsnummer eingeben (z. B. `v20`) und starten. GitHub führt dann die Tests aus, baut die Download-Pakete und legt Tag und Release an. Alternativ einen Tag `v…` setzen. Direkt aus dem Repo starten (ohne Release) geht mit `python3 python/ct_gruppenhierarchie.py`; die App zeigt dann „Entwicklungsversion“.
+**Neue Version veröffentlichen:** Auf GitHub unter *Actions → Release → Run workflow* die neue Versionsnummer eingeben (z. B. `v27`) und starten. GitHub führt dann die Tests aus, baut alle Pakete (Extension, Webseite, Desktop-App, Python-Version) und legt Tag und Release an. Für die Desktop-App muss das Repo-Secret `TAURI_SIGNING_PRIVATE_KEY` (Update-Schlüssel) hinterlegt sein. Alternativ einen Tag `v…` setzen. Direkt aus dem Repo starten (ohne Release) geht mit `python3 python/ct_gruppenhierarchie.py`; die App zeigt dann „Entwicklungsversion“.
 
 ## Lizenz
 

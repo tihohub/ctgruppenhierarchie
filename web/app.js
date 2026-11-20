@@ -877,6 +877,7 @@ setInterval(idleCheck, 5000);
 if (CT_MODE === "extension") {
   // In CT sitzt die App in einem eigenen Bereich (#ctgh); dort die Kennzeichnung setzen
   (document.getElementById("ctgh") || document.body).classList.add("extension");
+  $("betaNote").classList.remove("hidden"); // Beta-Hinweis im Über-Dialog
   $("welcome").classList.add("hidden");
   $("modal").classList.add("hidden");
   runLoad($("refresh"), true);
