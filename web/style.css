@@ -591,3 +591,19 @@ select {
 .extension #settingsBtn {
   display: none !important;
 }
+.upd-box {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.upd-box .check {
+  font-weight: 400;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin: 6px 0;
+}
+.upd-box .check input {
+  width: auto;
+}

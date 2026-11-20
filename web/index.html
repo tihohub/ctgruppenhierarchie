@@ -142,6 +142,18 @@
             >
           </p>
           <div class="notice">Hinweis: Diese Informationen ersetzen keine Rechtsberatung.</div>
+          <div id="updBox" class="upd-box hidden">
+            <b>Updates (Desktop-App)</b>
+            <label class="check"
+              ><input id="updAuto" type="checkbox" /> Beim Start nach neuen Versionen suchen</label
+            >
+            <p class="note">
+              Dabei fragt die App bei GitHub nach, ob es eine neue Version gibt. GitHub sieht dabei
+              die IP-Adresse, aber keine CT-Daten und keinen Login-Token.
+            </p>
+            <button id="updNow" class="light">Jetzt nach Updates suchen</button>
+            <span id="updStatus" class="note"></span>
+          </div>
         </div>
       </div>
       <div id="app" class="hidden">
@@ -257,6 +269,16 @@
             der Login-Token gelöscht.
           </p>
           <p><button id="idleGo">Weiterarbeiten</button></p>
+        </div>
+      </div>
+      <div id="updateDlg" class="modal hidden">
+        <div class="modalbox">
+          <h2>Neue Version verfügbar</h2>
+          <p id="updateText"></p>
+          <p class="row">
+            <button id="updateGo">Jetzt installieren</button
+            ><button id="updateLater" class="sec">Später</button>
+          </p>
         </div>
       </div>
       <div id="ended" class="modal hidden">

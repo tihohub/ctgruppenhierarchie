@@ -1,19 +1,31 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Rechte der Oberfläche: Leseanfragen an beliebige CT-Instanzen, Links im Browser öffnen",
-  "windows": ["main"],
+  "description": "Rechte der Oberfläche: Leseanfragen an beliebige CT-Instanzen, Links im Browser öffnen, nach Updates suchen und nach der Installation neu starten",
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "opener:default",
     {
       "identifier": "http:default",
       "allow": [
-        { "url": "https://*" },
-        { "url": "https://*:*" },
-        { "url": "http://localhost:*" },
-        { "url": "http://127.0.0.1:*" }
+        {
+          "url": "https://*"
+        },
+        {
+          "url": "https://*:*"
+        },
+        {
+          "url": "http://localhost:*"
+        },
+        {
+          "url": "http://127.0.0.1:*"
+        }
       ]
-    }
+    },
+    "updater:default",
+    "process:allow-restart"
   ]
 }

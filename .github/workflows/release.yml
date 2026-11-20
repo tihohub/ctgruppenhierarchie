@@ -42,6 +42,7 @@ jobs:
   desktop:
     needs: tests
     uses: ./.github/workflows/desktop.yml
+    secrets: inherit
     with:
       version: ${{ inputs.version || github.ref_name }}
 
@@ -58,6 +59,7 @@ jobs:
         # Das Webseiten-Paket (artifact.tar) gehört nicht ins Release
         run: |
           rm -f dist/*.tar
+          python3 tools/make_update_json.py "${VERSION}" dist
           cp desktop/THIRD_PARTY_RUST_LICENSES.txt "dist/ct-gruppenhierarchie-lizenzen-desktop-${VERSION}.txt"
           ls -l dist
       - name: Release anlegen

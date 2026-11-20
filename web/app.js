@@ -880,3 +880,58 @@ if (CT_MODE === "extension") {
   $("modal").classList.add("hidden");
   runLoad($("refresh"), true);
 }
+
+// ---- Desktop-App: Auto-Updater (abschaltbar im Über-Dialog) ----
+// Die Updates sind signiert; die App installiert nur Versionen mit gültiger Unterschrift.
+function updAutoOn() {
+  try {
+    return localStorage.getItem("ctg_update_auto") !== "aus";
+  } catch {
+    return true;
+  }
+}
+async function checkUpdate(manual) {
+  const set = (t) => ($("updStatus").textContent = t);
+  if (manual) set("Suche …");
+  let upd;
+  try {
+    upd = await globalThis.__TAURI__.updater.check();
+  } catch (e) {
+    if (manual) set("Suche fehlgeschlagen: " + e);
+    return;
+  }
+  if (!upd) {
+    if (manual) set("Die App ist aktuell.");
+    return;
+  }
+  if (manual) set("");
+  $("updateText").textContent =
+    `Version ${upd.version} ist verfügbar (installiert: ${VER_LABEL}). ` +
+    "Die App wird dafür kurz beendet und neu gestartet.";
+  $("updateDlg").classList.remove("hidden");
+  $("updateLater").onclick = () => $("updateDlg").classList.add("hidden");
+  $("updateGo").onclick = async () => {
+    $("updateGo").disabled = true;
+    $("updateText").textContent = "Update wird geladen und installiert …";
+    try {
+      await upd.downloadAndInstall();
+      await globalThis.__TAURI__.process.relaunch();
+    } catch (e) {
+      $("updateText").textContent = "Update fehlgeschlagen: " + e;
+      $("updateGo").disabled = false;
+    }
+  };
+}
+if (CT_MODE === "tauri") {
+  $("updBox").classList.remove("hidden");
+  $("updAuto").checked = updAutoOn();
+  $("updAuto").onchange = () => {
+    try {
+      localStorage.setItem("ctg_update_auto", $("updAuto").checked ? "an" : "aus");
+    } catch {
+      // ohne Speicher gilt die Einstellung nur bis zum Schließen
+    }
+  };
+  $("updNow").onclick = () => checkUpdate(true);
+  if (updAutoOn() && !VER.startsWith("__")) setTimeout(() => checkUpdate(false), 2000);
+}

@@ -51,6 +51,18 @@
       "../THIRD_PARTY_RUST_LICENSES.txt": "lizenzen/THIRD_PARTY_RUST_LICENSES.txt",
       "../../LICENSE.txt": "lizenzen/LICENSE.txt",
       "../../THIRD_PARTY_LICENSES.txt": "lizenzen/THIRD_PARTY_LICENSES.txt"
+    },
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEEzOUU4NkMzRDhCNUVDNzcKUldSMzdMWFl3NGFlb3o2dFB6NjlKc094RFRBN1U3UjNqWHE2L0pVTUlVQm1sZUlmK0NlYjRvQ0EK",
+      "endpoints": [
+        "https://github.com/tihohub/ctgruppenhierarchie/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
     }
   }
 }

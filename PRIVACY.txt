@@ -26,8 +26,10 @@ Varianten
   Webseitenaufruf technische Verbindungsdaten (z. B. IP-Adresse). CT-Daten und Login-Token
   gehen nicht an GitHub, sondern vom Browser direkt an die CT-Instanz. Datenschutzerklaerung
   von GitHub: https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement
-- Desktop-App: Das Programm fragt die CT-Instanz direkt. Weitere Verbindungen baut es nicht
-  auf. Links zu Gruppen werden im Standardbrowser geoeffnet.
+- Desktop-App: Das Programm fragt die CT-Instanz direkt. Links zu Gruppen werden im
+  Standardbrowser geoeffnet. Zusaetzlich fragt die App beim Start bei GitHub nach, ob es eine
+  neue Version gibt (abschaltbar im Dialog "Ueber"). GitHub erhaelt dabei technische
+  Verbindungsdaten (z. B. IP-Adresse), aber keine CT-Daten und keinen Login-Token.
 - Python-Version: Ein lokaler Server auf dem eigenen Rechner (127.0.0.1) reicht die
   Leseanfragen an die CT-Instanz weiter. Er ist nur vom eigenen Rechner aus erreichbar.
 
