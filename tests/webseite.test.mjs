@@ -26,6 +26,10 @@ async function waitFor(url) {
 async function openPage() {
   const page = await browser.newPage();
   page.errors = [];
+  // Verstöße gegen die Content-Security-Policy erscheinen als Konsolenmeldung
+  page.on("console", (m) => {
+    if (/Content Security Policy/i.test(m.text())) page.errors.push(m.text());
+  });
   page.on("pageerror", (e) => page.errors.push(e.message));
   await page.goto(WEB);
   await page.evaluate(() => {
