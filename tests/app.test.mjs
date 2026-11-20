@@ -131,6 +131,23 @@ test("Statistik richtet sich nach Filter und Suche", async () => {
   ]);
 });
 
+test("Unverschlüsselte Adressen (http://) werden abgelehnt", async () => {
+  const page = await openApp();
+  await page.fill("#base", "http://example.org");
+  await page.fill("#token", "test-token");
+  await page.click("#connect");
+  await page.waitForFunction(() => document.getElementById("msg").textContent.startsWith("✗"));
+  assert.match(await text(page, "#msg"), /mit https:\/\/ angeben/);
+  assert.equal(await page.isVisible("#app"), false);
+  // auch der lokale Server lehnt sie ab
+  const r = await fetch(APP + "ct", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ base: "http://example.org", path: "/whoami", token: "x" }),
+  });
+  assert.match((await r.json()).error, /https/);
+});
+
 test("Nicht sichtbare Obergruppe erscheint als ausgegrauter 🔒-Platzhalter ohne Link", async () => {
   const page = await openApp();
   await connected(page);

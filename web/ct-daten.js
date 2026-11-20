@@ -135,9 +135,17 @@ function nowText() {
 
 // ---- Laden und Aufbereiten ----
 
+// Nur verschlüsselte Verbindungen erlauben, damit der Login-Token nie unverschlüsselt durchs
+// Netz geht. Ausnahme: der eigene Rechner (localhost), z. B. für die automatischen Tests.
+const SAFE_BASE = /^(https:\/\/[^/\s]+|http:\/\/(localhost|127\.0\.0\.1)(:\d+)?)(\/|$)/i;
+
 async function loadGroupData(base, token) {
   base = base.trim().replace(/\/+$/, "");
   if (base.endsWith("/api")) base = base.slice(0, -4);
+  if (!SAFE_BASE.test(base))
+    throw new Error(
+      "Bitte die CT-Adresse mit https:// angeben, z. B. https://deine-gemeinde.church.tools",
+    );
 
   // Angemeldeter Benutzer
   const who = await ctGet(base, token, "/whoami");
