@@ -57,8 +57,9 @@ test("ZIP enthält index.html und assets/ direkt im Wurzelverzeichnis, mit absol
     .split("\n");
   assert.deepEqual(names.sort(), ["assets/app.js", "assets/style.css", "index.html"]);
   const index = readFileSync("dist/extension/index.html", "utf8");
-  assert.match(index, /href="\/ccm\/gruppenhierarchie\/assets\/style\.css"/);
-  assert.match(index, /src="\/ccm\/gruppenhierarchie\/assets\/app\.js"/);
+  // Versionsnummer an den Verweisen: nach einem Update lädt der Browser die neuen Dateien
+  assert.match(index, /href="\/ccm\/gruppenhierarchie\/assets\/style\.css\?v=v0\.1"/);
+  assert.match(index, /src="\/ccm\/gruppenhierarchie\/assets\/app\.js\?v=v0\.1"/);
   assert.doesNotMatch(index, /<iframe|<style/);
   assert.match(readFileSync("dist/extension/assets/app.js", "utf8"), /v0\.1/);
 });

@@ -8,6 +8,8 @@ So bettet CT eine Extension ein (getestet von anderen Extension-Projekten):
   /ccm/<Kürzel>/ eingebunden.
 - <style>-Blöcke und eingebettete Skripte werden entfernt bzw. blockiert: Gestaltung und
   Programm liegen als Dateien in assets/.
+- Die Dateinamen bleiben über Versionen gleich. Damit der Browser nach einem Update keine
+  alte Datei aus seinem Zwischenspeicher nimmt, hängt an jedem Verweis „?v=<Version>“.
 - Unsere Gestaltung darf CT nicht verändern: alle CSS-Regeln werden auf den eigenen
   Bereich <div id="ctgh"> beschränkt (aus „body“ wird „#ctgh“, aus „button“ „#ctgh button“).
 
@@ -109,9 +111,9 @@ def main(version):
     <title>CT Gruppenhierarchie</title>
   </head>
   <body>
-    <link rel="stylesheet" href="{BASE}style.css" />
+    <link rel="stylesheet" href="{BASE}style.css?v={version}" />
     <div id="ctgh">{body}</div>
-    <script type="module" src="{BASE}app.js"></script>
+    <script type="module" src="{BASE}app.js?v={version}"></script>
   </body>
 </html>
 """
