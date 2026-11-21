@@ -79,12 +79,16 @@ test("Extension lädt sofort mit der CT-Anmeldung, ohne Token", async () => {
   assert.deepEqual(errors, []);
 });
 
-test("Über-Dialog zeigt in der Extension den Beta-Hinweis", async () => {
+test("Über-Dialog zeigt in der Extension den Beta-Hinweis und den eigenen Datenschutz-Text", async () => {
   const { page } = await openExtension();
   await page.locator("#ctgh-app:not(.hidden)").waitFor();
   await page.click("#ctgh #aboutBtn");
   assert.equal(await page.locator("#betaNote").isVisible(), true);
   assert.match(await page.locator("#betaNote").textContent(), /Beta-Funktion ohne\s+Support/);
+  assert.equal(await page.locator("#extPrivacy").isVisible(), true);
+  const about = (await page.locator("#about").innerText()).replace(/\s+/g, " ");
+  assert.match(about, /von eurer CT-Instanz ausgeliefert/);
+  assert.doesNotMatch(about, /vom Nutzer angegebenen CT-Instanz|GitHub Pages/);
 });
 
 test("Gestaltung der App verändert die CT-Seite nicht", async () => {
