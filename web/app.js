@@ -878,6 +878,7 @@ if (CT_MODE === "extension") {
   // In CT sitzt die App in einem eigenen Bereich (#ctgh); dort die Kennzeichnung setzen
   (document.getElementById("ctgh") || document.body).classList.add("extension");
   $("betaNote").classList.remove("hidden"); // Beta-Hinweis im Über-Dialog
+  $("extPrivacy").classList.remove("hidden"); // eigener Datenschutz-Text für die Extension
   $("welcome").classList.add("hidden");
   $("modal").classList.add("hidden");
   runLoad($("refresh"), true);
