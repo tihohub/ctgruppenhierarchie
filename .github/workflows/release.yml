@@ -60,7 +60,7 @@ jobs:
         run: |
           rm -f dist/*.tar
           python3 tools/make_update_json.py "${VERSION}" dist
-          cp desktop/THIRD_PARTY_RUST_LICENSES.txt "dist/ct-gruppenhierarchie-lizenzen-desktop-${VERSION}.txt"
+          cp desktop/THIRD_PARTY_RUST_LICENSES.txt "dist/ct-gruppenhierarchie-lizenzen-desktop-${VERSION#v}.txt"
           ls -l dist
       - name: Release anlegen
         env:
@@ -68,7 +68,7 @@ jobs:
         run: |
           gh release create "${VERSION}" dist/* \
             --target "${GITHUB_SHA}" \
-            --title "CT Gruppenhierarchie ${VERSION}" \
+            --title "CT Gruppenhierarchie ${VERSION#v}" \
             --notes-file .github/release-notes.md \
             --generate-notes
 

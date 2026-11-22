@@ -65,12 +65,12 @@ jobs:
           B=desktop/src-tauri/target/release/bundle
           mkdir -p dist-desktop
           if [ "${{ matrix.name }}" = windows ]; then
-            cp "$B"/nsis/*.exe "dist-desktop/ct-gruppenhierarchie-windows-$VERSION-setup.exe"
-            cp "$B"/nsis/*.exe.sig "dist-desktop/ct-gruppenhierarchie-windows-$VERSION-setup.exe.sig"
+            cp "$B"/nsis/*.exe "dist-desktop/ct-gruppenhierarchie-windows-${VERSION#v}-setup.exe"
+            cp "$B"/nsis/*.exe.sig "dist-desktop/ct-gruppenhierarchie-windows-${VERSION#v}-setup.exe.sig"
           else
-            cp "$B"/appimage/*.AppImage "dist-desktop/ct-gruppenhierarchie-linux-$VERSION.AppImage"
-            cp "$B"/appimage/*.AppImage.sig "dist-desktop/ct-gruppenhierarchie-linux-$VERSION.AppImage.sig"
-            cp "$B"/deb/*.deb "dist-desktop/ct-gruppenhierarchie-linux-$VERSION.deb"
+            cp "$B"/appimage/*.AppImage "dist-desktop/ct-gruppenhierarchie-linux-${VERSION#v}.AppImage"
+            cp "$B"/appimage/*.AppImage.sig "dist-desktop/ct-gruppenhierarchie-linux-${VERSION#v}.AppImage.sig"
+            cp "$B"/deb/*.deb "dist-desktop/ct-gruppenhierarchie-linux-${VERSION#v}.deb"
           fi
           ls -l dist-desktop
       - uses: actions/upload-artifact@v4
