@@ -778,7 +778,8 @@ document.addEventListener("click", (e) => {
 
 // ---- Version, Verbindung zum lokalen Server (Lebenszeichen), Programmende ----
 const VER = "__CT_VERSION__",
-  VER_LABEL = VER.startsWith("__") ? "Entwicklungsversion" : VER;
+  // Anzeige „Version 1.0“; der Tag heißt intern „v1.0“
+  VER_LABEL = VER.startsWith("__") ? "Entwicklungsversion" : "Version " + VER.replace(/^v/, "");
 document.title = "CT Gruppenhierarchie " + VER_LABEL;
 document.querySelectorAll(".app-version").forEach((e) => (e.textContent = VER_LABEL));
 const CID = Math.random().toString(36).slice(2) + Date.now().toString(36);

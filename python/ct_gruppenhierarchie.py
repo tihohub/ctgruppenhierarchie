@@ -15,7 +15,7 @@ HOST = "127.0.0.1"
 PORT = 8765
 VERSION = "__CT_VERSION__"
 APP_ID = "ct-gruppenhierarchie"
-VERSION_LABEL = "Entwicklungsversion" if VERSION.startswith("__") else VERSION
+VERSION_LABEL = "Entwicklungsversion" if VERSION.startswith("__") else "Version " + VERSION.lstrip("v")
 # Weboberfläche: beim Release-Build hier eingebettet, sonst aus dem Ordner web/ gelesen
 EMBEDDED = {}
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
@@ -46,7 +46,7 @@ def req(base, path, token):
         headers={
             "Accept": "application/json",
             "Authorization": "Login " + token,
-            "User-Agent": "CT-Gruppenhierarchie-" + VERSION_LABEL,
+            "User-Agent": "CT-Gruppenhierarchie-" + VERSION.lstrip("v"),
         },
     )
     try:
@@ -234,8 +234,8 @@ def start():
     o = running_instance()
     if isinstance(o, dict):
         v = o.get("version", "?")
-        v = "Entwicklungsversion" if str(v).startswith("__") else v
-        print(f"Laufende Version {v} wird beendet …")
+        v = "Entwicklungsversion" if str(v).startswith("__") else "Version " + str(v).lstrip("v")
+        print(f"Laufende {v} wird beendet …")
         try:
             local_req("/shutdown", b"{}")
         except Exception:

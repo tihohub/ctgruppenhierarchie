@@ -50,7 +50,7 @@ test("ZIP enthält index.html und assets/ direkt im Wurzelverzeichnis, mit absol
   const names = execFileSync("python3", [
     "-c",
     "import zipfile,sys;print('\\n'.join(zipfile.ZipFile(sys.argv[1]).namelist()))",
-    "dist/ct-gruppenhierarchie-extension-v0.1.zip",
+    "dist/ct-gruppenhierarchie-extension-0.1.zip",
   ])
     .toString()
     .trim()
@@ -77,6 +77,12 @@ test("Extension lädt sofort mit der CT-Anmeldung, ohne Token", async () => {
     .evaluate((b) => getComputedStyle(b).backgroundColor);
   assert.equal(appBtn, "rgb(9, 105, 218)");
   assert.deepEqual(errors, []);
+});
+
+test("Versionsanzeige lautet „Version 0.1“ (ohne „v“)", async () => {
+  const { page } = await openExtension();
+  await page.locator("#ctgh-app:not(.hidden)").waitFor();
+  assert.equal((await page.locator("#ctgh h1 .app-version").textContent()).trim(), "Version 0.1");
 });
 
 test("Über-Dialog zeigt in der Extension den Beta-Hinweis und den eigenen Datenschutz-Text", async () => {

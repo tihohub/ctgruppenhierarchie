@@ -13,8 +13,8 @@ So bettet CT eine Extension ein (getestet von anderen Extension-Projekten):
 - Unsere Gestaltung darf CT nicht verändern: alle CSS-Regeln werden auf den eigenen
   Bereich <div id="ctgh"> beschränkt (aus „body“ wird „#ctgh“, aus „button“ „#ctgh button“).
 
-Aufruf: python3 tools/build_extension.py v26
-Ergebnis: dist/extension/ (entpackt) und dist/ct-gruppenhierarchie-extension-v26.zip
+Aufruf: python3 tools/build_extension.py v1.0
+Ergebnis: dist/extension/ (entpackt) und dist/ct-gruppenhierarchie-extension-1.0.zip
 """
 import re, shutil, sys, zipfile
 from pathlib import Path
@@ -83,7 +83,7 @@ def scope_css(css):
 
 def main(version):
     if not re.fullmatch(r"v\d+(\.\d+)*", version):
-        sys.exit(f"Ungültige Version: {version!r} (erwartet z. B. v26)")
+        sys.exit(f"Ungültige Version: {version!r} (erwartet z. B. v1.0)")
     web = {
         n: (ROOT / "web" / n).read_text(encoding="utf-8")
         for n in ("index.html", "style.css", "ct-daten.js", "app.js")
@@ -124,7 +124,8 @@ def main(version):
     (out / "index.html").write_text(index, encoding="utf-8")
     (out / "assets" / "style.css").write_text(css, encoding="utf-8")
     (out / "assets" / "app.js").write_text(js, encoding="utf-8")
-    zip_path = ROOT / "dist" / f"ct-gruppenhierarchie-extension-{version}.zip"
+    # Dateiname ohne „v“: ct-gruppenhierarchie-extension-1.0.zip
+    zip_path = ROOT / "dist" / f"ct-gruppenhierarchie-extension-{version.lstrip('v')}.zip"
     # Dateien direkt im Wurzelverzeichnis des ZIP (kein Unterordner), Pfade mit „/“
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
         for f in sorted(out.rglob("*")):

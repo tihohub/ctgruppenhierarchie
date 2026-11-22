@@ -5,7 +5,7 @@ Die Desktop-App lädt beim Start https://github.com/…/releases/latest/download
 vergleicht die Version. Die Datei enthält für Windows und Linux die Download-Adresse und die
 Unterschrift (aus den .sig-Dateien, die der Bau mit dem Update-Schlüssel erzeugt).
 
-Aufruf: python3 tools/make_update_json.py v24 dist
+Aufruf: python3 tools/make_update_json.py v1.0 dist
 """
 import json, re, sys
 from datetime import datetime, timezone
@@ -26,7 +26,7 @@ def main(version, folder):
     d = Path(folder)
     platforms = {}
     for key, pattern in FILES.items():
-        name = pattern.format(v=version)
+        name = pattern.format(v=version.lstrip("v"))  # Dateinamen ohne „v“
         sig = d / (name + ".sig")
         if not sig.is_file():
             sys.exit(f"Unterschrift fehlt: {sig}")
@@ -37,7 +37,7 @@ def main(version, folder):
         sig.unlink()  # Unterschrift steckt jetzt in latest.json
     data = {
         "version": semver,
-        "notes": f"CT Gruppenhierarchie {version}",
+        "notes": f"CT Gruppenhierarchie {version.lstrip('v')}",
         "pub_date": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "platforms": platforms,
     }

@@ -5,8 +5,8 @@ Fügt Oberfläche (web/) und Server (python/) zu einer einzigen Datei
 ct_gruppenhierarchie.py zusammen, setzt die Versionsnummer ein und packt alles mit
 Startdatei, README und Lizenztexten in ein ZIP.
 
-Aufruf: python3 tools/build_python.py v19
-Ergebnis: dist/ct-gruppenhierarchie-python-v19.zip
+Aufruf: python3 tools/build_python.py v1.0
+Ergebnis: dist/ct-gruppenhierarchie-python-1.0.zip
 """
 import re, sys, zipfile
 from pathlib import Path
@@ -17,7 +17,7 @@ PLACEHOLDER = "__CT_VERSION__"
 
 def main(version):
     if not re.fullmatch(r"v\d+(\.\d+)*", version):
-        sys.exit(f"Ungültige Version: {version!r} (erwartet z. B. v19)")
+        sys.exit(f"Ungültige Version: {version!r} (erwartet z. B. v1.0)")
     web = {
         name: (ROOT / "web" / name).read_text(encoding="utf-8").replace(PLACEHOLDER, version)
         for name in ("index.html", "style.css", "ct-daten.js", "app.js")
@@ -31,8 +31,9 @@ def main(version):
     )
     dist = ROOT / "dist"
     dist.mkdir(exist_ok=True)
-    folder = f"ct-gruppenhierarchie-{version}"
-    out = dist / f"ct-gruppenhierarchie-python-{version}.zip"
+    nummer = version.lstrip("v")  # Dateinamen ohne „v“: ct-gruppenhierarchie-python-1.0.zip
+    folder = f"ct-gruppenhierarchie-{nummer}"
+    out = dist / f"ct-gruppenhierarchie-python-{nummer}.zip"
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr(f"{folder}/ct_gruppenhierarchie.py", server)
         z.writestr(f"{folder}/start_windows.bat", bat.replace("\n", "\r\n"))
