@@ -28,8 +28,29 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
 - Übernommen wird als ein zusammengefasster Commit („Squash“).
 
 ### Versionen und Releases
-- Versionen werden **nur** über Git-Tags (`v19`, `v20`, …) und GitHub Releases
-  verwaltet, **nicht** über Dateinamen. Dateinamen bleiben über Versionen gleich.
+- Versionen werden **nur** über Git-Tags und GitHub Releases verwaltet, **nicht** über
+  Dateinamen. Dateinamen bleiben über Versionen gleich.
+- Schema `vX.Y` mit einer Nachkommastelle (`v1.0`, `v1.1`, …, `v2.0`): X = Generation
+  (1 = nur lesend, 2 = schreibend), Y = jeder Release dieser Generation, ob Fehlerbehebung
+  oder kleine Verbesserung. Keine dritte Stelle. Intern macht das Bauskript daraus `X.Y.0`.
+- Bis v28 wurde einfach hochgezählt (`v19` … `v28`); v1.0 entspricht inhaltlich v28. Die
+  Desktop-App hält 1.0 für älter als 28: Installationen bis v28 müssen v1.0 einmal von Hand
+  installieren.
+- Alle Varianten werden immer gemeinsam mit derselben Versionsnummer gebaut. Der Release-Text
+  sagt, wen ein Update betrifft und ob es optional ist.
+
+### Zwei Entwicklungslinien
+- `main` = Version 1.x (nur lesend, stabil): Fehlerbehebungen und kleine Verbesserungen.
+  Releases `v1.Y` kommen von `main`.
+- Branch `v2` = Version 2.0 (schreibend): große neue Funktionen, Pull Requests gegen `v2`.
+  Änderungen aus `main` werden regelmäßig nach `v2` übernommen.
+- Testversionen der 2.0 sollen als Vorab-Release erscheinen (z. B. `v2.0-beta1`), die die
+  Desktop-App nicht automatisch holt. Der Release-Ablauf kann das noch nicht; er wird vor
+  der ersten Testversion angepasst.
+- Bevor in `v2` geschrieben wird, werden die Grundsätze für das Schreiben gesondert mit dem
+  Inhaber besprochen. Bis dahin gelten die festen Grundsätze unten (nur lesend) für beide
+  Linien.
+- Ist 2.0 fertig, wird `v2` nach `main` übernommen; `main` ist ab dann 2.x.
 - Die Versionsnummer steht nicht fest im Code. Sie wird beim Release-Build aus dem
   Tag eingesetzt. Ohne Release zeigt die App „Entwicklungsversion“.
 - Fertige Programme (EXE, ZIP usw.) werden **nie** ins Repo eingecheckt. Sie werden

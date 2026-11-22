@@ -49,7 +49,7 @@ Die App läuft als Erweiterung innerhalb von CT. Nutzer öffnen sie wie jeden an
 4. Die ZIP-Datei hochladen und speichern.
 5. Aufrufen über das Menü oder unter `https://eure-gemeinde.church.tools/ccm/gruppenhierarchie/`.
 
-**Update:** Die Erweiterung in CT über den Stift öffnen, die ZIP-Datei der neuen Version hochladen und speichern. Danach die Seite mit **Strg+Shift+R** neu laden, damit der Browser keine alten Dateien verwendet. Die Extension aktualisiert sich nicht von selbst.
+**Update:** Die Erweiterung in CT über den Stift öffnen, die ZIP-Datei der neuen Version hochladen und speichern. Seit v28 lädt der Browser die neue Version danach von selbst (vorher war Strg+Shift+R nötig). Die Extension aktualisiert sich nicht von selbst, ein CT-Admin muss das neue ZIP hochladen.
 
 Hinweis: Erweiterungen sind nicht in jedem CT-Paket verfügbar. Fehlt der Menüpunkt „Erweiterungen“, eine der anderen Varianten nutzen.
 
@@ -211,7 +211,11 @@ npm test
 
 Auf GitHub laufen die Tests bei jedem Pull Request automatisch.
 
-**Neue Version veröffentlichen:** Auf GitHub unter *Actions → Release → Run workflow* die neue Versionsnummer eingeben (z. B. `v27`) und starten. GitHub führt dann die Tests aus, baut alle Pakete (Extension, Webseite, Desktop-App, Python-Version) und legt Tag und Release an. Für die Desktop-App muss das Repo-Secret `TAURI_SIGNING_PRIVATE_KEY` (Update-Schlüssel) hinterlegt sein. Alternativ einen Tag `v…` setzen. Direkt aus dem Repo starten (ohne Release) geht mit `python3 python/ct_gruppenhierarchie.py`; die App zeigt dann „Entwicklungsversion“.
+**Neue Version veröffentlichen:** Auf GitHub unter *Actions → Release → Run workflow* die neue Versionsnummer eingeben (z. B. `v1.1`) und starten. GitHub führt dann die Tests aus, baut alle Pakete (Extension, Webseite, Desktop-App, Python-Version) und legt Tag und Release an. Für die Desktop-App muss das Repo-Secret `TAURI_SIGNING_PRIVATE_KEY` (Update-Schlüssel) hinterlegt sein. Alternativ einen Tag `v…` setzen.
+
+**Versionsnummern:** `v1.0`, `v1.1`, … (eine Nachkommastelle). Die erste Zahl ist die Generation: 1 = nur lesend, 2 = schreibend (geplant, Entwicklung im Branch `v2`). Die zweite Zahl zählt jeden Release dieser Generation. Bis v28 wurde einfach hochgezählt; v1.0 entspricht inhaltlich v28. Wer die Desktop-App in v28 oder älter installiert hat, installiert v1.0 einmal von Hand, danach funktionieren automatische Updates wieder.
+
+Direkt aus dem Repo starten (ohne Release) geht mit `python3 python/ct_gruppenhierarchie.py`; die App zeigt dann „Entwicklungsversion“.
 
 ## Lizenz
 
