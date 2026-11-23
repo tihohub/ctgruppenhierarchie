@@ -1,13 +1,15 @@
 # Erstellt ein GitHub Release: Tests ausführen, Download-Pakete bauen, Release mit Tag anlegen.
 # Start entweder per Knopf (Actions → Release → „Run workflow“, Versionsnummer eingeben)
-# oder durch Setzen eines Tags (z. B. v20).
+# oder durch Setzen eines Tags (z. B. v1.1).
+# Sicherung: Nur Versionen 1.x aus dem Stand von main werden veröffentlicht (tools/release_check.py).
+# Version 2.0 (Branch v2) wird noch nicht veröffentlicht.
 name: Release
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Versionsnummer, z. B. v20"
+        description: "Versionsnummer, z. B. v1.1"
         required: true
   push:
     tags: ["v*"]
@@ -19,7 +21,17 @@ permissions:
   contents: write
 
 jobs:
+  pruefen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Nur Version 1.x aus main veröffentlichen
+        run: python3 tools/release_check.py "${VERSION}" "${GITHUB_SHA}"
+
   tests:
+    needs: pruefen
     uses: ./.github/workflows/tests.yml
 
   python-paket:
