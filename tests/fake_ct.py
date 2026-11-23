@@ -11,6 +11,7 @@ Testdaten:
   C ─ X, Z               Z hat zwei Obergruppen (C und die nicht sichtbare Gruppe 99)
   99 „Leitung geheim“    nicht in /groups enthalten (keine Berechtigung)
   D                      alleinstehend
+  8 „Alter Kreis“        alleinstehend, Status „beendet“ (beim Start ausgefiltert)
 """
 import json, os, re, sys
 from pathlib import Path
@@ -22,7 +23,8 @@ SESSION_COOKIE = "ct_session=angemeldet"
 # Optional: Ordner einer gebauten Extension, ausgeliefert unter /ccm/gruppenhierarchie/
 EXT_DIR = os.environ.get("CTG_EXT_DIR")
 TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css"}
-GROUPS = {1: "A", 2: "B", 3: "C", 4: "D", 5: "X", 6: "Y", 7: "Z"}
+GROUPS = {1: "A", 2: "B", 3: "C", 4: "D", 5: "X", 6: "Y", 7: "Z", 8: "Alter Kreis"}
+STATUS = {8: 2}  # alle anderen Gruppen: 1 = aktiv
 GROUPS.update({100 + i: f"Füll{i:02d}" for i in range(40)})
 HIERARCHIES = (
     [{"groupId": 1, "parents": [], "children": [2] + [100 + i for i in range(40)]}]
@@ -49,7 +51,7 @@ def page(data):
 ROUTES = {
     "/api/whoami": {"data": {"id": 1, "firstName": "Test", "lastName": "Nutzer"}},
     "/api/persons/1": {"data": {"firstName": "Test", "lastName": "Nutzer"}},
-    "/api/masterdata/person": {"data": {"groupStatuses": [{"id": 1, "name": "aktiv"}]}},
+    "/api/masterdata/person": {"data": {"groupStatuses": [{"id": 1, "name": "aktiv"}, {"id": 2, "name": "beendet"}]}},
     "/api/group/grouptypes": page([{"id": 1, "name": "Kleingruppe"}]),
     "/api/groups": page(
         [
@@ -58,7 +60,7 @@ ROUTES = {
                 "name": n,
                 "information": {
                     "groupTypeId": 1,
-                    "groupStatusId": 1,
+                    "groupStatusId": STATUS.get(i, 1),
                     "note": "Beschreibung von " + n,
                 },
                 "settings": {"visibility": "intern"},

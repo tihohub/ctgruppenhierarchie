@@ -26,7 +26,7 @@ function prefs() {
 }
 let P = prefs();
 if (P.base) $("base").value = P.base;
-mode = P.mode || "horizontal";
+// Die Visualisierung startet immer horizontal (umschaltbar, gilt dann bis zum Neuladen)
 function save() {
   localStorage.setItem(
     "ctv10",
@@ -131,6 +131,7 @@ async function load(fresh) {
         .filter((g) => g.childIds.length)
         .map((g) => g.id),
     );
+    NEEDFIT = true; // neu geladen: so weit herauszoomen, dass alles zu sehen ist
     renderForest();
   }
   $("refresh").classList.remove("hidden");
@@ -142,6 +143,7 @@ async function load(fresh) {
   $("user").innerHTML =
     `Nutzer-ID: <b>${esc(j.userId)}</b><br>Nutzername: <b>${esc(j.userName || "Nicht verfügbar")}</b>`;
   $("modal").classList.add("hidden");
+  fitIfNeeded(); // erst jetzt ist die Ansicht sichtbar und messbar
 }
 
 // ---- Suche und Filter ----
@@ -208,11 +210,18 @@ function facets(
   $("status").value = s;
   $("multiF").value = mm;
 }
+// Status „aktiv“: Beim Start werden nur aktive Gruppen angezeigt
+function activeStatus() {
+  return (
+    Object.keys(M.statusNames).find((k) => M.statusNames[k].trim().toLowerCase() === "aktiv") ||
+    ""
+  );
+}
 function setup(first) {
   P = prefs();
   $("search").value = P.search || "";
   expanded = new Set((P.expanded || []).map(Number));
-  facets(P.type || "", P.visibility || "", P.status || "", P.multi || "");
+  facets(P.type || "", P.visibility || "", first ? activeStatus() : P.status || "", P.multi || "");
   render();
   if (first && (!P.expanded || !P.expanded.length)) {
     expandAllBoth();
@@ -534,7 +543,139 @@ function renderForest() {
   $("visSoloCount").textContent = `${solos.length} ${solos.length === 1 ? "Gruppe" : "Gruppen"}`;
   $("visCount").textContent = `${roots.length} Gruppenstämme`;
   placeBack();
+  fitIfNeeded();
 }
+
+// ---- Visualisierung: Zoomen und Verschieben ----
+let ZOOM = 1,
+  NEEDFIT = false;
+const ZMIN = 0.1,
+  ZMAX = 2,
+  ZSTEP = 1.25;
+const vArea = () => $("forest").parentElement;
+// Zoomt auf z; der Punkt (cx, cy) im Fenster bleibt dabei an seiner Stelle (sonst die Mitte)
+function setZoom(z, cx, cy) {
+  let a = vArea(),
+    r = a.getBoundingClientRect();
+  z = Math.min(ZMAX, Math.max(ZMIN, z));
+  let mx = cx == null ? a.clientWidth / 2 : cx - r.left,
+    my = cy == null ? a.clientHeight / 2 : cy - r.top,
+    px = (a.scrollLeft + mx) / ZOOM,
+    py = (a.scrollTop + my) / ZOOM;
+  ZOOM = z;
+  $("forest").style.zoom = z;
+  a.scrollLeft = px * z - mx;
+  a.scrollTop = py * z - my;
+  $("zoomVal").textContent = Math.round(z * 100) + " %";
+}
+// Nach dem Laden bzw. Umschalten einmal einpassen, sobald die Visualisierung sichtbar ist
+function fitIfNeeded() {
+  if (NEEDFIT && vArea().clientWidth) {
+    NEEDFIT = false;
+    zoomFit();
+  }
+}
+// So weit herauszoomen, dass alle Gruppenstämme ganz zu sehen sind (höchstens 100 %)
+function zoomFit() {
+  let a = vArea(),
+    f = $("forest"),
+    cs = getComputedStyle(a);
+  if (!a.clientWidth) return;
+  f.style.zoom = 1;
+  let w = f.scrollWidth,
+    h = f.scrollHeight,
+    aw = a.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight),
+    ah = a.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  ZOOM = 1;
+  setZoom(Math.min(1, w ? aw / w : 1, h ? ah / h : 1));
+  // Schrift wird beim Verkleinern nicht exakt mitskaliert: so lange nachregeln, bis alles passt
+  for (let i = 0; i < 5; i++) {
+    let r = Math.min(a.clientWidth / a.scrollWidth, a.clientHeight / a.scrollHeight);
+    if (r >= 1) break;
+    setZoom(ZOOM * r * 0.98);
+  }
+  a.scrollLeft = 0;
+  a.scrollTop = 0;
+}
+$("zoomIn").onclick = () => setZoom(ZOOM * ZSTEP);
+$("zoomOut").onclick = () => setZoom(ZOOM / ZSTEP);
+$("zoomFit").onclick = () => zoomFit();
+// Strg + Mausrad (auch Zwei-Finger-Geste auf dem Touchpad) zoomt; Mausrad allein scrollt
+vArea().addEventListener(
+  "wheel",
+  (e) => {
+    if (!e.ctrlKey) return;
+    e.preventDefault();
+    setZoom(ZOOM * Math.exp(-e.deltaY * 0.002), e.clientX, e.clientY);
+  },
+  { passive: false },
+);
+// Ziehen mit gedrückter Maustaste verschiebt die Ansicht. Wer dabei auf einem Gruppennamen
+// losgelassen hat, öffnet die Gruppe nicht versehentlich.
+let PAN = null;
+vArea().addEventListener("pointerdown", (e) => {
+  if (e.pointerType !== "mouse" || e.button !== 0 || e.target.closest("button, input, select"))
+    return;
+  let a = vArea();
+  // nicht auf den Bildlaufleisten
+  if (e.target === a && (e.offsetX >= a.clientWidth || e.offsetY >= a.clientHeight)) return;
+  PAN = { x: e.clientX, y: e.clientY, l: a.scrollLeft, t: a.scrollTop, moved: false };
+});
+window.addEventListener("pointermove", (e) => {
+  if (!PAN) return;
+  let dx = e.clientX - PAN.x,
+    dy = e.clientY - PAN.y;
+  if (!PAN.moved && Math.hypot(dx, dy) < 5) return;
+  PAN.moved = true;
+  let a = vArea();
+  a.classList.add("panning");
+  a.scrollLeft = PAN.l - dx;
+  a.scrollTop = PAN.t - dy;
+  e.preventDefault();
+});
+window.addEventListener("pointerup", () => {
+  if (!PAN) return;
+  vArea().classList.remove("panning");
+  if (PAN.moved) {
+    // den Klick, der auf das Loslassen folgt, nicht als Klick auf eine Gruppe werten
+    const eat = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    window.addEventListener("click", eat, { capture: true, once: true });
+    setTimeout(() => {
+      window.removeEventListener("click", eat, { capture: true });
+      PAN = null;
+    }, 0);
+  } else PAN = null;
+});
+// Zwei Finger auseinander/zusammen (Handy, Tablet, Touchscreen) zoomen
+let PINCH = null;
+const fingers = (t) => ({
+  d: Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY),
+  x: (t[0].clientX + t[1].clientX) / 2,
+  y: (t[0].clientY + t[1].clientY) / 2,
+});
+vArea().addEventListener(
+  "touchstart",
+  (e) => {
+    if (e.touches.length === 2) PINCH = { ...fingers(e.touches), z: ZOOM };
+  },
+  { passive: true },
+);
+vArea().addEventListener(
+  "touchmove",
+  (e) => {
+    if (!PINCH || e.touches.length !== 2) return;
+    e.preventDefault();
+    let f = fingers(e.touches);
+    if (PINCH.d) setZoom((PINCH.z * f.d) / PINCH.d, f.x, f.y);
+  },
+  { passive: false },
+);
+vArea().addEventListener("touchend", (e) => {
+  if (e.touches.length < 2) PINCH = null;
+});
 function stem(id) {
   let g = M.byId[id],
     kids = g.childIds.filter((x) => DISPLAY.has(x)),
@@ -692,11 +833,13 @@ $("tabMulti").onclick = () => {
 };
 $("modeH").onclick = () => {
   mode = "horizontal";
+  NEEDFIT = true;
   renderForest();
   save();
 };
 $("modeV").onclick = () => {
   mode = "vertical";
+  NEEDFIT = true;
   renderForest();
   save();
 };
@@ -754,7 +897,7 @@ document.addEventListener("click", (e) => {
     $("search").value = "";
     $("type").value = "";
     $("visibility").value = "";
-    $("status").value = "";
+    $("status").value = activeStatus(); // Standard: nur aktive Gruppen
     $("multiF").value = "";
     render();
     return;

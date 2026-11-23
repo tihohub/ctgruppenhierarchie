@@ -45,12 +45,12 @@ after(() => ct?.kill());
 
 test("Gruppenstämme, alleinstehende Gruppen und Beziehungen", async () => {
   const d = await loadGroupData(CT + "/", "test-token");
-  assert.equal(d.groups.length, 47);
+  assert.equal(d.groups.length, 48);
   assert.deepEqual(
     d.roots.map((id) => d.byId[id].name),
     ["A", "C", "Leitung geheim"],
   );
-  assert.deepEqual(d.standalone, [4]);
+  assert.deepEqual(d.standalone, [8, 4]); // nach Name: „Alter Kreis“, „D“
   assert.equal(d.edges, 46);
   assert.equal(d.userName, "Test Nutzer");
 });

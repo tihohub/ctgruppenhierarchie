@@ -76,7 +76,7 @@ test("Verbindung lädt alle Gruppen und zeigt die Statistik", async () => {
   const page = await openApp();
   await connected(page);
   const stats = await text(page, "#stats");
-  assert.match(stats, /47 \/ 47 Gruppen/);
+  assert.match(stats, /47 \/ 48 Gruppen/); // beim Start nur aktive Gruppen
   assert.match(stats, /3 Gruppenstämme/);
   assert.match(stats, /2 mit mehreren Obergruppen/);
   assert.match(await text(page, "#user"), /Test Nutzer/);
@@ -107,7 +107,7 @@ test("Statistik richtet sich nach Filter und Suche", async () => {
   const stats = () =>
     page.evaluate(() => [...document.querySelectorAll("#stats span")].map((s) => s.textContent));
   assert.deepEqual(await stats(), [
-    "47 / 47 Gruppen",
+    "47 / 48 Gruppen",
     "46 hierarchisch",
     "1 alleinstehend",
     "3 Gruppenstämme",
@@ -116,7 +116,7 @@ test("Statistik richtet sich nach Filter und Suche", async () => {
   ]);
   await page.fill("#search", "Füll01");
   assert.deepEqual(await stats(), [
-    "1* / 47 Gruppen",
+    "1* / 48 Gruppen",
     "1 hierarchisch",
     "0 alleinstehend",
     "1 Gruppenstämme",
@@ -126,7 +126,7 @@ test("Statistik richtet sich nach Filter und Suche", async () => {
   await page.fill("#search", "");
   await page.selectOption("#multiF", "multi");
   assert.deepEqual(await stats(), [
-    "2* / 47 Gruppen",
+    "2* / 48 Gruppen",
     "2 hierarchisch",
     "0 alleinstehend",
     "3 Gruppenstämme",
@@ -188,7 +188,7 @@ test("Mehrfachzuordnungen: Hinweis, Filter und Arbeitsliste", async () => {
   assert.match(await text(page, '#tree li[data-gid="5"][data-pid="2"] > .multi'), /auch unter: C/);
   assert.match(await text(page, '#tree li[data-gid="6"][data-pid="5"] > .dup'), /mehrfach über X/);
   await page.selectOption("#multiF", "multi");
-  assert.match(await text(page, "#stats"), /^2\* \/ 47 Gruppen/);
+  assert.match(await text(page, "#stats"), /^2\* \/ 48 Gruppen/);
   await page.click("#tabMulti");
   assert.equal(await text(page, "#multiCount"), "2 Gruppen");
   assert.match(await text(page, "#multiList"), /A › B › X/);
@@ -197,6 +197,7 @@ test("Mehrfachzuordnungen: Hinweis, Filter und Arbeitsliste", async () => {
 test("Sprung zur Obergruppe und schrittweise zurück", async () => {
   const page = await openApp();
   await connected(page);
+  await page.click("#tabList");
   await page.locator('#tree li[data-gid="5"][data-pid="2"] > .multi .jump').click();
   assert.match(await text(page, '#tree li[data-gid="3"] .backinline'), /zurück zu X/);
   await page.locator('#tree li[data-gid="7"][data-pid="3"] > .multi .jump').click();
@@ -206,6 +207,82 @@ test("Sprung zur Obergruppe und schrittweise zurück", async () => {
   await page.click(".backinline");
   assert.equal(await page.locator(".backinline").count(), 0);
   await page.waitForSelector('#tree li[data-gid="5"][data-pid="2"].flash');
+});
+
+test("Startansicht: Visualisierung horizontal, Reiter links, Status „aktiv“", async () => {
+  const page = await openApp();
+  await page.evaluate(() => localStorage.setItem("ctv10", JSON.stringify({ mode: "vertical", status: "" })));
+  await page.reload();
+  await connected(page);
+  const tabs = await page.evaluate(() => [...document.querySelectorAll(".tabs .tab")].map((b) => b.id));
+  assert.deepEqual(tabs, ["tabVis", "tabList", "tabMulti"]);
+  assert.ok(await page.isVisible("#visPane"));
+  assert.equal(await page.isVisible("#listPane"), false);
+  assert.match(await page.getAttribute("#forest", "class"), /horizontal/);
+  assert.match(await page.locator("#status option:checked").textContent(), /^aktiv/);
+  assert.equal(await page.locator('#soloForest [data-gid="8"]').count(), 0, "beendete Gruppe ausgefiltert");
+  // „Alle Gruppenstatus“ zeigt auch die beendete Gruppe; Zurücksetzen stellt „aktiv“ wieder her
+  await page.selectOption("#status", "");
+  assert.equal(await page.locator('#soloForest [data-gid="8"]').count(), 1);
+});
+
+test("Zoom: Start mit ganzem Stamm, Knöpfe, Strg+Mausrad, Ziehen, zwei Finger", async () => {
+  const page = await openApp();
+  await connected(page);
+  const zoom = () => page.evaluate(() => ZOOM);
+  const area = page.locator("#visPane .visual-area").first();
+  // beim Start so weit herausgezoomt, dass alles hineinpasst
+  const passt = await page.evaluate(() => {
+    const a = document.getElementById("forest").parentElement;
+    return a.scrollWidth <= a.clientWidth + 1 && a.scrollHeight <= a.clientHeight + 1;
+  });
+  assert.ok(passt, "ganzer Stamm sichtbar");
+  const start = await zoom();
+  assert.ok(start < 1, "herausgezoomt");
+  assert.match(await text(page, "#zoomVal"), /^\d+ %$/);
+  await page.click("#zoomIn");
+  assert.ok((await zoom()) > start);
+  await page.click("#zoomIn");
+  await page.click("#zoomIn");
+  await page.click("#zoomOut");
+  const z = await zoom();
+  // Strg + Mausrad zoomt, Mausrad allein nicht
+  const box = await area.boundingBox();
+  await page.mouse.move(box.x + 200, box.y + 200);
+  await page.mouse.wheel(0, 100);
+  assert.equal(await zoom(), z);
+  await page.keyboard.down("Control");
+  await page.mouse.wheel(0, -200);
+  await page.keyboard.up("Control");
+  assert.ok((await zoom()) > z, "Strg+Mausrad zoomt hinein");
+  // Ziehen verschiebt die Ansicht (bei 100 %, damit es etwas zu verschieben gibt)
+  await page.evaluate(() => {
+    setZoom(1);
+    const a = document.getElementById("forest").parentElement;
+    a.scrollLeft = 300;
+    a.scrollTop = 300;
+  });
+  const vorher = await page.evaluate(() => document.getElementById("forest").parentElement.scrollTop);
+  await page.mouse.move(box.x + 300, box.y + 300);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 200, box.y + 250, { steps: 5 });
+  await page.mouse.up();
+  const nachher = await page.evaluate(() => document.getElementById("forest").parentElement.scrollTop);
+  assert.equal(nachher, vorher + 50, "nach oben ziehen zeigt weiter unten liegende Gruppen");
+  // „Ganzer Stamm“ zoomt wieder auf alles
+  await page.click("#zoomFit");
+  assert.equal(await zoom(), start);
+  // zwei Finger auseinander zoomen hinein
+  await page.evaluate(() => {
+    const a = document.getElementById("forest").parentElement,
+      r = a.getBoundingClientRect(),
+      t = (id, x) => new Touch({ identifier: id, target: a, clientX: r.left + x, clientY: r.top + 100 });
+    a.dispatchEvent(new TouchEvent("touchstart", { touches: [t(1, 100), t(2, 200)], bubbles: true }));
+    a.dispatchEvent(new TouchEvent("touchmove", { touches: [t(1, 50), t(2, 250)], bubbles: true, cancelable: true }));
+    a.dispatchEvent(new TouchEvent("touchend", { touches: [], bubbles: true }));
+  });
+  assert.ok((await zoom()) > start * 1.5, "zwei Finger zoomen hinein");
+  assert.deepEqual(page.errors, []);
 });
 
 test("Visualisierung ist aufgeklappt und zeigt alleinstehende Gruppen", async () => {
