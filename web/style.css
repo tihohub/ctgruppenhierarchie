@@ -246,6 +246,51 @@ button {
   width: auto;
   margin-top: 3px;
 }
+.undo-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.undo-wrap > button:first-child {
+  border-radius: 7px 0 0 7px;
+}
+#undoMenuBtn {
+  border-radius: 0 7px 7px 0;
+  border-left: 1px solid #fff8;
+  padding-left: 7px;
+  padding-right: 7px;
+}
+.undo-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 25;
+  min-width: 320px;
+  max-height: 60vh;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  box-shadow: 0 10px 30px #0003;
+  padding: 6px;
+}
+.undo-head {
+  font-size: 12px;
+  color: var(--mut);
+  padding: 4px 8px;
+}
+.undo-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  color: var(--ink);
+  font-weight: 500;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+.undo-item:hover {
+  background: #eef3f8;
+}
 .toast {
   position: fixed;
   left: 50%;
