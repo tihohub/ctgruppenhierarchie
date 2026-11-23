@@ -76,3 +76,19 @@ test("Mehrere Obergruppen werden vollständig erfasst", async () => {
 test("Falscher Token führt zu einem Fehler", async () => {
   await assert.rejects(loadGroupData(CT, "falsch"), /401/);
 });
+
+test("Gruppenfelder für eigene Filter: Namen statt IDs, Anzahlen, eigene Felder", async () => {
+  const d = await loadGroupData(CT, "test-token");
+  const x = d.byId[5].fields;
+  assert.equal(x.campusId, "Wiesbaden");
+  assert.equal(x.groupCategoryId, "Jugend");
+  assert.equal(x.groupTypeId, "Kleingruppe");
+  assert.equal(x["memberStatistics.leaders"], 0);
+  assert.equal(d.byId[1].fields.kostenstelle, "4711");
+  assert.equal(d.byId[1].fields.groupCategoryId, undefined, "leere Felder fehlen");
+  const labels = Object.fromEntries(d.fieldList.map((f) => [f.key, f.label]));
+  assert.equal(labels["memberStatistics.leaders"], "Anzahl Leiter");
+  assert.equal(labels.kostenstelle, "kostenstelle", "unbekannte Felder behalten ihren Namen");
+  assert.ok(!("id" in labels), "technische Felder ausgeblendet");
+  assert.equal(d.fieldList.find((f) => f.key === "memberStatistics.leaders").num, true);
+});

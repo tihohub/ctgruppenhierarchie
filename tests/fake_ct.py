@@ -25,6 +25,7 @@ EXT_DIR = os.environ.get("CTG_EXT_DIR")
 TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css"}
 GROUPS = {1: "A", 2: "B", 3: "C", 4: "D", 5: "X", 6: "Y", 7: "Z", 8: "Alter Kreis"}
 STATUS = {8: 2}  # alle anderen Gruppen: 1 = aktiv
+CATEGORY = {2: 1, 5: 1, 6: 2}  # B, X: Jugend; Y: Musik
 GROUPS.update({100 + i: f"Füll{i:02d}" for i in range(40)})
 HIERARCHIES = (
     [{"groupId": 1, "parents": [], "children": [2] + [100 + i for i in range(40)]}]
@@ -51,7 +52,11 @@ def page(data):
 ROUTES = {
     "/api/whoami": {"data": {"id": 1, "firstName": "Test", "lastName": "Nutzer"}},
     "/api/persons/1": {"data": {"firstName": "Test", "lastName": "Nutzer"}},
-    "/api/masterdata/person": {"data": {"groupStatuses": [{"id": 1, "name": "aktiv"}, {"id": 2, "name": "beendet"}]}},
+    "/api/masterdata/person": {"data": {
+            "groupStatuses": [{"id": 1, "name": "aktiv"}, {"id": 2, "name": "beendet"}],
+            "groupCategories": [{"id": 1, "name": "Jugend"}, {"id": 2, "name": "Musik"}],
+            "campuses": [{"id": 1, "name": "Mainz"}, {"id": 2, "name": "Wiesbaden"}],
+        }},
     "/api/group/grouptypes": page([{"id": 1, "name": "Kleingruppe"}]),
     "/api/groups": page(
         [
@@ -61,9 +66,15 @@ ROUTES = {
                 "information": {
                     "groupTypeId": 1,
                     "groupStatusId": STATUS.get(i, 1),
+                    "campusId": 2 if i in (5, 6) else 1,
+                    **({"groupCategoryId": CATEGORY[i]} if i in CATEGORY else {}),
                     "note": "Beschreibung von " + n,
                 },
                 "settings": {"visibility": "intern"},
+                # Anzahl Leiter: X und Y haben keine Leitung
+                "memberStatistics": {"leaders": 0 if i in (5, 6) else 1, "active": 10 + i % 5},
+                # eigenes Gruppenfeld der Instanz (nur bei A)
+                **({"kostenstelle": "4711"} if i == 1 else {}),
             }
             for i, n in GROUPS.items()
         ]

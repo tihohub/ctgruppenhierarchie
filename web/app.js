@@ -39,6 +39,7 @@ function save() {
       search: $("search").value,
       expanded: [...expanded],
       mode,
+      cf: CF,
     }),
   );
 }
@@ -169,6 +170,7 @@ function match(g, except = "") {
   if (except !== "visibility" && v && g.visibility !== v) return false;
   if (except !== "status" && s && String(g.groupStatusId) !== s) return false;
   if (except !== "multi" && multiV() && !isMulti(g)) return false;
+  if (except !== "custom" && !cfMatch(g)) return false;
   return true;
 }
 // Ein/Aus-Filter „Nur Gruppen mit Mehrfachzuordnung“ (Hakenkästchen): "multi" oder ""
@@ -217,6 +219,8 @@ function activeStatus() {
 function setup(first) {
   P = prefs();
   $("search").value = P.search || "";
+  CF = cfValid(P.cf) ? P.cf : cfNew("and");
+  cfRender();
   expanded = new Set((P.expanded || []).map(Number));
   facets(P.type || "", P.visibility || "", first ? activeStatus() : P.status || "", P.multi || "");
   render();
@@ -412,6 +416,7 @@ function filterState() {
     visibility: $("visibility").value,
     status: $("status").value,
     multiF: multiV(),
+    cf: JSON.stringify(CF),
   };
 }
 function ancestors(id) {
@@ -468,6 +473,8 @@ function jump(id, tab, from) {
   if (!DISPLAY.has(id)) {
     ["search", "type", "visibility", "status"].forEach((x) => ($(x).value = ""));
     setMulti("");
+    CF = cfNew("and");
+    cfRender();
     render();
   }
   ancestors(id).forEach((x) => {
@@ -486,6 +493,8 @@ function goBack() {
   }
   let f = b.f,
     fr = b.from;
+  CF = JSON.parse(f.cf);
+  cfRender();
   facets(f.type, f.visibility, f.status, f.multiF);
   $("search").value = f.search;
   if (fr.ctx !== "multi")
@@ -526,6 +535,8 @@ function activeFilters() {
     if ($(id).value)
       a.push([id, l + ": " + $(id).selectedOptions[0].textContent.replace(/ \(\d+\)$/, "")]);
   if (multiV()) a.push(["multiF", "Nur Mehrfachzuordnung"]);
+  let n = cfCount();
+  if (n) a.push(["custom", `Eigener Filter (${n} ${n === 1 ? "Bedingung" : "Bedingungen"})`]);
   return a;
 }
 function chips() {
@@ -539,6 +550,160 @@ function chips() {
         .join("") + '<button id="reset" class="reset">Alle Filter zurücksetzen</button>'
     : "";
 }
+
+// ---- Eigene Filter: Eigenschaft – Bedingung – Wert, mit UND/ODER verschachtelbar ----
+// Aufbau: { op: "and" | "or", items: [ { field, cmp, value } | { op, items } ] }
+let CF = cfNew("and");
+function cfNew(op) {
+  return { op, items: [] };
+}
+function cfValid(x) {
+  return (
+    x &&
+    (x.op === "and" || x.op === "or") &&
+    Array.isArray(x.items) &&
+    x.items.every((i) => (i && i.items ? cfValid(i) : i && typeof i === "object"))
+  );
+}
+const CF_CMPS = [
+  ["is", "ist"],
+  ["not", "ist nicht"],
+  ["has", "enthält"],
+  ["hasnot", "enthält nicht"],
+  ["empty", "ist leer"],
+  ["filled", "ist nicht leer"],
+  ["gt", "größer als"],
+  ["lt", "kleiner als"],
+];
+const cfNoValue = (c) => c.cmp === "empty" || c.cmp === "filled";
+const cfComplete = (c) => !!c.field && (cfNoValue(c) || String(c.value ?? "").trim() !== "");
+// Anzahl vollständiger Bedingungen (nur die wirken)
+function cfCount(grp = CF) {
+  return grp.items.reduce((n, x) => n + (x.items ? cfCount(x) : cfComplete(x) ? 1 : 0), 0);
+}
+function cfTest(g, c) {
+  let v = g.fields ? g.fields[c.field] : undefined,
+    s = v == null ? "" : String(v).toLowerCase(),
+    w = String(c.value ?? "")
+      .trim()
+      .toLowerCase();
+  switch (c.cmp) {
+    case "empty":
+      return s === "";
+    case "filled":
+      return s !== "";
+    case "is":
+      return s === w;
+    case "not":
+      return s !== w;
+    case "has":
+      return s.includes(w);
+    case "hasnot":
+      return !s.includes(w);
+    case "gt":
+    case "lt": {
+      let a = parseFloat(s.replace(",", ".")),
+        b = parseFloat(w.replace(",", "."));
+      if (isNaN(a) || isNaN(b)) return false;
+      return c.cmp === "gt" ? a > b : a < b;
+    }
+  }
+  return true;
+}
+function cfMatch(g, grp = CF) {
+  let items = grp.items.filter((x) => (x.items ? cfCount(x) > 0 : cfComplete(x)));
+  if (!items.length) return true;
+  let ok = (x) => (x.items ? cfMatch(g, x) : cfTest(g, x));
+  return grp.op === "and" ? items.every(ok) : items.some(ok);
+}
+// Knoten über den Pfad (z. B. "0.2") finden; liefert [Knoten, Elterngruppe, Index]
+function cfAt(path) {
+  if (path === "") return [CF, null, -1];
+  let parts = path.split(".").map(Number),
+    node = CF,
+    parent = null;
+  for (let i of parts) {
+    parent = node;
+    node = node.items[i];
+  }
+  return [node, parent, parts[parts.length - 1]];
+}
+const cfSel = (val, list) =>
+  list
+    .map(([v, t]) => `<option value="${esc(v)}"${v === val ? " selected" : ""}>${esc(t)}</option>`)
+    .join("");
+function cfGroupHtml(grp, path) {
+  let root = path === "";
+  return `<div class="cf-group" data-cfpath="${path}">${
+    grp.items.length || !root
+      ? `<div class="cf-head"><select data-cf="op" aria-label="Verknüpfung">${cfSel(grp.op, [
+          ["and", "Alle (UND)"],
+          ["or", "Mindestens eine (ODER)"],
+        ])}</select><span>${root ? "der folgenden Bedingungen müssen zutreffen" : "dieser Bedingungen"}</span>${
+          root ? "" : '<button class="cf-del" data-cf="del" title="Untergruppe entfernen">✕</button>'
+        }</div>`
+      : ""
+  }${grp.items
+    .map((x, i) => {
+      let p = root ? String(i) : path + "." + i;
+      return x.items ? cfGroupHtml(x, p) : cfCondHtml(x, p);
+    })
+    .join(
+      "",
+    )}<div class="cf-add"><button class="light" data-cf="addc">＋ Bedingung</button><button class="light" data-cf="addg" title="Bedingungen, die mit eigener UND/ODER-Verknüpfung zusammengefasst werden">＋ Untergruppe</button></div></div>`;
+}
+function cfCondHtml(c, path) {
+  let fields = M ? M.fieldList : [],
+    vals = [];
+  if (M && c.field) {
+    let set = new Set();
+    for (let g of M.groups) if (g.fields && g.fields[c.field] !== undefined) set.add(String(g.fields[c.field]));
+    vals = [...set].sort((a, b) => a.localeCompare(b, "de", { numeric: true })).slice(0, 300);
+  }
+  let lid = "cfl-" + path.replace(/\./g, "-");
+  return `<div class="cf-cond" data-cfpath="${path}"><select data-cf="field" aria-label="Eigenschaft"><option value="">Eigenschaft wählen …</option>${cfSel(
+    c.field,
+    fields.map((f) => [f.key, f.label]),
+  )}</select><select data-cf="cmp" aria-label="Bedingung">${cfSel(c.cmp, CF_CMPS)}</select>${
+    cfNoValue(c)
+      ? ""
+      : `<input data-cf="value" aria-label="Wert" placeholder="Wert" list="${lid}" value="${esc(c.value ?? "")}" /><datalist id="${lid}">${vals.map((v) => `<option value="${esc(v)}"></option>`).join("")}</datalist>`
+  }<button class="cf-del" data-cf="del" title="Bedingung entfernen">✕</button></div>`;
+}
+function cfRender() {
+  $("cfBox").innerHTML = cfGroupHtml(CF, "");
+}
+// Änderungen im Baukasten: Auswahl → neu aufbauen; Werteingabe → nur Ergebnis neu berechnen
+$("cfBox").addEventListener("input", (e) => {
+  let el = e.target.closest("[data-cf]"),
+    box = e.target.closest("[data-cfpath]");
+  if (!el || !box) return;
+  let [node] = cfAt(box.dataset.cfpath),
+    k = el.dataset.cf;
+  if (k === "value") node.value = el.value;
+  else if (k === "field" || k === "cmp" || k === "op") {
+    node[k] = el.value;
+    cfRender();
+  } else return;
+  BACK = [];
+  if (M) render();
+});
+$("cfBox").addEventListener("click", (e) => {
+  let el = e.target.closest("button[data-cf]"),
+    box = e.target.closest("[data-cfpath]");
+  if (!el || !box) return;
+  let [node, parent, i] = cfAt(box.dataset.cfpath),
+    k = el.dataset.cf;
+  if (k === "addc") node.items.push({ field: "", cmp: "is", value: "" });
+  else if (k === "addg") node.items.push({ op: node.op === "and" ? "or" : "and", items: [{ field: "", cmp: "is", value: "" }] });
+  else if (k === "del" && parent) parent.items.splice(i, 1);
+  else return;
+  cfRender();
+  BACK = [];
+  if (M) render();
+});
+
+cfRender();
 
 // ---- Visualisierung ----
 function renderForest() {
@@ -937,7 +1102,10 @@ document.addEventListener("click", (e) => {
   if (c) {
     BACK = [];
     if (c.dataset.clear === "multiF") setMulti("");
-    else $(c.dataset.clear).value = "";
+    else if (c.dataset.clear === "custom") {
+      CF = cfNew("and");
+      cfRender();
+    } else $(c.dataset.clear).value = "";
     render();
     return;
   }
@@ -948,6 +1116,8 @@ document.addEventListener("click", (e) => {
     $("visibility").value = "";
     $("status").value = activeStatus(); // Standard: nur aktive Gruppen
     setMulti("");
+    CF = cfNew("and");
+    cfRender();
     render();
     return;
   }
