@@ -92,3 +92,39 @@ test("Gruppenfelder für eigene Filter: Namen statt IDs, Anzahlen, eigene Felder
   assert.ok(!("id" in labels), "technische Felder ausgeblendet");
   assert.equal(d.fieldList.find((f) => f.key === "memberStatistics.leaders").num, true);
 });
+
+test("Feldnamen auf Deutsch, technische Felder ausgeblendet, Zahlen werden angefordert", async () => {
+  const d = await loadGroupData(CT, "test-token");
+  const labels = Object.fromEntries(d.fieldList.map((f) => [f.key, f.label]));
+  assert.equal(labels.isOpenForMembers, "Offen für Anmeldungen");
+  assert.equal(d.byId[1].fields.isOpenForMembers, "ja");
+  assert.equal(d.byId[5].fields.isOpenForMembers, "nein");
+  assert.ok(!("signUpHeadline" in labels) && !("imageAiGenerated" in labels), "ausgeblendet");
+  // memberStatistics kommt nur, weil die App es ausdrücklich anfordert
+  const r = await (await fetch(CT + "/_test/requests")).json();
+  assert.ok(r.some((x) => x.path === "/api/groups"));
+  assert.equal(labels["memberStatistics.active"], "Anzahl Mitglieder (aktiv)");
+});
+
+test("Instanz ohne Mitanfordern der Zahlen: Laden klappt trotzdem", async () => {
+  const port = CT_PORT + 10,
+    p = spawn("python3", ["tests/fake_ct.py", String(port)], {
+      env: { ...process.env, CTG_OHNE_ZAHLEN: "1" },
+      stdio: "pipe",
+    });
+  try {
+    for (let i = 0; i < 100; i++) {
+      try {
+        await fetch(`http://127.0.0.1:${port}/_test/requests`);
+        break;
+      } catch {
+        await new Promise((r) => setTimeout(r, 100));
+      }
+    }
+    const d = await loadGroupData(`http://127.0.0.1:${port}`, "test-token");
+    assert.equal(d.groups.length, 48);
+    assert.ok(!d.fieldList.some((f) => f.key.startsWith("memberStatistics")));
+  } finally {
+    p.kill();
+  }
+});
