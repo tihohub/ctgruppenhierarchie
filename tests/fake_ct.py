@@ -22,26 +22,45 @@ TOKEN = "test-token"
 SESSION_COOKIE = "ct_session=angemeldet"
 # Optional: Ordner einer gebauten Extension, ausgeliefert unter /ccm/gruppenhierarchie/
 EXT_DIR = os.environ.get("CTG_EXT_DIR")
+# Kürzel, unter dem die Extension ausgeliefert wird (Testversion: gruppenhierarchietest)
+EXT = "/ccm/" + os.environ.get("CTG_EXT_KUERZEL", "gruppenhierarchie")
 TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css"}
 GROUPS = {1: "A", 2: "B", 3: "C", 4: "D", 5: "X", 6: "Y", 7: "Z", 8: "Alter Kreis"}
 STATUS = {8: 2}  # alle anderen Gruppen: 1 = aktiv
 CATEGORY = {2: 1, 5: 1, 6: 2}  # B, X: Jugend; Y: Musik
 GROUPS.update({100 + i: f"Füll{i:02d}" for i in range(40)})
-HIERARCHIES = (
-    [{"groupId": 1, "parents": [], "children": [2] + [100 + i for i in range(40)]}]
-    + [{"groupId": 100 + i, "parents": [1], "children": []} for i in range(40)]
-    + [
-        {"groupId": 2, "parents": [1], "children": [5]},
-        {"groupId": 3, "parents": [], "children": [5, 7]},
-        {"groupId": 5, "parents": [2, 3], "children": [6]},
-        {"groupId": 6, "parents": [5], "children": []},
-        {
-            "groupId": 7,
-            "parents": [3, {"domainIdentifier": "99", "title": "Leitung geheim"}],
-            "children": [],
-        },
-    ]
+# Obergruppen je Gruppe (veränderbar: die App kann in der Extension Obergruppen ändern)
+PARENTS = {100 + i: [1] for i in range(40)}
+PARENTS.update(
+    {
+        2: [1],
+        5: [2, 3],
+        6: [5],
+        7: [3, {"domainIdentifier": "99", "title": "Leitung geheim"}],
+    }
 )
+# Optional (CTG_TESTSTAMM=1): Teststamm für die Testversion der Extension
+if os.environ.get("CTG_TESTSTAMM"):
+    GROUPS.update({200: "Test Gruppenhierarchie", 201: "Test A", 202: "Test B", 203: "Test C", 204: "Test D"})
+    PARENTS.update({201: [200], 202: [200], 203: [201], 204: [200]})
+# Schreiben in diese Gruppe verweigert CT (fehlende Rechte), z. B. Lösen von X aus C
+NO_RIGHTS = {3}
+CSRF = "csrf-123"
+
+
+def pid(p):
+    return int(p["domainIdentifier"]) if isinstance(p, dict) else p
+
+
+def hierarchies():
+    """Hierarchie-Daten wie /groups/hierarchies sie liefert, aus PARENTS berechnet."""
+    out = []
+    for g in GROUPS:
+        kids = [c for c, ps in PARENTS.items() if g in [pid(p) for p in ps]]
+        out.append({"groupId": g, "parents": PARENTS.get(g, []), "children": kids})
+    return out
+
+
 REQUESTS = []
 
 
@@ -79,7 +98,6 @@ ROUTES = {
             for i, n in GROUPS.items()
         ]
     ),
-    "/api/groups/hierarchies": page(HIERARCHIES),
 }
 
 
@@ -105,16 +123,16 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(204)
         self.send_header("Access-Control-Allow-Origin", self.headers.get("Origin") or "*")
         self.send_header("Access-Control-Allow-Headers", "Authorization, Accept")
-        self.send_header("Access-Control-Allow-Methods", "GET")
+        self.send_header("Access-Control-Allow-Methods", "GET")  # Webseite: nur lesen
         self.end_headers()
 
     def do_GET(self):
         path = self._record()
         if path == "/_test/requests":
             return self._send(200, REQUESTS)
-        if EXT_DIR and path.startswith("/ccm/gruppenhierarchie/assets/"):
-            return self._file(path[len("/ccm/gruppenhierarchie/") :])
-        if EXT_DIR and path.startswith("/ccm/gruppenhierarchie"):
+        if EXT_DIR and path.startswith(EXT + "/assets/"):
+            return self._file(path[len(EXT + "/") :])
+        if EXT_DIR and (path == EXT or path.startswith(EXT + "/")):
             return self._ct_page()
         token_ok = self.headers.get("Authorization") == "Login " + TOKEN
         session_ok = SESSION_COOKIE in (self.headers.get("Cookie") or "")
@@ -125,7 +143,53 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(401, {"message": "Unauthorized"})
         if path in ROUTES:
             return self._send(200, ROUTES[path])
+        if path == "/api/groups/hierarchies":
+            return self._send(200, page(hierarchies()))
+        if path == "/api/csrftoken":
+            return self._send(200, {"data": CSRF})
+        m = re.fullmatch(r"/api/groups/(\d+)/parents", path)
+        if m:
+            ps = PARENTS.get(int(m.group(1)), [])
+            data = [
+                {"domainType": "group", "domainIdentifier": str(pid(p)), "title": GROUPS.get(pid(p), "")}
+                for p in ps
+            ]
+            return self._send(200, {"data": data})
         self._send(404, {"message": "Not found"})
+
+    def _write(self):
+        """Obergruppe hinzufügen (PUT) oder entfernen (DELETE) – wie CT, mit Anmeldung,
+        CSRF-Merkmal und Rechteprüfung."""
+        path = self._record()
+        if path == "/_test/parents":  # Test-Hilfe: Obergruppen „von außen“ ändern
+            n = int(self.headers.get("Content-Length") or 0)
+            j = json.loads(self.rfile.read(n) or b"{}")
+            PARENTS[int(j["group"])] = j["parents"]
+            return self._send(200, {})
+        m = re.fullmatch(r"/api/groups/(\d+)/parents/(\d+)", path)
+        if not m or self.command not in ("PUT", "DELETE"):
+            return self._send(405, {"message": "nicht erlaubt"})
+        if SESSION_COOKIE not in (self.headers.get("Cookie") or ""):
+            return self._send(401, {"message": "Session abgelaufen"})
+        if self.headers.get("CSRF-Token") != CSRF:
+            return self._send(401, {"message": "CSRF-Token ungültig"})
+        g, p = int(m.group(1)), int(m.group(2))
+        if g not in GROUPS or p not in GROUPS:
+            return self._send(404, {"message": "Gruppe nicht gefunden"})
+        if g in NO_RIGHTS or p in NO_RIGHTS:
+            return self._send(403, {"message": "Keine Berechtigung"})
+        ps = PARENTS.setdefault(g, [])
+        ids = [pid(x) for x in ps]
+        if self.command == "PUT":
+            if p in ids:
+                return self._send(400, {"messageKey": "group.parent.already.exists"})
+            ps.append(p)
+            return self._send(200, {"data": {}})
+        if p not in ids:
+            return self._send(404, {"message": "keine Obergruppe"})
+        ps.pop(ids.index(p))
+        self.send_response(204)
+        self.end_headers()
 
     def _ct_page(self):
         """Ahmt nach, wie CT eine Extension einbettet: eigene Seite mit CT-Menüleiste,
@@ -160,10 +224,13 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(b)
 
     def do_POST(self):
+        if self.path.split("?")[0] == "/_test/parents":
+            return self._write()
         self._record()
         self._send(405, {"message": "nicht erlaubt"})
 
-    do_PUT = do_PATCH = do_DELETE = do_POST
+    do_PATCH = do_POST
+    do_PUT = do_DELETE = _write
 
     def log_message(self, *a):
         pass

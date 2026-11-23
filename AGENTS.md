@@ -119,7 +119,7 @@ Ausnahme vom Grundsatz „nur lesend“, gilt nur für Version 2.0 im Branch `v2
 - `start_windows.bat` – Startdatei für Windows
 - `tests/` – automatische Tests: `fake_ct.py` (Schein-CT-Server mit Testdaten) und
   `app.test.mjs` (Browser-Tests), `ct-daten.test.mjs` (Datenaufbereitung),
-  `webseite.test.mjs` (Webseiten-Variante ohne lokalen Server), `extension.test.mjs` (CT-Extension), `release.test.mjs` (Dateinamen und Update-Datei der Release-Pakete). Ausführen mit `npm install` und `npm test`.
+  `webseite.test.mjs` (Webseiten-Variante ohne lokalen Server), `extension.test.mjs` (CT-Extension), `release.test.mjs` (Dateinamen und Update-Datei der Release-Pakete), `schreiben.test.mjs` (nur `v2`: Obergruppen ändern, Stand-Prüfung, Rechte, Sperre der Testversion). Ausführen mit `npm install` und `npm test`.
 - `.github/workflows/` – GitHub Actions: `tests.yml` (bei jedem Pull Request),
   `release.yml` (per „Run workflow“ mit Versionsnummer oder bei Tag `v*`: Tests, Pakete
   bauen, Tag und Release anlegen)

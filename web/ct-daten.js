@@ -1,6 +1,9 @@
 // CT Gruppenhierarchie – Datenabruf und Datenaufbereitung
 //
-// Holt die Gruppendaten nur lesend (GET) aus CT und bereitet sie für die Anzeige auf:
+// Holt die Gruppendaten lesend (GET) aus CT und bereitet sie für die Anzeige auf.
+// Version 2.0: Am Ende stehen die einzigen Schreibfunktionen (Obergruppen ändern), die nur
+// in der CT-Extension arbeiten (siehe „Schreiben in CT“ in AGENTS.md).
+// Die Datenaufbereitung umfasst:
 // Hierarchie, Gruppenstämme, alleinstehende Gruppen, Platzhalter für nicht sichtbare
 // Obergruppen, Zähler für die Filter.
 //
@@ -448,4 +451,132 @@ function fieldList(groups) {
   return [...keys.values()]
     .map((e) => ({ ...e, label: FIELD_LABELS[e.key] || e.key }))
     .sort((a, b) => a.label.localeCompare(b.label, "de"));
+}
+
+// ---- Schreiben in CT (Version 2.0, nur in der CT-Extension) ----
+// Erlaubt ist ausschließlich: eine Obergruppe einer Gruppe hinzufügen (PUT) oder entfernen
+// (DELETE). Webseite, Desktop-App und Python-Version schreiben nicht.
+const CT_WRITE = CT_MODE === "extension";
+// Testversion der Extension (Kürzel „gruppenhierarchietest“): Änderungen nur an Gruppen
+// unterhalb der Gruppe „Test Gruppenhierarchie“ – Schutz echter Gruppen beim Ausprobieren
+const CT_TEST = /^\/ccm\/gruppenhierarchietest(\/|$)/.test(location.pathname);
+const TEST_ROOT = "Test Gruppenhierarchie";
+
+// Fehler beim Schreiben mit Art: "lock", "conflict", "rights", "partial", "error"
+function writeError(kind, msg, parents) {
+  const e = new Error(msg);
+  e.kind = kind;
+  if (parents) e.parents = parents;
+  return e;
+}
+
+// Sicherheits-Merkmal (CSRF-Token), das CT bei Schreibzugriffen aus dem Browser verlangt
+let CSRF_TOKEN = null;
+async function ctCsrf(fresh) {
+  if (!CSRF_TOKEN || fresh) {
+    const j = await ctGetSession("/csrftoken");
+    CSRF_TOKEN = isObj(j) && j.data !== undefined ? j.data : j;
+  }
+  return CSRF_TOKEN;
+}
+
+async function ctSend(method, path) {
+  if (!CT_WRITE) throw writeError("error", "Schreiben ist nur in der CT-Extension möglich.");
+  if (!["PUT", "DELETE"].includes(method) || !/^\/groups\/\d+\/parents\/\d+$/.test(path))
+    throw writeError("error", "Nicht erlaubte Änderung: " + method + " " + path);
+  const send = async (fresh) =>
+    fetch("/api" + path, {
+      method,
+      credentials: "same-origin",
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "CSRF-Token": await ctCsrf(fresh),
+      },
+      body: method === "PUT" ? "{}" : undefined,
+    });
+  try {
+    let r = await send(false);
+    // abgelaufenes Sicherheits-Merkmal: einmal mit frischem versuchen
+    if (r.status === 401) r = await send(true);
+    return r;
+  } catch {
+    throw writeError("error", "Verbindungsfehler: CT nicht erreichbar");
+  }
+}
+
+// Aktuelle Obergruppen einer Gruppe, direkt aus CT
+async function ctParents(gid) {
+  const j = await ctGetSession(`/groups/${gid}/parents`);
+  const d = isObj(j) && j.data !== undefined ? j.data : j;
+  return sortedNums((Array.isArray(d) ? d : []).map((p) => ref(p, new Map())).filter((x) => x !== null));
+}
+
+// Testversion: Liegt die Gruppe unterhalb (oder ist sie selbst, wenn self erlaubt) der Gruppe
+// „Test Gruppenhierarchie“?
+function belowTestRoot(model, id, self) {
+  const roots = new Set(model.groups.filter((g) => g.name.trim() === TEST_ROOT).map((g) => g.id));
+  if (roots.has(id)) return self;
+  const seen = new Set(),
+    stack = [...((model.byId[id] || {}).parentIds || [])];
+  while (stack.length) {
+    const p = stack.pop();
+    if (roots.has(p)) return true;
+    if (seen.has(p)) continue;
+    seen.add(p);
+    stack.push(...((model.byId[p] || {}).parentIds || []));
+  }
+  return false;
+}
+
+const sameNums = (a, b) => a.length === b.length && sortedNums(a).every((x, i) => x === sortedNums(b)[i]);
+
+// Ändert die Obergruppen einer Gruppe: add/remove sind Listen von Gruppen-IDs.
+// expected sind die Obergruppen, wie sie gerade angezeigt werden: Weicht CT davon ab, wird
+// nichts geschrieben (jemand anderes hat inzwischen geändert). Liefert die neuen Obergruppen.
+async function ctChangeParents(model, gid, add, remove, expected) {
+  if (CT_TEST && !(belowTestRoot(model, gid, false) && [...add, ...remove].every((p) => belowTestRoot(model, p, true))))
+    throw writeError("lock", `Die Testversion ändert nur Gruppen unterhalb von „${TEST_ROOT}“.`);
+  const before = await ctParents(gid);
+  if (!sameNums(before, expected))
+    throw writeError(
+      "conflict",
+      "Diese Gruppe wurde inzwischen in CT geändert. Die Ansicht wird aktualisiert – bitte noch einmal versuchen.",
+      before,
+    );
+  let fail = null;
+  for (const [method, list] of [
+    ["PUT", add],
+    ["DELETE", remove],
+  ]) {
+    for (const p of list) {
+      const r = await ctSend(method, `/groups/${gid}/parents/${p}`);
+      if (r.ok) continue;
+      const t = await r.text().catch(() => "");
+      if (method === "PUT" && r.status === 400 && /already/i.test(t)) continue; // schon gesetzt
+      if (method === "DELETE" && r.status === 404) continue; // schon entfernt
+      fail = r.status === 401 || r.status === 403 ? "rights" : "error";
+      break;
+    }
+    if (fail) break;
+  }
+  const after = await ctParents(gid);
+  const want = sortedNums(new Set([...expected, ...add].filter((p) => !remove.includes(p))));
+  if (sameNums(after, want)) return after;
+  if (sameNums(after, before))
+    throw writeError(
+      fail || "error",
+      fail === "rights"
+        ? "Du darfst diese Gruppen in CT nicht so ändern. Es wurde nichts geändert."
+        : "Die Änderung wurde von CT nicht übernommen. Es wurde nichts geändert.",
+      after,
+    );
+  throw writeError(
+    "partial",
+    "Die Änderung wurde nur teilweise übernommen" +
+      (fail === "rights" ? " (fehlende Rechte in CT)" : "") +
+      ". Die Ansicht wird aktualisiert.",
+    after,
+  );
 }
