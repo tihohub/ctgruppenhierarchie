@@ -241,3 +241,49 @@ test("Bearbeiten: Abbrechen schreibt nichts", async () => {
   const nachher = (await (await fetch(CT + "/_test/requests")).json()).filter((r) => r.method !== "GET").length;
   assert.equal(nachher, vorher);
 });
+
+test("Zurück: letzte Änderung zurücknehmen, mehrere über die Liste, Prüfung des Stands", async () => {
+  const { page, errors } = await bearbeiten();
+  assert.ok(await page.isVisible("#undoBtn"));
+  assert.ok(await page.isDisabled("#undoBtn"), "noch nichts zum Zurücknehmen");
+  const ziehen = async (gid, ziel) => {
+    await page.locator(`#tree li[data-gid="${gid}"] > a`).first().dragTo(page.locator(`#tree li[data-gid="${ziel}"] > a`).first());
+    await page.click("#editGo");
+    await toastText(page);
+    await neuGeladen(page);
+  };
+  // 1) Y von X nach B, 2) Y von B nach A
+  await ziehen(6, 2);
+  await ziehen(6, 1);
+  await page.locator('#tree li[data-gid="6"][data-pid="1"]').waitFor({ state: "attached" });
+  // Liste: neueste oben
+  await page.click("#undoMenuBtn");
+  assert.deepEqual(await page.locator("#undoMenu .undo-item").allTextContents(), [
+    "„Y“ von „B“ nach „A“ verschoben",
+    "„Y“ von „X“ nach „B“ verschoben",
+  ]);
+  await page.click("#undoMenuBtn");
+  // ↶ nimmt nur die letzte zurück → Y wieder unter B
+  await page.click("#undoBtn");
+  assert.equal(await toastText(page), "↶ Zurückgenommen.");
+  await neuGeladen(page);
+  await page.locator('#tree li[data-gid="6"][data-pid="2"]').waitFor({ state: "attached" });
+  // wieder nach A, dann über die Liste bis zur ersten Änderung → Y wieder unter X
+  await ziehen(6, 1);
+  await page.click("#undoMenuBtn");
+  await page.locator("#undoMenu .undo-item").last().click();
+  assert.equal(await toastText(page), "↶ 2 Änderungen zurückgenommen.");
+  await neuGeladen(page);
+  await page.locator('#tree li[data-gid="6"][data-pid="5"]').first().waitFor({ state: "attached" });
+  assert.ok(await page.isDisabled("#undoBtn"));
+  // jemand anderes ändert inzwischen in CT → Zurücknehmen schreibt nichts
+  await ziehen(6, 2);
+  await fetch(CT + "/_test/parents", { method: "POST", body: JSON.stringify({ group: 6, parents: [1] }) });
+  await page.click("#undoBtn");
+  assert.match(await toastText(page), /inzwischen in CT geändert/);
+  await neuGeladen(page);
+  assert.equal(await page.isDisabled("#undoBtn"), false, "Eintrag bleibt in der Liste");
+  // Ausgangszustand wiederherstellen
+  await fetch(CT + "/_test/parents", { method: "POST", body: JSON.stringify({ group: 6, parents: [5] }) });
+  assert.deepEqual(errors, []);
+});

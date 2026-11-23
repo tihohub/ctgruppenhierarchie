@@ -59,6 +59,8 @@ function clearData() {
   M = null;
   CUR = null;
   BACK = [];
+  UNDO = []; // Zurück-Liste gehört zur Verbindung
+  undoRender();
   $("refresh").classList.add("hidden");
   expanded = new Set();
   vExpanded = new Set();
@@ -1319,6 +1321,7 @@ function setEdit(on) {
   $("editBtn").setAttribute("aria-pressed", String(EDIT));
   $("editBtn").textContent = EDIT ? "✓ Bearbeiten beenden" : "✎ Bearbeiten";
   $("editBar").classList.toggle("hidden", !EDIT);
+  undoRender();
   document.querySelector("main").classList.toggle("editing", EDIT);
   if (M) editAttrs();
 }
@@ -1422,7 +1425,16 @@ function askMove(gid, from, to) {
         choice("add", `<b>Zusätzlich</b> unter ${z} einordnen („${esc(gname(from))}“ bleibt Obergruppe)`)
       : choice("add", `${n} unter ${z} einordnen`, true)) +
       `<p class="note">Alle Untergruppen von ${n} ziehen mit.</p>`,
-    (c) => ({ gid, add: [to], remove: c === "move" && from != null ? [from] : [], what: c === "move" ? "verschoben" : "eingeordnet" }),
+    (c) => ({
+      gid,
+      add: [to],
+      remove: c === "move" && from != null ? [from] : [],
+      what: c === "move" ? "verschoben" : "eingeordnet",
+      label:
+        c === "move" && from != null
+          ? `„${gname(gid)}“ von „${gname(from)}“ nach „${gname(to)}“ verschoben`
+          : `„${gname(gid)}“ ${from != null ? "zusätzlich " : ""}unter „${gname(to)}“ eingeordnet`,
+    }),
   );
 }
 function askCut(gid, from) {
@@ -1435,7 +1447,7 @@ function askCut(gid, from) {
         ? ` Weitere Obergruppen bleiben: ${rest.map((p) => "„" + esc(gname(p)) + "“").join(", ")}.`
         : " Sie hat danach keine Obergruppe mehr und wird zum Gruppenstamm bzw. zur alleinstehenden Gruppe."
     }</p>`,
-    () => ({ gid, add: [], remove: [from], what: "gelöst" }),
+    () => ({ gid, add: [], remove: [from], what: "gelöst", label: `„${gname(gid)}“ von „${gname(from)}“ gelöst` }),
   );
 }
 $("editCancel").onclick = () => {
@@ -1450,8 +1462,9 @@ $("editGo").onclick = async () => {
   $("editDlg").classList.add("hidden");
   $("toast").classList.add("hidden");
   $("editGo").disabled = true;
+  let before = M.byId[op.gid].parentIds || [];
   try {
-    await ctChangeParents(M, op.gid, op.add, op.remove, M.byId[op.gid].parentIds || []);
+    remember(op, before, await ctChangeParents(M, op.gid, op.add, op.remove, before));
     // neue Obergruppe aufklappen, damit man das Ergebnis gleich sieht
     op.add.forEach((p) => {
       expanded.add(p);
@@ -1460,12 +1473,75 @@ $("editGo").onclick = async () => {
     save();
     toast(`✓ „${gname(op.gid)}“ wurde in CT ${op.what}.`);
   } catch (e) {
+    if (e.parents) remember(op, before, e.parents); // teilweise übernommen: das Geschehene merken
     toast("✗ " + e.message, true);
   } finally {
     $("editGo").disabled = false;
   }
   await runLoad($("refresh")); // Anzeige mit dem neuen Stand aus CT
 };
+
+// ---- Zurück: Änderungen dieser Sitzung zurücknehmen (wie in Word/Excel) ----
+// Jeder Eintrag merkt sich, welche Obergruppen tatsächlich hinzugekommen bzw. weggefallen
+// sind. Zurücknehmen = genau das Gegenteil, mit derselben Prüfung des aktuellen Stands.
+// Die Liste gilt bis zum Schließen oder Neuladen der Seite.
+let UNDO = [];
+function remember(op, before, after) {
+  let add = after.filter((p) => !before.includes(p)),
+    remove = before.filter((p) => !after.includes(p));
+  if (add.length || remove.length) UNDO.push({ gid: op.gid, add, remove, label: op.label });
+  undoRender();
+}
+function undoRender() {
+  $("undoWrap").classList.toggle("hidden", !CT_WRITE || (!EDIT && !UNDO.length));
+  $("undoBtn").disabled = $("undoMenuBtn").disabled = !UNDO.length;
+  $("undoBtn").title = UNDO.length
+    ? "Zurücknehmen: " + UNDO[UNDO.length - 1].label
+    : "Keine Änderung zum Zurücknehmen";
+  $("undoMenu").innerHTML = UNDO.length
+    ? '<div class="undo-head">Zurücknehmen bis einschließlich:</div>' +
+      UNDO.map((u, i) => `<button class="undo-item" data-undo="${i}">${esc(u.label)}</button>`)
+        .reverse()
+        .join("")
+    : "";
+  if (!UNDO.length) $("undoMenu").classList.add("hidden");
+}
+// Nimmt alle Änderungen ab Index i (bis zur neuesten) zurück, die neueste zuerst
+async function undoTo(i) {
+  $("undoMenu").classList.add("hidden");
+  $("toast").classList.add("hidden");
+  $("undoBtn").disabled = $("undoMenuBtn").disabled = true;
+  let done = 0,
+    err = null;
+  while (UNDO.length > i) {
+    let u = UNDO[UNDO.length - 1];
+    try {
+      await ctChangeParents(M, u.gid, u.remove, u.add, M.byId[u.gid].parentIds || []);
+      UNDO.pop();
+      done++;
+      await load(); // neuer Stand aus CT als Grundlage für den nächsten Schritt
+    } catch (e) {
+      err = e;
+      break;
+    }
+  }
+  if (err) toast(`✗ ${done ? done + " Änderung(en) zurückgenommen, dann: " : ""}${err.message}`, true);
+  else toast(done === 1 ? "↶ Zurückgenommen." : `↶ ${done} Änderungen zurückgenommen.`);
+  await runLoad($("refresh"));
+  undoRender();
+}
+$("undoBtn").onclick = () => UNDO.length && undoTo(UNDO.length - 1);
+$("undoMenuBtn").onclick = (e) => {
+  e.stopPropagation();
+  $("undoMenu").classList.toggle("hidden");
+};
+$("undoMenu").addEventListener("click", (e) => {
+  let b = e.target.closest("[data-undo]");
+  if (b) undoTo(+b.dataset.undo);
+});
+document.addEventListener("click", (e) => {
+  if (!e.target.closest("#undoWrap")) $("undoMenu").classList.add("hidden");
+});
 document.addEventListener("click", (e) => {
   let b = e.target.closest("[data-cut]");
   if (!b || !EDIT) return;

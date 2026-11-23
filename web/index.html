@@ -180,8 +180,19 @@
               aria-pressed="false"
               title="Gruppen per Ziehen in CT umhängen (Version 2.0)"
             >
-              ✎ Bearbeiten
-            </button>
+              ✎ Bearbeiten</button
+            ><span id="undoWrap" class="undo-wrap hidden"
+              ><button id="undoBtn" class="light" disabled>↶ Zurück</button
+              ><button
+                id="undoMenuBtn"
+                class="light"
+                disabled
+                aria-label="Liste der Änderungen"
+                title="Liste der Änderungen"
+              >
+                ▾</button
+              ><span id="undoMenu" class="undo-menu hidden"></span
+            ></span>
           </div>
           <p id="conn" class="ok"></p>
           <div id="stats" class="stats"></div>
