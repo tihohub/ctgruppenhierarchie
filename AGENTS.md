@@ -123,6 +123,9 @@ Ausnahme vom Grundsatz „nur lesend“, gilt nur für Version 2.0 im Branch `v2
 - `.github/workflows/` – GitHub Actions: `tests.yml` (bei jedem Pull Request),
   `release.yml` (per „Run workflow“ mit Versionsnummer oder bei Tag `v*`: Tests, Pakete
   bauen, Tag und Release anlegen)
+- `.github/workflows/testversion.yml` (nur im Branch `v2`) – baut bei jeder Änderung an `v2`
+  eine Testversion der Extension (Kürzel `gruppenhierarchietest`, Version `v2.0-test.<Commit>`)
+  als Download unter Actions. Kein Release; in CT als zweite Erweiterung hochladen.
 - `tools/release_check.py` – Sicherung im Release-Ablauf: nur Versionen `v1.x` aus dem Stand
   von `main` werden veröffentlicht (2.0 noch nicht)
 - `tools/build_python.py` – baut das Python-Paket (eine Datei mit eingebetteter Oberfläche)

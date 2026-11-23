@@ -1,0 +1,37 @@
+# Baut bei jeder Änderung im Branch v2 eine Testversion der CT-Extension.
+# Sie ist KEIN Release: Sie erscheint nur unter Actions (Download „Artifacts“, 30 Tage),
+# nicht unter Releases, und die Desktop-App holt sie nicht.
+# In CT als zweite Erweiterung mit dem Kürzel „gruppenhierarchietest“ hochladen;
+# die echte Erweiterung („gruppenhierarchie“) bleibt unberührt.
+name: Testversion Extension
+
+on:
+  push:
+    branches: [v2]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
+
+  extension:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Testversion bauen
+        run: |
+          python3 tools/build_extension.py "v2.0-test.${GITHUB_SHA::7}" --kuerzel gruppenhierarchietest
+      # Der Inhalt von dist/extension (index.html, assets/) liegt direkt im Download-ZIP –
+      # genau so, wie CT es zum Hochladen erwartet.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ct-gruppenhierarchie-extension-testversion
+          path: dist/extension/
+          retention-days: 30
