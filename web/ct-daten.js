@@ -210,6 +210,22 @@ async function loadGroupData(base, token) {
       .map((x) => [toInt(x.id), x.nameTranslated || x.name || `Status ${x.id}`]),
   );
 
+  // Namen für ID-Felder aus den Stammdaten (soweit CT sie liefert)
+  const lookup = (k) =>
+    new Map(
+      (isObj(md) && Array.isArray(md[k]) ? md[k] : [])
+        .filter((x) => x && x.id != null)
+        .map((x) => [toInt(x.id), x.nameTranslated || x.name || String(x.id)]),
+    );
+  const lookups = {
+    groupTypeId: typeNames,
+    groupStatusId: statusNames,
+    groupCategoryId: lookup("groupCategories"),
+    campusId: lookup("campuses"),
+    targetGroupId: lookup("targetGroups"),
+    ageGroupIds: lookup("ageGroups"),
+  };
+
   // Ober- und Untergruppen aus den Hierarchie-Daten
   const parents = new Map(),
     children = new Map(),
@@ -267,6 +283,7 @@ async function loadGroupData(base, token) {
       name: g.name || "",
       description,
       searchFields,
+      fields: groupFields(g, lookups),
       groupTypeId: tid,
       groupTypeName: typeName,
       groupStatusId: st,
@@ -346,5 +363,89 @@ async function loadGroupData(base, token) {
       })),
     counts: { visibility: sortedObj(countVis), status: sortedObj(countStatus) },
     statusNames: Object.fromEntries([...statusNames].map(([k, v]) => [String(k), v])),
+    fieldList: fieldList(data),
   };
+}
+
+// ---- Gruppenfelder für eigene Filter ----
+// Alle Felder, die CT zu einer Gruppe liefert, als flache Liste „Schlüssel → Anzeigewert“.
+// Neue Felder in CT (auch eigene Gruppenfelder der Instanz) erscheinen ohne Programmänderung.
+const FIELD_LABELS = {
+  name: "Name",
+  note: "Notiz",
+  groupTypeId: "Gruppentyp",
+  groupStatusId: "Gruppenstatus",
+  visibility: "Sichtbarkeit",
+  groupCategoryId: "Gruppenkategorie",
+  campusId: "Standort",
+  targetGroupId: "Zielgruppe",
+  ageGroupIds: "Altersgruppen",
+  dateOfFoundation: "Gründungsdatum",
+  endDate: "Enddatum",
+  meetingTime: "Treffzeit",
+  weekday: "Wochentag",
+  groupHomepageUrl: "Homepage der Gruppe",
+  modifiedDate: "Zuletzt geändert",
+  "memberStatistics.leaders": "Anzahl Leiter",
+  "memberStatistics.active": "Anzahl Mitglieder (aktiv)",
+  "memberStatistics.participants": "Anzahl Teilnehmer",
+  "memberStatistics.requested": "Anzahl Anfragen",
+  "memberStatistics.waiting": "Anzahl Warteliste",
+};
+// Technische Felder ohne Nutzen für Filter
+const FIELD_SKIP = new Set([
+  "id",
+  "guid",
+  "imageUrl",
+  "chatStatus",
+  "color",
+  "signUpOverrideRoleId",
+  "maxMembers",
+  "frontendUrl",
+  "domainIdentifier",
+  "apiUrl",
+  "domainType",
+]);
+function fieldValue(v, names) {
+  if (v === null || v === undefined || v === "") return "";
+  if (typeof v === "boolean") return v ? "ja" : "nein";
+  if (Array.isArray(v)) {
+    return v
+      .filter((x) => !isObj(x) && !Array.isArray(x))
+      .map((x) => fieldValue(x, names))
+      .filter((x) => x !== "")
+      .join(", ");
+  }
+  if (isObj(v)) return "";
+  if (names && names.has(toInt(v))) return names.get(toInt(v));
+  return typeof v === "number" ? v : String(v);
+}
+function groupFields(g, lookups) {
+  const out = {},
+    put = (k, v) => {
+      if (FIELD_SKIP.has(k.split(".").pop())) return;
+      const val = fieldValue(v, lookups[k]);
+      if (val !== "") out[k] = val;
+    };
+  for (const [k, v] of Object.entries(g)) {
+    if (k === "information" || k === "settings" || k === "memberStatistics") continue;
+    if (!isObj(v)) put(k, v);
+  }
+  for (const [k, v] of Object.entries(g.information || {})) put(k, v);
+  for (const [k, v] of Object.entries(g.settings || {})) if (!isObj(v)) put(k, v);
+  for (const [k, v] of Object.entries(g.memberStatistics || {}))
+    if (typeof v === "number") put("memberStatistics." + k, v);
+  return out;
+}
+function fieldList(groups) {
+  const keys = new Map();
+  for (const g of groups)
+    for (const [k, v] of Object.entries(g.fields)) {
+      const e = keys.get(k) || { key: k, num: true };
+      if (typeof v !== "number") e.num = false;
+      keys.set(k, e);
+    }
+  return [...keys.values()]
+    .map((e) => ({ ...e, label: FIELD_LABELS[e.key] || e.key }))
+    .sort((a, b) => a.label.localeCompare(b.label, "de"));
 }
