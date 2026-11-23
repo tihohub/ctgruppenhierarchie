@@ -64,6 +64,27 @@ test("ZIP enthält index.html und assets/ direkt im Wurzelverzeichnis, mit absol
   assert.match(readFileSync("dist/extension/assets/app.js", "utf8"), /v0\.1/);
 });
 
+test("Testversion: eigenes Kürzel, Zusatz in der Version, echte Kürzel-Pfade unberührt", () => {
+  execFileSync("python3", ["tools/build_extension.py", "v2.0-test.abc1234", "--kuerzel", "gruppenhierarchietest"]);
+  const index = readFileSync("dist/extension/index.html", "utf8");
+  assert.match(index, /src="\/ccm\/gruppenhierarchietest\/assets\/app\.js\?v=v2\.0-test\.abc1234"/);
+  assert.doesNotMatch(index, /\/ccm\/gruppenhierarchie\//);
+  assert.match(readFileSync("dist/extension/assets/app.js", "utf8"), /v2\.0-test\.abc1234/);
+  // Zusatz nur für die Testversion, andere Kürzel gar nicht
+  const geht = (...a) => {
+    try {
+      execFileSync("python3", ["tools/build_extension.py", ...a], { stdio: "pipe" });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  assert.equal(geht("v2.0-test.abc1234"), false);
+  assert.equal(geht("v2.0", "--kuerzel", "irgendwas"), false);
+  // für die folgenden Tests wieder die normale Extension bauen
+  execFileSync("python3", ["tools/build_extension.py", "v0.1"]);
+});
+
 test("Extension lädt sofort mit der CT-Anmeldung, ohne Token", async () => {
   const { page, errors } = await openExtension();
   await page.locator("#ctgh-app:not(.hidden)").waitFor();

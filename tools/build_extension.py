@@ -15,12 +15,18 @@ So bettet CT eine Extension ein (getestet von anderen Extension-Projekten):
 
 Aufruf: python3 tools/build_extension.py v1.0
 Ergebnis: dist/extension/ (entpackt) und dist/ct-gruppenhierarchie-extension-1.0.zip
+
+Testversion (nicht für Nutzer, nur zum Ausprobieren der Entwicklung in CT):
+  python3 tools/build_extension.py v2.0-test.abc1234 --kuerzel gruppenhierarchietest
+Die Testversion wird in CT als ZWEITE Erweiterung mit diesem Kürzel hochgeladen; die echte
+Erweiterung (Kürzel „gruppenhierarchie“) bleibt davon unberührt.
 """
 import re, shutil, sys, zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 KUERZEL = "gruppenhierarchie"  # muss in CT beim Anlegen der Erweiterung genau so eingetragen werden
+TEST_KUERZEL = "gruppenhierarchietest"  # Kürzel der Testversion (zweite Erweiterung in CT)
 BASE = f"/ccm/{KUERZEL}/assets/"
 SCOPE = "#ctgh"
 
@@ -81,8 +87,14 @@ def scope_css(css):
     return "".join(out)
 
 
-def main(version):
-    if not re.fullmatch(r"v\d+(\.\d+)*", version):
+def main(version, kuerzel=KUERZEL):
+    global BASE
+    if kuerzel not in (KUERZEL, TEST_KUERZEL):
+        sys.exit(f"Unbekanntes Kürzel: {kuerzel!r}")
+    BASE = f"/ccm/{kuerzel}/assets/"
+    # Testversionen dürfen einen Zusatz tragen (z. B. v2.0-test.abc1234), Releases nicht
+    muster = r"v\d+(\.\d+)*" if kuerzel == KUERZEL else r"v\d+(\.\d+)*-test\.[0-9a-z]+"
+    if not re.fullmatch(muster, version):
         sys.exit(f"Ungültige Version: {version!r} (erwartet z. B. v1.0)")
     web = {
         n: (ROOT / "web" / n).read_text(encoding="utf-8")
@@ -135,4 +147,8 @@ def main(version):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "")
+    a = sys.argv[1:]
+    if len(a) == 3 and a[1] == "--kuerzel":
+        main(a[0], a[2])
+    else:
+        main(a[0] if a else "")
