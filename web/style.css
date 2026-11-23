@@ -244,7 +244,10 @@ select {
 }
 .visual-area {
   overflow: auto;
-  min-height: 620px;
+  height: 72vh;
+  min-height: 420px;
+  /* ein Finger scrollt wie gewohnt, zwei Finger zoomen (übernimmt die App) */
+  touch-action: pan-x pan-y;
   background: #fbfcfd;
   border: 1px solid var(--line);
   border-radius: 9px;
@@ -342,7 +345,26 @@ select {
   display: none;
 }
 .solo-area {
+  height: auto;
   min-height: 0;
+}
+/* Zoomen und Verschieben der Visualisierung */
+.zoom-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 12px;
+}
+.zoom-val {
+  min-width: 48px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted, #57606a);
+}
+.visual-area.panning,
+.visual-area.panning * {
+  cursor: grabbing !important;
+  user-select: none;
 }
 .vcard {
   border: 1px solid #a8b1bb;
@@ -572,6 +594,13 @@ select {
   }
   .card {
     border: 0;
+  }
+  #forest {
+    zoom: 1 !important;
+  }
+  .visual-area {
+    height: auto;
+    overflow: visible;
   }
 }
 .token-help {

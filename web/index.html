@@ -208,11 +208,11 @@
           <div id="chips" class="chips"></div>
         </div>
         <div class="tabs">
-          <button id="tabList" class="tab active">☷ Übersicht</button
-          ><button id="tabVis" class="tab">⌘ Visualisierung</button
+          <button id="tabVis" class="tab active">⌘ Visualisierung</button
+          ><button id="tabList" class="tab">☷ Übersicht</button
           ><button id="tabMulti" class="tab">🔗 Mehrfachzuordnungen</button>
         </div>
-        <div id="listPane">
+        <div id="listPane" class="hidden">
           <div class="card">
             <div class="sectionhead">
               <h2>Gruppenhierarchie</h2>
@@ -229,7 +229,7 @@
             <div id="stand" class="stand"></div>
           </div>
         </div>
-        <div id="visPane" class="hidden">
+        <div id="visPane">
           <div class="card">
             <div class="sectionhead">
               <h2>Gruppenstämme</h2>
@@ -242,11 +242,22 @@
               ><button id="modeV" class="mode" title="Stämme vertikal untereinander">
                 ↕ Vertikal
               </button>
+              <span class="zoom-tools">
+                <button id="zoomOut" class="mode" title="Herauszoomen" aria-label="Herauszoomen">
+                  −</button
+                ><span id="zoomVal" class="zoom-val">100 %</span
+                ><button id="zoomIn" class="mode" title="Hineinzoomen" aria-label="Hineinzoomen">
+                  ＋</button
+                ><button id="zoomFit" class="mode" title="So weit herauszoomen, dass alles zu sehen ist">
+                  ⤢ Ganzer Stamm
+                </button>
+              </span>
             </div>
             <div class="visual-area"><div id="forest" class="forest horizontal"></div></div>
             <p class="note">
               Horizontal: Gruppenstämme nebeneinander, Untergruppen untereinander. Vertikal:
-              Gruppenstämme untereinander, direkte Untergruppen nebeneinander.
+              Gruppenstämme untereinander, direkte Untergruppen nebeneinander. Zoomen: Knöpfe,
+              Strg + Mausrad oder mit zwei Fingern. Verschieben: mit gedrückter Maustaste ziehen.
             </p>
           </div>
           <div class="card">

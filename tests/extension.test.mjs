@@ -67,13 +67,13 @@ test("ZIP enthält index.html und assets/ direkt im Wurzelverzeichnis, mit absol
 test("Extension lädt sofort mit der CT-Anmeldung, ohne Token", async () => {
   const { page, errors } = await openExtension();
   await page.locator("#ctgh-app:not(.hidden)").waitFor();
-  assert.match(await page.locator("#ctgh #stats").textContent(), /47 \/ 47 Gruppen/);
+  assert.match(await page.locator("#ctgh #stats").textContent(), /47 \/ 48 Gruppen/);
   assert.equal(await page.locator("#token").isVisible(), false);
   assert.equal(await page.locator("#settingsBtn").isVisible(), false);
   assert.equal(await page.locator("#welcome").isVisible(), false);
   // Gestaltung der App ist geladen (Knöpfe in der App sind blau hinterlegt)
   const appBtn = await page
-    .locator("#ctgh #tabList")
+    .locator("#ctgh #tabVis")
     .evaluate((b) => getComputedStyle(b).backgroundColor);
   assert.equal(appBtn, "rgb(9, 105, 218)");
   assert.deepEqual(errors, []);
