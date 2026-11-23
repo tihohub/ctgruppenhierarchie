@@ -705,6 +705,67 @@ $("cfBox").addEventListener("click", (e) => {
 
 cfRender();
 
+// ---- Eigene Filter mit Namen speichern (nur auf diesem Gerät) ----
+const CF_STORE = "ctg_saved_filters";
+function cfSavedList() {
+  try {
+    let l = JSON.parse(localStorage.getItem(CF_STORE) || "[]");
+    return Array.isArray(l) ? l.filter((x) => x && typeof x.name === "string" && cfValid(x.cf)) : [];
+  } catch {
+    return [];
+  }
+}
+function cfSavedWrite(l) {
+  try {
+    localStorage.setItem(CF_STORE, JSON.stringify(l));
+    return true;
+  } catch {
+    return false;
+  }
+}
+function cfSavedRender(sel = "") {
+  let l = cfSavedList();
+  $("cfSaved").innerHTML =
+    `<option value="">${l.length ? "Gespeicherten Filter wählen …" : "Noch keine gespeicherten Filter"}</option>` +
+    l.map((x) => `<option value="${esc(x.name)}"${x.name === sel ? " selected" : ""}>${esc(x.name)}</option>`).join("");
+  $("cfDelete").disabled = !sel;
+}
+const cfMsg = (t) => ($("cfMsg").textContent = t);
+$("cfSaved").onchange = () => {
+  let name = $("cfSaved").value,
+    f = cfSavedList().find((x) => x.name === name);
+  $("cfDelete").disabled = !f;
+  if (!f) return;
+  CF = JSON.parse(JSON.stringify(f.cf));
+  $("cfName").value = f.name;
+  cfMsg("");
+  cfRender();
+  BACK = [];
+  if (M) render();
+};
+$("cfSave").onclick = () => {
+  let name = $("cfName").value.trim();
+  if (!name) return cfMsg("Bitte einen Namen eingeben.");
+  if (!cfCount()) return cfMsg("Der Filter hat noch keine vollständige Bedingung.");
+  let l = cfSavedList(),
+    i = l.findIndex((x) => x.name === name),
+    e = { name, cf: JSON.parse(JSON.stringify(CF)) };
+  if (i >= 0) l[i] = e;
+  else l.push(e);
+  l.sort((a, b) => a.name.localeCompare(b.name, "de"));
+  if (!cfSavedWrite(l)) return cfMsg("Speichern ist in diesem Browser nicht möglich.");
+  cfSavedRender(name);
+  cfMsg(i >= 0 ? `„${name}“ aktualisiert.` : `„${name}“ gespeichert.`);
+};
+$("cfDelete").onclick = () => {
+  let name = $("cfSaved").value;
+  if (!name) return;
+  cfSavedWrite(cfSavedList().filter((x) => x.name !== name));
+  cfSavedRender();
+  cfMsg(`„${name}“ gelöscht. Der Filter selbst bleibt aktiv, bis du ihn leerst.`);
+};
+cfSavedRender();
+
 // ---- Visualisierung ----
 function renderForest() {
   let roots = M.roots.filter((x) => DISPLAY.has(x));

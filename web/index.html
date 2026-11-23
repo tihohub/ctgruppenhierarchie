@@ -223,6 +223,18 @@
           </div>
           <div class="cf">
             <div class="cf-title">Eigene Filter</div>
+            <div class="cf-saved">
+              <select id="cfSaved" aria-label="Gespeicherte Filter"></select
+              ><button id="cfDelete" class="cf-del" title="Ausgewählten gespeicherten Filter löschen">
+                🗑 Löschen</button
+              ><input id="cfName" placeholder="Name für diesen Filter" aria-label="Name für diesen Filter" /><button
+                id="cfSave"
+                class="light"
+              >
+                💾 Speichern
+              </button>
+              <span id="cfMsg" class="note"></span>
+            </div>
             <div id="cfBox"></div>
           </div>
           <div id="chips" class="chips"></div>
