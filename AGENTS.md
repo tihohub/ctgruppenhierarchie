@@ -47,9 +47,9 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
 - Testversionen der 2.0 sollen als Vorab-Release erscheinen (z. B. `v2.0-beta1`), die die
   Desktop-App nicht automatisch holt. Der Release-Ablauf kann das noch nicht; er wird vor
   der ersten Testversion angepasst.
-- Bevor in `v2` geschrieben wird, werden die Grundsätze für das Schreiben gesondert mit dem
-  Inhaber besprochen. Bis dahin gelten die festen Grundsätze unten (nur lesend) für beide
-  Linien.
+- Die Grundsätze für das Schreiben sind mit dem Inhaber besprochen (Abschnitt „Schreiben in CT
+  (nur Branch v2)“ unten). Funktionen und Reihenfolge der 2.0 stehen in `PLAN_V2.md` (nur im
+  Branch `v2`). In `main` gilt weiter ausschließlich „nur lesend“.
 - Ist 2.0 fertig, wird `v2` nach `main` übernommen; `main` ist ab dann 2.x.
 - Die Versionsnummer steht nicht fest im Code. Sie wird beim Release-Build aus dem
   Tag eingesetzt. Ohne Release zeigt die App „Entwicklungsversion“.
@@ -67,6 +67,23 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
 - Einzige Verbindung außer zu CT: die Update-Suche der Desktop-App bei GitHub (abschaltbar,
   im Datenschutzhinweis genannt).
 - Die App muss ohne Anpassung auf beliebigen Rechnern laufen.
+
+## Schreiben in CT (nur Branch `v2`)
+Ausnahme vom Grundsatz „nur lesend“, gilt nur für Version 2.0 im Branch `v2`:
+- Geschrieben wird zunächst **nur in der CT-Extension** (mit der CT-Anmeldung des Nutzers).
+  Webseite, Desktop-App und Python-Version bleiben nur lesend, bis der Inhaber das
+  ausdrücklich ändert.
+- Erlaubt sind nur die in `PLAN_V2.md` festgelegten Änderungen: Obergruppen einer Gruppe
+  ändern (verschieben, zusätzlich einordnen, lösen) und – falls CT es anbietet – eigene
+  Filter in der Datenablage für Erweiterungen speichern. Keine anderen Daten verändern,
+  nichts löschen.
+- Geschrieben wird nur im eingeschalteten Bearbeiten-Modus und erst nach einer Rückfrage.
+- Vor jedem Schreiben den aktuellen Stand in CT prüfen; weicht er von der Anzeige ab, nichts
+  schreiben.
+- Jede Änderung ist mit dem Zurück-Knopf umkehrbar.
+- CT prüft die Rechte; die App umgeht sie nicht.
+- Tests: Schreib-Anfragen zuerst nur gegen den Schein-CT, dann gegen Testgruppen; der Test
+  „nur lesend“ gilt weiter für Webseite, Desktop-App und Python-Version.
 
 ## Auto-Updater der Desktop-App
 - Updates werden mit einem eigenen Schlüssel signiert. Der öffentliche Teil steht in
