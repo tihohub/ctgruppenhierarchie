@@ -37,3 +37,29 @@ test("Update-Datei der Desktop-App verweist auf Dateinamen ohne „v“", () => 
   );
   assert.equal(j.platforms["windows-x86_64"].signature, "sig-win");
 });
+
+test("Release-Sicherung lässt nur Version 1.x zu", () => {
+  const pruefe = (v) => {
+    try {
+      execFileSync("python3", ["tools/release_check.py", v], { stdio: "pipe" });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  for (const v of ["v1.0", "v1.1", "v1.12"]) assert.equal(pruefe(v), true, v);
+  for (const v of ["v2.0", "v2.0-beta1", "v28", "v1.1.1", "1.1", ""]) assert.equal(pruefe(v), false, v);
+});
+
+test("Release-Sicherung lehnt Stände ab, die nicht in main sind", () => {
+  // ein Commit, den es in main nicht gibt
+  const leer = execFileSync("git", ["mktree"], { input: "" }).toString().trim();
+  const fremd = execFileSync("git", ["commit-tree", "-m", "fremd", leer], {
+    env: { ...process.env, GIT_AUTHOR_NAME: "t", GIT_AUTHOR_EMAIL: "t@t", GIT_COMMITTER_NAME: "t", GIT_COMMITTER_EMAIL: "t@t" },
+  })
+    .toString()
+    .trim();
+  assert.throws(() =>
+    execFileSync("python3", ["tools/release_check.py", "v1.1", fremd], { stdio: "pipe" }),
+  );
+});

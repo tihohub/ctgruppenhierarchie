@@ -106,6 +106,8 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
 - `.github/workflows/` – GitHub Actions: `tests.yml` (bei jedem Pull Request),
   `release.yml` (per „Run workflow“ mit Versionsnummer oder bei Tag `v*`: Tests, Pakete
   bauen, Tag und Release anlegen)
+- `tools/release_check.py` – Sicherung im Release-Ablauf: nur Versionen `v1.x` aus dem Stand
+  von `main` werden veröffentlicht (2.0 noch nicht)
 - `tools/build_python.py` – baut das Python-Paket (eine Datei mit eingebetteter Oberfläche)
 - `tools/build_web.py` – baut die Webseite für GitHub Pages (Job `webseite` in `release.yml`)
 - `tools/build_extension.py` – baut das ZIP der CT-Extension. CT übernimmt nur den INHALT der
