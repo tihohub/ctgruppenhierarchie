@@ -334,7 +334,7 @@ function badge(g) {
   return `<span class="badge">${mark(g.groupTypeName)}</span><span class="badge status">${mark(g.groupStatusName)}</span><span class="badge">${mark(lv(g.visibility))}</span>`;
 }
 function line(g) {
-  return `<div class="node ${searchHits(g).length ? "search-row" : ""}"${tipAttrs(g)}><span class="sp"></span><a class="link" href="${esc(g.frontendUrl)}" target="_blank">${shownName(g)}</a>${descIcon(g)}${badge(g)}${hitInfo(g)}</div>`;
+  return `<div class="node ${searchHits(g).length ? "search-row" : ""}" data-gid="${g.id}" data-pid=""${tipAttrs(g)}><span class="sp"></span><a class="link" href="${esc(g.frontendUrl)}" target="_blank">${shownName(g)}</a>${descIcon(g)}${badge(g)}${hitInfo(g)}</div>`;
 }
 
 // ---- Mehrfachzuordnungen ----
@@ -521,7 +521,7 @@ function tnode(id, path, parent, via) {
     np = new Set(path),
     nv = isMulti(g) ? id : via;
   np.add(id);
-  return `<li class="node ${MATCH.has(id) ? "" : "context"} ${searchHits(g).length ? "search-row" : ""}" data-gid="${id}" data-pid="${parent ?? ""}"${tipAttrs(g)}>${kids.length ? `<button class="tog" data-tree="${id}">${open ? "−" : "+"}</button>` : '<span class="sp"></span>'}${nameEl(g, "link")}${descIcon(g)}${badge(g)}${multiHint(g, parent)}${dupHint(g, via)}${hitInfo(g)}${kids.length ? `<ul class="${open ? "" : "hidden"}">${kids.map((x) => tnode(x, np, id, nv)).join("")}</ul>` : ""}</li>`;
+  return `<li class="node ${MATCH.has(id) ? "" : "context"} ${searchHits(g).length ? "search-row" : ""}" data-gid="${id}" data-pid="${parent ?? ""}"${tipAttrs(g)}>${kids.length ? `<button class="tog" data-tree="${id}">${open ? "−" : "+"}</button>` : '<span class="sp"></span>'}${nameEl(g, "link")}${cutBtn(g, parent)}${descIcon(g)}${badge(g)}${multiHint(g, parent)}${dupHint(g, via)}${hitInfo(g)}${kids.length ? `<ul class="${open ? "" : "hidden"}">${kids.map((x) => tnode(x, np, id, nv)).join("")}</ul>` : ""}</li>`;
 }
 // Wirksame Filter als [Feld, Beschriftung]
 function activeFilters() {
@@ -782,6 +782,7 @@ function renderForest() {
   $("visCount").textContent = `${roots.length} Gruppenstämme`;
   placeBack();
   fitIfNeeded();
+  editAttrs();
 }
 
 // ---- Visualisierung: Zoomen und Verschieben ----
@@ -854,6 +855,8 @@ let PAN = null;
 vArea().addEventListener("pointerdown", (e) => {
   if (e.pointerType !== "mouse" || e.button !== 0 || e.target.closest("button, input, select"))
     return;
+  // im Bearbeiten-Modus verschiebt Ziehen auf einer Gruppe die Gruppe, nicht die Ansicht
+  if (EDIT && e.target.closest("[draggable='true']")) return;
   let a = vArea();
   // nicht auf den Bildlaufleisten
   if (e.target === a && (e.offsetX >= a.clientWidth || e.offsetY >= a.clientHeight)) return;
@@ -932,7 +935,7 @@ function vitem(id, path, parent, via) {
   np.add(id);
   let kids = g.childIds.filter((x) => DISPLAY.has(x)),
     open = vExpanded.has(id);
-  return `<div class="vitem"><div class="vcard ${MATCH.has(id) ? "" : "context"} ${searchHits(g).length ? "search-row" : ""}" data-gid="${id}" data-pid="${parent ?? ""}"${tipAttrs(g)}>${kids.length ? `<button class="vtoggle" data-v="${id}">${open ? "−" : "+"}</button>` : ""}${nameEl(g, "vname")}${descIcon(g)}${hitInfo(g)}${metaLine(g)}${isMulti(g) || (via && !isMulti(g)) ? `<div class="vmeta">${multiHint(g, parent)}${dupHint(g, via)}</div>` : ""}</div>${open && kids.length ? `<div class="vchildren">${kids.map((x) => vitem(x, np, id, nv)).join("")}</div>` : ""}</div>`;
+  return `<div class="vitem"><div class="vcard ${MATCH.has(id) ? "" : "context"} ${searchHits(g).length ? "search-row" : ""}" data-gid="${id}" data-pid="${parent ?? ""}"${tipAttrs(g)}>${kids.length ? `<button class="vtoggle" data-v="${id}">${open ? "−" : "+"}</button>` : ""}${nameEl(g, "vname")}${cutBtn(g, parent)}${descIcon(g)}${hitInfo(g)}${metaLine(g)}${isMulti(g) || (via && !isMulti(g)) ? `<div class="vmeta">${multiHint(g, parent)}${dupHint(g, via)}</div>` : ""}</div>${open && kids.length ? `<div class="vchildren">${kids.map((x) => vitem(x, np, id, nv)).join("")}</div>` : ""}</div>`;
 }
 
 // ---- Bedienelemente und Ereignisse ----
@@ -1297,12 +1300,196 @@ function idleCheck() {
 }
 setInterval(idleCheck, 5000);
 
+// ---- Bearbeiten: Gruppen in CT umhängen (Version 2.0, nur in der CT-Extension) ----
+// Ziehen auf eine Gruppe = dort einordnen; ✂ bzw. Ablagefläche = von der Obergruppe lösen.
+// Geschrieben wird nur über ctChangeParents (ct-daten.js), immer erst nach der Rückfrage.
+let EDIT = false,
+  DRAG = null,
+  PENDING = null;
+// Ziehbare Gruppen und Ablageziele: Übersicht (Baum, alleinstehende) und Visualisierung
+const EDIT_SEL =
+  "#tree li[data-gid], #stand .node[data-gid], #forest .vcard, #forest .stem-title, #soloForest .stem-title";
+function cutBtn(g, parent) {
+  let p = parent != null && parent !== "" && M.byId[parent];
+  if (!CT_WRITE || g.placeholder || !p || p.placeholder) return "";
+  return `<button class="cut" data-cut="${g.id}" data-from="${parent}" title="Von „${esc(p.name)}“ lösen" aria-label="Von Obergruppe lösen">✂</button>`;
+}
+function setEdit(on) {
+  EDIT = on && CT_WRITE;
+  $("editBtn").setAttribute("aria-pressed", String(EDIT));
+  $("editBtn").textContent = EDIT ? "✓ Bearbeiten beenden" : "✎ Bearbeiten";
+  $("editBar").classList.toggle("hidden", !EDIT);
+  document.querySelector("main").classList.toggle("editing", EDIT);
+  if (M) editAttrs();
+}
+$("editBtn").onclick = () => setEdit(!EDIT);
+// Ziehbare Gruppen markieren (nach jedem Neuaufbau der Anzeige)
+function editAttrs() {
+  document
+    .querySelectorAll(EDIT_SEL)
+    .forEach((el) => {
+      let g = M && M.byId[el.dataset.gid];
+      if (EDIT && g && !g.placeholder) el.setAttribute("draggable", "true");
+      else el.removeAttribute("draggable");
+    });
+}
+// Liegt b unterhalb von a (oder ist b = a)?
+function isBelow(a, b) {
+  let seen = new Set(),
+    st = [a];
+  while (st.length) {
+    let x = st.pop();
+    if (x === b) return true;
+    if (seen.has(x)) continue;
+    seen.add(x);
+    st.push(...((M.byId[x] || {}).childIds || []));
+  }
+  return false;
+}
+const dropTarget = (e) => {
+  let el = e.target.closest(EDIT_SEL);
+  return el && M.byId[el.dataset.gid] && !M.byId[el.dataset.gid].placeholder ? el : null;
+};
+// Warum ein Ablegen nicht geht (sonst "")
+function dropProblem(target) {
+  if (!DRAG) return "nichts gezogen";
+  if (target === DRAG.gid) return "Eine Gruppe kann nicht unter sich selbst eingeordnet werden.";
+  if (isBelow(DRAG.gid, target))
+    return `„${gname(target)}“ ist eine Untergruppe von „${gname(DRAG.gid)}“ – das ergäbe einen Kreis.`;
+  if ((M.byId[DRAG.gid].parentIds || []).includes(target))
+    return `„${gname(target)}“ ist bereits Obergruppe von „${gname(DRAG.gid)}“.`;
+  return "";
+}
+document.addEventListener("dragstart", (e) => {
+  if (!EDIT) return;
+  let el = e.target.closest && e.target.closest("[draggable='true'][data-gid]");
+  if (!el) return;
+  DRAG = { gid: +el.dataset.gid, from: el.dataset.pid ? +el.dataset.pid : null, el };
+  el.classList.add("dragging");
+  e.dataTransfer.effectAllowed = "move";
+  e.dataTransfer.setData("text/plain", gname(DRAG.gid));
+});
+document.addEventListener("dragend", () => {
+  if (DRAG) DRAG.el.classList.remove("dragging");
+  DRAG = null;
+  document.querySelectorAll(".drop-ok, .drop-no").forEach((x) => x.classList.remove("drop-ok", "drop-no"));
+});
+document.addEventListener("dragover", (e) => {
+  if (!EDIT || !DRAG) return;
+  document.querySelectorAll(".drop-ok, .drop-no").forEach((x) => x.classList.remove("drop-ok", "drop-no"));
+  if (e.target.closest("#dropRoot")) {
+    e.preventDefault();
+    $("dropRoot").classList.add("drop-ok");
+    return;
+  }
+  let el = dropTarget(e);
+  if (!el) return;
+  if (dropProblem(+el.dataset.gid)) el.classList.add("drop-no");
+  else {
+    el.classList.add("drop-ok");
+    e.preventDefault(); // Ablegen erlauben
+  }
+});
+document.addEventListener("drop", (e) => {
+  if (!EDIT || !DRAG) return;
+  e.preventDefault();
+  let d = DRAG;
+  if (e.target.closest("#dropRoot")) return askCut(d.gid, d.from);
+  let el = dropTarget(e);
+  if (!el) return;
+  let t = +el.dataset.gid,
+    p = dropProblem(t);
+  if (p) return toast(p, true);
+  askMove(d.gid, d.from, t);
+});
+function choice(v, text, checked) {
+  return `<label><input type="radio" name="editChoice" value="${v}"${checked ? " checked" : ""} /><span>${text}</span></label>`;
+}
+function openEdit(title, choicesHtml, action) {
+  PENDING = action;
+  $("editTitle").textContent = title;
+  $("editChoices").innerHTML = choicesHtml;
+  $("editDlg").classList.remove("hidden");
+  $("editGo").focus();
+}
+function askMove(gid, from, to) {
+  let n = `„${esc(gname(gid))}“`,
+    z = `„${esc(gname(to))}“`;
+  openEdit(
+    `${gname(gid)} unter ${gname(to)} einordnen?`,
+    (from != null
+      ? choice("move", `<b>Verschieben:</b> von „${esc(gname(from))}“ nach ${z}`, true) +
+        choice("add", `<b>Zusätzlich</b> unter ${z} einordnen („${esc(gname(from))}“ bleibt Obergruppe)`)
+      : choice("add", `${n} unter ${z} einordnen`, true)) +
+      `<p class="note">Alle Untergruppen von ${n} ziehen mit.</p>`,
+    (c) => ({ gid, add: [to], remove: c === "move" && from != null ? [from] : [], what: c === "move" ? "verschoben" : "eingeordnet" }),
+  );
+}
+function askCut(gid, from) {
+  if (from == null) return toast(`„${gname(gid)}“ hat an dieser Stelle keine Obergruppe.`, true);
+  let rest = (M.byId[gid].parentIds || []).filter((p) => p !== from);
+  openEdit(
+    `${gname(gid)} von ${gname(from)} lösen?`,
+    `<p>„${esc(gname(gid))}“ wird von „${esc(gname(from))}“ gelöst.${
+      rest.length
+        ? ` Weitere Obergruppen bleiben: ${rest.map((p) => "„" + esc(gname(p)) + "“").join(", ")}.`
+        : " Sie hat danach keine Obergruppe mehr und wird zum Gruppenstamm bzw. zur alleinstehenden Gruppe."
+    }</p>`,
+    () => ({ gid, add: [], remove: [from], what: "gelöst" }),
+  );
+}
+$("editCancel").onclick = () => {
+  $("editDlg").classList.add("hidden");
+  PENDING = null;
+};
+$("editGo").onclick = async () => {
+  if (!PENDING) return;
+  let c = (document.querySelector('input[name="editChoice"]:checked') || {}).value,
+    op = PENDING(c);
+  PENDING = null;
+  $("editDlg").classList.add("hidden");
+  $("toast").classList.add("hidden");
+  $("editGo").disabled = true;
+  try {
+    await ctChangeParents(M, op.gid, op.add, op.remove, M.byId[op.gid].parentIds || []);
+    // neue Obergruppe aufklappen, damit man das Ergebnis gleich sieht
+    op.add.forEach((p) => {
+      expanded.add(p);
+      vExpanded.add(p);
+    });
+    save();
+    toast(`✓ „${gname(op.gid)}“ wurde in CT ${op.what}.`);
+  } catch (e) {
+    toast("✗ " + e.message, true);
+  } finally {
+    $("editGo").disabled = false;
+  }
+  await runLoad($("refresh")); // Anzeige mit dem neuen Stand aus CT
+};
+document.addEventListener("click", (e) => {
+  let b = e.target.closest("[data-cut]");
+  if (!b || !EDIT) return;
+  e.preventDefault();
+  e.stopPropagation();
+  askCut(+b.dataset.cut, +b.dataset.from);
+});
+let toastTimer = null;
+function toast(text, bad) {
+  let t = $("toast");
+  t.textContent = text;
+  t.classList.toggle("bad", !!bad);
+  t.classList.remove("hidden");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.add("hidden"), bad ? 9000 : 4000);
+}
+
 // ---- CT-Extension: sofort mit der Anmeldung des Nutzers in CT laden ----
 if (CT_MODE === "extension") {
   // In CT sitzt die App in einem eigenen Bereich (#ctgh); dort die Kennzeichnung setzen
   (document.getElementById("ctgh") || document.body).classList.add("extension");
   $("betaNote").classList.remove("hidden"); // Beta-Hinweis im Über-Dialog
   $("extPrivacy").classList.remove("hidden"); // eigener Datenschutz-Text für die Extension
+  if (CT_WRITE) $("editBtn").classList.remove("hidden"); // Version 2.0: Bearbeiten
   $("welcome").classList.add("hidden");
   $("modal").classList.add("hidden");
   runLoad($("refresh"), true);

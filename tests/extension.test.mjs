@@ -33,8 +33,8 @@ after(async () => {
   ct?.kill();
 });
 
-async function openExtension(angemeldet = true) {
-  const ctx = await browser.newContext();
+async function openExtension(angemeldet = true, viewport) {
+  const ctx = await browser.newContext(viewport ? { viewport } : {});
   if (angemeldet) await ctx.addCookies([{ name: "ct_session", value: "angemeldet", url: CT }]);
   const page = await ctx.newPage();
   const errors = [];
@@ -143,11 +143,101 @@ test("Ohne CT-Anmeldung (Anonymous) erscheint ein verständlicher Hinweis", asyn
   assert.equal(await page.locator("#modal").isVisible(), true);
 });
 
-test("Die Extension greift nur lesend auf CT zu", async () => {
+test("Ohne Bearbeiten greift die Extension nur lesend auf CT zu", async () => {
   const reqs = await (await fetch(CT + "/_test/requests")).json();
   assert.ok(reqs.some((r) => r.path === "/api/whoami"));
   assert.deepEqual(
     reqs.filter((r) => !["GET", "OPTIONS"].includes(r.method)),
     [],
   );
+});
+
+// ---- Version 2.0: Bearbeiten (schreibt in den Schein-CT) ----
+async function bearbeiten() {
+  // großes Fenster, damit Ausgangs- und Zielgruppe beim Ziehen gleichzeitig sichtbar sind
+  const { page, errors } = await openExtension(true, { width: 1250, height: 2400 });
+  await page.locator("#ctgh-app:not(.hidden)").waitFor();
+  await page.click("#tabList");
+  await page.click("#editBtn");
+  return { page, errors };
+}
+const toastText = async (page) => {
+  await page.locator("#toast:not(.hidden)").waitFor();
+  return (await page.locator("#toast").textContent()).trim();
+};
+const neuGeladen = (page) => page.waitForFunction(() => !document.getElementById("refresh").disabled);
+
+test("Bearbeiten: Knopf nur in der Extension, Ziehen verschiebt nach Rückfrage", async () => {
+  const { page, errors } = await openExtension();
+  await page.locator("#ctgh-app:not(.hidden)").waitFor();
+  await page.click("#tabList");
+  // ohne Bearbeiten-Modus: Ziehen bewirkt nichts
+  await page.locator('#tree li[data-gid="6"] > a').first().dragTo(page.locator('#tree li[data-gid="2"] > a'));
+  assert.equal(await page.isVisible("#editDlg"), false);
+  await page.click("#editBtn");
+  assert.ok(await page.isVisible("#editBar"));
+  // Y (unter X) auf B ziehen → Rückfrage mit „Verschieben“ vorausgewählt
+  await page.locator('#tree li[data-gid="6"] > a').first().dragTo(page.locator('#tree li[data-gid="2"] > a'));
+  assert.ok(await page.isVisible("#editDlg"));
+  assert.equal(await page.textContent("#editTitle"), "Y unter B einordnen?");
+  assert.equal(await page.locator('input[name="editChoice"]:checked').getAttribute("value"), "move");
+  assert.match(await page.textContent("#editDlg"), /Rechte aus Obergruppen/);
+  await page.click("#editGo");
+  assert.equal(await toastText(page), "✓ „Y“ wurde in CT verschoben.");
+  await neuGeladen(page);
+  await page.locator('#tree li[data-gid="6"][data-pid="2"]').waitFor();
+  assert.equal(await page.locator('#tree li[data-gid="6"][data-pid="5"]').count(), 0);
+  assert.deepEqual(errors, []);
+});
+
+test("Bearbeiten: ✂ löst von der Obergruppe, Ziehen ordnet wieder ein", async () => {
+  const { page } = await bearbeiten();
+  await page.locator('#tree li[data-gid="6"][data-pid="2"] > .cut').click();
+  assert.equal(await page.textContent("#editTitle"), "Y von B lösen?");
+  assert.match(await page.textContent("#editChoices"), /keine Obergruppe mehr/);
+  await page.click("#editGo");
+  assert.equal(await toastText(page), "✓ „Y“ wurde in CT gelöst.");
+  await neuGeladen(page);
+  // Y ist jetzt alleinstehend; aus der Liste der alleinstehenden Gruppen wieder unter X ziehen
+  await page.locator('#stand .node[data-gid="6"] a').dragTo(page.locator('#tree li[data-gid="5"] > a').first());
+  assert.equal(await page.locator('input[name="editChoice"]').count(), 1, "ohne alte Obergruppe nur „einordnen“");
+  await page.click("#editGo");
+  assert.equal(await toastText(page), "✓ „Y“ wurde in CT eingeordnet.");
+  await neuGeladen(page);
+  await page.locator('#tree li[data-gid="6"][data-pid="5"]').first().waitFor({ state: "visible" });
+});
+
+test("Bearbeiten in der Visualisierung: Karte auf Karte ziehen", async () => {
+  const { page } = await bearbeiten();
+  await page.click("#tabVis");
+  for (let i = 0; i < 8; i++) await page.click("#zoomIn"); // auf etwa 100 %
+  // Y (unter X) auf den Stamm C ziehen → Rückfrage, dann abbrechen. Beide liegen sichtbar
+  // nebeneinander (beim Ziehen über weite Strecken scrollt der Testbrowser sonst mitten im Zug).
+  await page.locator('#forest .vcard[data-gid="6"] a').first().dragTo(page.locator('#forest .stem-title[data-gid="3"] a'));
+  assert.equal(await page.textContent("#editTitle"), "Y unter C einordnen?");
+  await page.click("#editCancel");
+});
+
+test("Bearbeiten: Kreise werden verhindert, fehlende Rechte verständlich gemeldet", async () => {
+  const { page } = await bearbeiten();
+  // B unter X (eine Untergruppe von B) → kein Ablegen möglich
+  await page.locator('#tree li[data-gid="2"] > a').dragTo(page.locator('#tree li[data-gid="5"] > a').first());
+  assert.equal(await page.isVisible("#editDlg"), false);
+  // Y unter C (keine Rechte in CT) → Meldung, nichts geändert
+  await page.locator('#tree li[data-gid="6"] > a').first().dragTo(page.locator('#tree li[data-gid="3"] > a'));
+  await page.click('input[name="editChoice"][value="add"]');
+  await page.click("#editGo");
+  assert.match(await toastText(page), /nicht so ändern\. Es wurde nichts geändert/);
+  await neuGeladen(page);
+  assert.equal(await page.locator('#tree li[data-gid="6"][data-pid="3"]').count(), 0);
+});
+
+test("Bearbeiten: Abbrechen schreibt nichts", async () => {
+  const { page } = await bearbeiten();
+  const vorher = (await (await fetch(CT + "/_test/requests")).json()).filter((r) => r.method !== "GET").length;
+  await page.locator('#tree li[data-gid="6"] > a').first().dragTo(page.locator('#tree li[data-gid="1"] > a'));
+  await page.click("#editCancel");
+  assert.equal(await page.isVisible("#editDlg"), false);
+  const nachher = (await (await fetch(CT + "/_test/requests")).json()).filter((r) => r.method !== "GET").length;
+  assert.equal(nachher, vorher);
 });
