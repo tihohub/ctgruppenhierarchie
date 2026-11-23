@@ -35,7 +35,7 @@ function save() {
       type: $("type").value,
       visibility: $("visibility").value,
       status: $("status").value,
-      multi: $("multiF").value,
+      multi: multiV(),
       search: $("search").value,
       expanded: [...expanded],
       mode,
@@ -168,15 +168,17 @@ function match(g, except = "") {
   if (except !== "type" && t && String(g.groupTypeId) !== t) return false;
   if (except !== "visibility" && v && g.visibility !== v) return false;
   if (except !== "status" && s && String(g.groupStatusId) !== s) return false;
-  let mm = $("multiF").value;
-  if (except !== "multi" && mm && !isMulti(g)) return false;
+  if (except !== "multi" && multiV() && !isMulti(g)) return false;
   return true;
 }
+// Ein/Aus-Filter „Nur Gruppen mit Mehrfachzuordnung“ (Hakenkästchen): "multi" oder ""
+const multiV = () => ($("multiF").checked ? "multi" : "");
+const setMulti = (v) => ($("multiF").checked = v === "multi");
 function facets(
   t = $("type").value,
   v = $("visibility").value,
   s = $("status").value,
-  mm = $("multiF").value,
+  mm = multiV(),
 ) {
   let C = (ex, k) => {
       let o = {};
@@ -199,16 +201,11 @@ function facets(
     Object.keys(M.counts.status)
       .map((x) => opt(x, `${M.statusNames[x] || "Status " + x} (${sc[x] || 0})`))
       .join("");
-  $("multiF").innerHTML =
-    opt("", `Alle (${M.groups.filter((g) => match(g, "multi")).length})`) +
-    opt(
-      "multi",
-      `Nur mit mehreren Obergruppen (${M.groups.filter((g) => match(g, "multi") && isMulti(g)).length})`,
-    );
+  $("multiCount2").textContent = `(${M.groups.filter((g) => match(g, "multi") && isMulti(g)).length})`;
   $("type").value = t;
   $("visibility").value = v;
   $("status").value = s;
-  $("multiF").value = mm;
+  setMulti(mm);
 }
 // Status „aktiv“: Beim Start werden nur aktive Gruppen angezeigt
 function activeStatus() {
@@ -230,7 +227,7 @@ function setup(first) {
 
 // ---- Anzeige: Übersicht (Baum) und Statistik ----
 function render() {
-  let sel = [$("type").value, $("visibility").value, $("status").value, $("multiF").value];
+  let sel = [$("type").value, $("visibility").value, $("status").value, multiV()];
   facets(...sel);
   MATCH = new Set(M.groups.filter((g) => match(g)).map((g) => g.id));
   DISPLAY = new Set(MATCH);
@@ -414,7 +411,7 @@ function filterState() {
     type: $("type").value,
     visibility: $("visibility").value,
     status: $("status").value,
-    multiF: $("multiF").value,
+    multiF: multiV(),
   };
 }
 function ancestors(id) {
@@ -469,7 +466,8 @@ function jump(id, tab, from) {
   if (t === "tabMulti") t = "tabList";
   BACK.push({ tab: cur, f: filterState(), from, to: id, toTab: t });
   if (!DISPLAY.has(id)) {
-    ["search", "type", "visibility", "status", "multiF"].forEach((x) => ($(x).value = ""));
+    ["search", "type", "visibility", "status"].forEach((x) => ($(x).value = ""));
+    setMulti("");
     render();
   }
   ancestors(id).forEach((x) => {
@@ -516,11 +514,25 @@ function tnode(id, path, parent, via) {
   np.add(id);
   return `<li class="node ${MATCH.has(id) ? "" : "context"} ${searchHits(g).length ? "search-row" : ""}" data-gid="${id}" data-pid="${parent ?? ""}"${tipAttrs(g)}>${kids.length ? `<button class="tog" data-tree="${id}">${open ? "−" : "+"}</button>` : '<span class="sp"></span>'}${nameEl(g, "link")}${descIcon(g)}${badge(g)}${multiHint(g, parent)}${dupHint(g, via)}${hitInfo(g)}${kids.length ? `<ul class="${open ? "" : "hidden"}">${kids.map((x) => tnode(x, np, id, nv)).join("")}</ul>` : ""}</li>`;
 }
-function chips() {
+// Wirksame Filter als [Feld, Beschriftung]
+function activeFilters() {
   let a = [];
   if ($("search").value) a.push(["search", "Suche: " + $("search").value]);
-  for (let id of ["type", "visibility", "status", "multiF"])
-    if ($(id).value) a.push([id, $(id).selectedOptions[0].textContent.replace(/ \(\d+\)$/, "")]);
+  for (let [id, l] of [
+    ["type", "Typ"],
+    ["visibility", "Sichtbarkeit"],
+    ["status", "Status"],
+  ])
+    if ($(id).value)
+      a.push([id, l + ": " + $(id).selectedOptions[0].textContent.replace(/ \(\d+\)$/, "")]);
+  if (multiV()) a.push(["multiF", "Nur Mehrfachzuordnung"]);
+  return a;
+}
+function chips() {
+  let a = activeFilters();
+  // zugeklappt: in der Kopfzeile zeigen, welche Filter wirken
+  $("filterSummary").textContent =
+    !filterOpen() && a.length ? `(${a.length} aktiv: ${a.map((x) => x[1]).join(", ")})` : "";
   $("chips").innerHTML = a.length
     ? a
         .map((x) => `<span class="chip">${esc(x[1])}<button data-clear="${x[0]}">×</button></span>`)
@@ -684,7 +696,7 @@ function stem(id) {
 }
 // Zeile mit Gruppentyp, Status und Sichtbarkeit (bzw. Hinweis bei 🔒-Platzhaltern)
 function metaLine(g) {
-  return `<div class="vmeta">${g.placeholder ? `Keine Berechtigung · ID ${esc(g.id)}` : `${mark(g.groupTypeName)} · ${mark(g.groupStatusName)} · ${mark(lv(g.visibility))}`}</div>`;
+  return `<div class="vmeta info">${g.placeholder ? `Keine Berechtigung · ID ${esc(g.id)}` : `${mark(g.groupTypeName)} · ${mark(g.groupStatusName)} · ${mark(lv(g.visibility))}`}</div>`;
 }
 function vitem(id, path, parent, via) {
   let g = M.byId[id];
@@ -812,6 +824,42 @@ $("print").onclick = () => print();
     render();
   }),
 );
+// Filterbereich auf-/zuklappen; der Zustand wird auf dem Gerät gemerkt (Start: zugeklappt)
+const filterOpen = () => $("filterToggle").getAttribute("aria-expanded") === "true";
+function setFilterOpen(open) {
+  $("filterToggle").setAttribute("aria-expanded", String(open));
+  $("filterBody").classList.toggle("hidden", !open);
+  try {
+    localStorage.setItem("ctg_filter_open", open ? "1" : "0");
+  } catch {
+    // ohne Speicher gilt der Zustand nur bis zum Schließen
+  }
+  if (M) chips();
+}
+$("filterToggle").onclick = () => setFilterOpen(!filterOpen());
+// Zusatzinfos (Gruppentyp, Status, Sichtbarkeit) ein-/ausblenden; ebenfalls gemerkt
+function setShowMeta(on) {
+  $("showMeta").checked = on;
+  document.querySelector("main").classList.toggle("no-meta", !on);
+  try {
+    localStorage.setItem("ctg_show_meta", on ? "1" : "0");
+  } catch {
+    // s. o.
+  }
+}
+$("showMeta").onchange = () => setShowMeta($("showMeta").checked);
+{
+  let o = null,
+    m = null;
+  try {
+    o = localStorage.getItem("ctg_filter_open");
+    m = localStorage.getItem("ctg_show_meta");
+  } catch {
+    // s. o.
+  }
+  setFilterOpen(o === "1");
+  setShowMeta(m !== "0");
+}
 function showTab(t) {
   [
     ["tabList", "listPane"],
@@ -888,7 +936,8 @@ document.addEventListener("click", (e) => {
   let c = e.target.closest("[data-clear]");
   if (c) {
     BACK = [];
-    $(c.dataset.clear).value = "";
+    if (c.dataset.clear === "multiF") setMulti("");
+    else $(c.dataset.clear).value = "";
     render();
     return;
   }
@@ -898,7 +947,7 @@ document.addEventListener("click", (e) => {
     $("type").value = "";
     $("visibility").value = "";
     $("status").value = activeStatus(); // Standard: nur aktive Gruppen
-    $("multiF").value = "";
+    setMulti("");
     render();
     return;
   }

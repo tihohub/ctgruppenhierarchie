@@ -90,8 +90,57 @@ button {
 }
 .filters {
   display: grid;
-  grid-template-columns: 2fr repeat(4, 1fr);
+  grid-template-columns: 2fr repeat(3, 1fr);
   gap: 9px;
+}
+/* Filterbereich: zuklappbar, Ein/Aus-Schalter */
+.filter-toggle {
+  background: none;
+  color: inherit;
+  padding: 2px 0;
+  font-weight: 700;
+  font-size: 15px;
+  text-align: left;
+}
+.ft-arrow {
+  display: inline-block;
+  transition: transform 0.15s;
+}
+.filter-toggle[aria-expanded="true"] .ft-arrow {
+  transform: rotate(90deg);
+}
+.filter-summary {
+  font-weight: 400;
+  color: var(--mut);
+  font-size: 13px;
+}
+.filter-body {
+  margin-top: 10px;
+}
+.switches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  margin-top: 10px;
+}
+.switches .check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  margin: 0;
+}
+.switches .check input {
+  width: auto;
+  margin: 0;
+}
+.switches .note {
+  margin: 0;
+}
+/* Zusatzinfos ausgeblendet */
+.no-meta .badge,
+.no-meta .vmeta.info {
+  display: none;
 }
 label {
   font-weight: 650;

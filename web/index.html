@@ -179,6 +179,16 @@
           <div id="stats" class="stats"></div>
         </div>
         <div class="card filters-card">
+          <button
+            id="filterToggle"
+            class="filter-toggle"
+            aria-expanded="false"
+            aria-controls="filterBody"
+            title="Filter auf- oder zuklappen"
+          >
+            <span class="ft-arrow">▸</span> Filter <span id="filterSummary" class="filter-summary"></span>
+          </button>
+          <div id="filterBody" class="filter-body hidden">
           <div class="filters">
             <div>
               <label>Suche</label
@@ -200,12 +210,19 @@
               <label>Gruppenstatus</label
               ><select id="status"></select>
             </div>
-            <div>
-              <label>Mehrfachzuordnung</label
-              ><select id="multiF"></select>
-            </div>
+          </div>
+          <div class="switches">
+            <label class="check"
+              ><input id="multiF" type="checkbox" /> Nur Gruppen mit Mehrfachzuordnung
+              <span id="multiCount2" class="note"></span
+            ></label>
+            <label class="check"
+              ><input id="showMeta" type="checkbox" checked /> Zusatzinfos anzeigen (Gruppentyp,
+              Status, Sichtbarkeit)</label
+            >
           </div>
           <div id="chips" class="chips"></div>
+          </div>
         </div>
         <div class="tabs">
           <button id="tabVis" class="tab active">⌘ Visualisierung</button
