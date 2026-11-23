@@ -387,6 +387,45 @@ test("Eigene Filter: Eigenschaft – Bedingung – Wert mit UND/ODER", async () 
   assert.deepEqual(page.errors, []);
 });
 
+test("Eigene Filter mit Namen speichern, laden, aktualisieren und löschen", async () => {
+  const page = await openApp();
+  await connected(page);
+  await openFilters(page);
+  const gruppen = async () => (await page.locator("#stats span").first().textContent()).trim();
+  const cond = (i) => page.locator("#cfBox .cf-cond").nth(i);
+  // ohne Bedingung wird nicht gespeichert
+  await page.fill("#cfName", "Ohne Leitung");
+  await page.click("#cfSave");
+  assert.match(await text(page, "#cfMsg"), /keine vollständige Bedingung/);
+  await page.click('#cfBox [data-cf="addc"]');
+  await cond(0).locator('[data-cf="field"]').selectOption({ label: "Anzahl Leiter" });
+  await cond(0).locator('[data-cf="value"]').fill("0");
+  await page.click("#cfSave");
+  assert.match(await text(page, "#cfMsg"), /„Ohne Leitung“ gespeichert/);
+  // Filter leeren, dann gespeicherten Filter wählen
+  await page.click('#chips [data-clear="custom"]');
+  assert.equal(await gruppen(), "47 / 48 Gruppen");
+  await page.selectOption("#cfSaved", "Ohne Leitung");
+  assert.equal(await gruppen(), "2* / 48 Gruppen");
+  // bleibt nach Neuladen erhalten; gleicher Name aktualisiert
+  await page.reload();
+  await connected(page);
+  assert.deepEqual(await page.locator("#cfSaved option").allTextContents(), [
+    "Gespeicherten Filter wählen …",
+    "Ohne Leitung",
+  ]);
+  await page.selectOption("#cfSaved", "Ohne Leitung");
+  await cond(0).locator('[data-cf="value"]').fill("1");
+  await page.click("#cfSave");
+  assert.match(await text(page, "#cfMsg"), /aktualisiert/);
+  assert.equal(await page.locator("#cfSaved option").count(), 2);
+  // löschen
+  await page.click("#cfDelete");
+  assert.match(await text(page, "#cfMsg"), /gelöscht/);
+  assert.equal(await text(page, "#cfSaved"), "Noch keine gespeicherten Filter");
+  assert.deepEqual(page.errors, []);
+});
+
 test("Visualisierung ist aufgeklappt und zeigt alleinstehende Gruppen", async () => {
   const page = await openApp();
   await connected(page);
