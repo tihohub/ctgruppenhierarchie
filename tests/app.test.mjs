@@ -57,6 +57,11 @@ async function connected(page) {
   await page.waitForSelector("#app:not(.hidden)");
 }
 
+// Filterbereich aufklappen (startet zugeklappt)
+async function openFilters(page) {
+  if ((await page.getAttribute("#filterToggle", "aria-expanded")) !== "true") await page.click("#filterToggle");
+}
+
 const text = async (page, sel) => ((await page.textContent(sel)) || "").replace(/\s+/g, " ").trim();
 
 before(async () => {
@@ -114,6 +119,7 @@ test("Statistik richtet sich nach Filter und Suche", async () => {
     "2 mit mehreren Obergruppen",
     "46 Beziehungen",
   ]);
+  await openFilters(page);
   await page.fill("#search", "Füll01");
   assert.deepEqual(await stats(), [
     "1* / 48 Gruppen",
@@ -124,7 +130,7 @@ test("Statistik richtet sich nach Filter und Suche", async () => {
     "1 Beziehungen",
   ]);
   await page.fill("#search", "");
-  await page.selectOption("#multiF", "multi");
+  await page.check("#multiF");
   assert.deepEqual(await stats(), [
     "2* / 48 Gruppen",
     "2 hierarchisch",
@@ -187,7 +193,8 @@ test("Mehrfachzuordnungen: Hinweis, Filter und Arbeitsliste", async () => {
   await connected(page);
   assert.match(await text(page, '#tree li[data-gid="5"][data-pid="2"] > .multi'), /auch unter: C/);
   assert.match(await text(page, '#tree li[data-gid="6"][data-pid="5"] > .dup'), /mehrfach über X/);
-  await page.selectOption("#multiF", "multi");
+  await openFilters(page);
+  await page.check("#multiF");
   assert.match(await text(page, "#stats"), /^2\* \/ 48 Gruppen/);
   await page.click("#tabMulti");
   assert.equal(await text(page, "#multiCount"), "2 Gruppen");
@@ -222,6 +229,7 @@ test("Startansicht: Visualisierung horizontal, Reiter links, Status „aktiv“"
   assert.match(await page.locator("#status option:checked").textContent(), /^aktiv/);
   assert.equal(await page.locator('#soloForest [data-gid="8"]').count(), 0, "beendete Gruppe ausgefiltert");
   // „Alle Gruppenstatus“ zeigt auch die beendete Gruppe; Zurücksetzen stellt „aktiv“ wieder her
+  await openFilters(page);
   await page.selectOption("#status", "");
   assert.equal(await page.locator('#soloForest [data-gid="8"]').count(), 1);
 });
@@ -283,6 +291,48 @@ test("Zoom: Start mit ganzem Stamm, Knöpfe, Strg+Mausrad, Ziehen, zwei Finger",
   });
   assert.ok((await zoom()) > start * 1.5, "zwei Finger zoomen hinein");
   assert.deepEqual(page.errors, []);
+});
+
+test("Filterbereich: zugeklappt mit Anzeige der wirksamen Filter, Zustand wird gemerkt", async () => {
+  const page = await openApp();
+  await connected(page);
+  assert.equal(await page.isVisible("#filterBody"), false, "beim ersten Start zugeklappt");
+  assert.equal(await text(page, "#filterSummary"), "(1 aktiv: Status: aktiv)");
+  await page.click("#filterToggle");
+  assert.ok(await page.isVisible("#search"));
+  assert.equal(await text(page, "#filterSummary"), "", "aufgeklappt: Filter stehen als Chips da");
+  await page.fill("#search", "Füll");
+  await page.check("#multiF");
+  await page.click("#filterToggle");
+  assert.match(await text(page, "#filterSummary"), /^\(3 aktiv: Suche: Füll, Status: aktiv, Nur Mehrfachzuordnung\)$/);
+  // aufgeklappt verlassen → beim nächsten Start aufgeklappt
+  await page.click("#filterToggle");
+  await page.reload();
+  await connected(page);
+  assert.ok(await page.isVisible("#filterBody"));
+});
+
+test("Ein/Aus-Filter Mehrfachzuordnung und Zusatzinfos ausblenden", async () => {
+  const page = await openApp();
+  await connected(page);
+  await openFilters(page);
+  assert.equal(await page.getAttribute("#multiF", "type"), "checkbox");
+  assert.equal(await text(page, "#multiCount2"), "(2)");
+  await page.check("#multiF");
+  assert.match(await text(page, "#stats"), /^2\* \/ 48 Gruppen/);
+  await page.uncheck("#multiF");
+  assert.match(await text(page, "#stats"), /^47 \/ 48 Gruppen/);
+  // Zusatzinfos: standardmäßig sichtbar, ausblendbar, Einstellung bleibt nach Neuladen
+  const meta = page.locator('#forest .stem-title[data-gid="1"] .vmeta.info');
+  assert.ok(await meta.isVisible());
+  await page.uncheck("#showMeta");
+  assert.equal(await meta.isVisible(), false);
+  await page.click("#tabList");
+  assert.equal(await page.locator("#tree .badge").first().isVisible(), false);
+  await page.reload();
+  await connected(page);
+  assert.equal(await page.isChecked("#showMeta"), false);
+  assert.equal(await page.locator('#forest .stem-title[data-gid="1"] .vmeta.info').isVisible(), false);
 });
 
 test("Visualisierung ist aufgeklappt und zeigt alleinstehende Gruppen", async () => {
