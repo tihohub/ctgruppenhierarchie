@@ -287,3 +287,31 @@ test("Zurück: letzte Änderung zurücknehmen, mehrere über die Liste, Prüfung
   await fetch(CT + "/_test/parents", { method: "POST", body: JSON.stringify({ group: 6, parents: [5] }) });
   assert.deepEqual(errors, []);
 });
+
+test("Gemeinsame Filter: für alle freigeben, andere sehen und nutzen ihn, löschen", async () => {
+  const { page, errors } = await openExtension();
+  await page.locator("#ctgh-app:not(.hidden)").waitFor();
+  if ((await page.getAttribute("#filterToggle", "aria-expanded")) !== "true") await page.click("#filterToggle");
+  assert.ok(await page.isVisible("#cfShare"));
+  await page.click('#cfBox [data-cf="addc"]');
+  const c = page.locator("#cfBox .cf-cond").first();
+  await c.locator('[data-cf="field"]').selectOption({ label: "Anzahl Leiter" });
+  await c.locator('[data-cf="value"]').fill("0");
+  await page.fill("#cfName", "Ohne Leitung");
+  await page.click("#cfShare");
+  await page.waitForFunction(() => /für alle freigegeben/.test(document.getElementById("cfMsg").textContent));
+  // eine andere Person öffnet die Extension: der Filter steht unter „Für alle freigegeben“
+  const { page: p2 } = await openExtension();
+  await p2.locator("#ctgh-app:not(.hidden)").waitFor();
+  if ((await p2.getAttribute("#filterToggle", "aria-expanded")) !== "true") await p2.click("#filterToggle");
+  const opt = p2.locator('#cfSaved optgroup[label="👥 Für alle freigegeben"] option');
+  await opt.first().waitFor({ state: "attached" });
+  assert.deepEqual(await opt.allTextContents(), ["Ohne Leitung"]);
+  await p2.selectOption("#cfSaved", { label: "Ohne Leitung" });
+  assert.equal((await p2.locator("#stats span").first().textContent()).trim(), "2* / 48 Gruppen");
+  // nicht mehr freigeben
+  await p2.click("#cfDelete");
+  await p2.waitForFunction(() => /nicht mehr für alle freigegeben/.test(document.getElementById("cfMsg").textContent));
+  assert.equal(await p2.locator('#cfSaved optgroup[label="👥 Für alle freigegeben"]').count(), 0);
+  assert.deepEqual(errors, []);
+});

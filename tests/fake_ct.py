@@ -46,6 +46,13 @@ if os.environ.get("CTG_TESTSTAMM"):
 # Schreiben in diese Gruppe verweigert CT (fehlende Rechte), z. B. Lösen von X aus C
 NO_RIGHTS = {3}
 CSRF = "csrf-123"
+# Datenablage der Extension (Custom Module): Bereiche und Einträge
+MODULE_ID = 7
+CATEGORIES = []  # [{id, shorty, name, ...}]
+VALUES = []  # [{id, dataCategoryId, value}]
+NEXT = {"id": 100}
+# ohne Schreibrechte für die Datenablage (CTG_KEINE_FILTERRECHTE=1)
+NO_CUSTOM_WRITE = bool(os.environ.get("CTG_KEINE_FILTERRECHTE"))
 
 
 def pid(p):
@@ -160,6 +167,13 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(200, page(hierarchies()))
         if path == "/api/csrftoken":
             return self._send(200, {"data": CSRF})
+        if path == "/api/custommodules":
+            return self._send(200, {"data": [{"id": MODULE_ID, "shorty": EXT[len("/ccm/") :], "name": "Gruppenhierarchie"}]})
+        if path == f"/api/custommodules/{MODULE_ID}/customdatacategories":
+            return self._send(200, {"data": CATEGORIES})
+        m = re.fullmatch(rf"/api/custommodules/{MODULE_ID}/customdatacategories/(\d+)/customdatavalues", path)
+        if m:
+            return self._send(200, {"data": [v for v in VALUES if v["dataCategoryId"] == int(m.group(1))]})
         m = re.fullmatch(r"/api/groups/(\d+)/parents", path)
         if m:
             ps = PARENTS.get(int(m.group(1)), [])
@@ -179,6 +193,8 @@ class Handler(BaseHTTPRequestHandler):
             j = json.loads(self.rfile.read(n) or b"{}")
             PARENTS[int(j["group"])] = j["parents"]
             return self._send(200, {})
+        if path.startswith("/api/custommodules/"):
+            return self._custom(path)
         m = re.fullmatch(r"/api/groups/(\d+)/parents/(\d+)", path)
         if not m or self.command not in ("PUT", "DELETE"):
             return self._send(405, {"message": "nicht erlaubt"})
@@ -236,8 +252,47 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(b)
 
+    def _custom(self, path):
+        """Datenablage der Extension: Bereich anlegen, Einträge anlegen/ändern/löschen."""
+        if SESSION_COOKIE not in (self.headers.get("Cookie") or ""):
+            return self._send(401, {"message": "Session abgelaufen"})
+        if self.headers.get("CSRF-Token") != CSRF:
+            return self._send(401, {"message": "CSRF-Token ungültig"})
+        if NO_CUSTOM_WRITE:  # wie CT bei fehlendem Recht
+            return self._send(401, {"message": "Die Session ist abgelaufen"})
+        n = int(self.headers.get("Content-Length") or 0)
+        body = json.loads(self.rfile.read(n) or b"{}")
+        pre = f"/api/custommodules/{MODULE_ID}/customdatacategories"
+        if path == pre and self.command == "POST":
+            NEXT["id"] += 1
+            c = {"id": NEXT["id"], "customModuleId": MODULE_ID, **{k: body[k] for k in ("name", "shorty", "description") if k in body}}
+            CATEGORIES.append(c)
+            return self._send(201, {"data": c})
+        m = re.fullmatch(rf"{pre}/(\d+)/customdatavalues(?:/(\d+))?", path)
+        if not m or not any(c["id"] == int(m.group(1)) for c in CATEGORIES):
+            return self._send(404, {"message": "Not found"})
+        cid, vid = int(m.group(1)), m.group(2)
+        if self.command == "POST" and not vid:
+            if len(body.get("value", "")) > 10000:
+                return self._send(400, {"messageKey": "validation.length"})
+            NEXT["id"] += 1
+            VALUES.append({"id": NEXT["id"], "dataCategoryId": cid, "value": body.get("value", "")})
+            return self._send(201, {"data": {"id": NEXT["id"]}})
+        v = next((x for x in VALUES if vid and x["id"] == int(vid)), None)
+        if not v:
+            return self._send(404, {"message": "Not found"})
+        if self.command == "PUT":
+            v["value"] = body.get("value", "")
+            return self._send(200, {"data": v})
+        if self.command == "DELETE":
+            VALUES.remove(v)
+            self.send_response(204)
+            self.end_headers()
+            return
+        return self._send(405, {"message": "nicht erlaubt"})
+
     def do_POST(self):
-        if self.path.split("?")[0] == "/_test/parents":
+        if self.path.split("?")[0] == "/_test/parents" or self.path.startswith("/api/custommodules/"):
             return self._write()
         self._record()
         self._send(405, {"message": "nicht erlaubt"})
