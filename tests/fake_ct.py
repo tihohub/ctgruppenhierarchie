@@ -13,7 +13,7 @@ Testdaten:
   D                      alleinstehend
   8 „Alter Kreis“        alleinstehend, Status „beendet“ (beim Start ausgefiltert)
 """
-import json, os, re, sys
+import json, os, re, sys, urllib.parse
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -89,7 +89,13 @@ ROUTES = {
                     **({"groupCategoryId": CATEGORY[i]} if i in CATEGORY else {}),
                     "note": "Beschreibung von " + n,
                 },
-                "settings": {"visibility": "intern"},
+                "settings": {
+                    "visibility": "intern",
+                    "isOpenForMembers": i in (1, 2),
+                    "signUpHeadline": "Jetzt anmelden",  # ausgeblendet
+                    "imageAiGenerated": False,  # ausgeblendet
+                },
+                # wie CT: Anzahlen nur, wenn ausdrücklich angefordert (include[]=memberStatistics);
                 # Anzahl Leiter: X und Y haben keine Leitung
                 "memberStatistics": {"leaders": 0 if i in (5, 6) else 1, "active": 10 + i % 5},
                 # eigenes Gruppenfeld der Instanz (nur bei A)
@@ -141,6 +147,13 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(200, {"data": {"id": -1, "lastName": "Anonymous"}})
         if not (token_ok or session_ok):
             return self._send(401, {"message": "Unauthorized"})
+        mit_zahlen = "memberStatistics" in urllib.parse.unquote(self.path)
+        if path == "/api/groups" and mit_zahlen and os.environ.get("CTG_OHNE_ZAHLEN"):
+            # Instanz, die das Mitanfordern nicht kennt
+            return self._send(400, {"message": "unbekannter Parameter include"})
+        if path == "/api/groups" and not mit_zahlen:
+            data = [{k: v for k, v in g.items() if k != "memberStatistics"} for g in ROUTES[path]["data"]]
+            return self._send(200, page(data))
         if path in ROUTES:
             return self._send(200, ROUTES[path])
         if path == "/api/groups/hierarchies":

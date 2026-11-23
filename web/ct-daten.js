@@ -201,7 +201,7 @@ async function loadGroupData(base, token) {
   const suffix = sq ? "?" + sq : "";
 
   const [groups, hierarchies, types] = await Promise.all([
-    ctPaged(base, token, "/groups" + suffix),
+    groupsWithStats(base, token, sq),
     ctPaged(base, token, "/groups/hierarchies" + suffix),
     ctPaged(base, token, "/group/grouptypes"),
   ]);
@@ -370,6 +370,18 @@ async function loadGroupData(base, token) {
   };
 }
 
+// Gruppen mit Mitglieder- und Leiterzahlen (memberStatistics) anfordern. Unterstützt eine
+// CT-Instanz das nicht, ohne diesen Zusatz erneut laden.
+async function groupsWithStats(base, token, sq) {
+  const q = (extra) => "/groups" + ([sq, extra].filter(Boolean).length ? "?" + [sq, extra].filter(Boolean).join("&") : "");
+  try {
+    return await ctPaged(base, token, q("include%5B%5D=memberStatistics"));
+  } catch (e) {
+    if (/HTTP 40[13]/.test(String(e.message))) throw e; // Anmeldung/Rechte: nicht verschleiern
+    return ctPaged(base, token, q(""));
+  }
+}
+
 // ---- Gruppenfelder für eigene Filter ----
 // Alle Felder, die CT zu einer Gruppe liefert, als flache Liste „Schlüssel → Anzeigewert“.
 // Neue Felder in CT (auch eigene Gruppenfelder der Instanz) erscheinen ohne Programmänderung.
@@ -389,6 +401,28 @@ const FIELD_LABELS = {
   weekday: "Wochentag",
   groupHomepageUrl: "Homepage der Gruppe",
   modifiedDate: "Zuletzt geändert",
+  isOpenForMembers: "Offen für Anmeldungen",
+  isPublic: "Öffentlich",
+  isHidden: "Versteckt",
+  inStatistic: "In Statistik berücksichtigen",
+  autoAccept: "Anmeldungen automatisch annehmen",
+  allowWaitinglist: "Warteliste erlaubt",
+  waitinglistMaxPersons: "Warteliste: max. Personen",
+  automaticMoveUp: "Automatisch von Warteliste nachrücken",
+  allowChildRegistration: "Anmeldung von Kindern erlaubt",
+  allowSpouseRegistration: "Anmeldung des Ehepartners erlaubt",
+  allowOtherRegistration: "Anmeldung weiterer Personen erlaubt",
+  allowSameEmailRegistration: "Anmeldung mit gleicher E-Mail erlaubt",
+  signUpOpeningDate: "Anmeldung geöffnet ab",
+  signUpClosingDate: "Anmeldeschluss",
+  emailVerificationMode: "E-Mail-Bestätigung bei Anmeldung",
+  informLeader: "Gruppenleitung bei Anmeldung informieren",
+  postsEnabled: "Beiträge aktiviert",
+  chatHistoryVisible: "Chatverlauf sichtbar",
+  qrCodeCheckin: "QR-Code-Check-in",
+  dynamicGroupStatus: "Automatische Mitgliedschaft",
+  securityLevelForGroup: "Sicherheitsstufe",
+  appointmentStartDate: "Termin: Beginn",
   "memberStatistics.leaders": "Anzahl Leiter",
   "memberStatistics.active": "Anzahl Mitglieder (aktiv)",
   "memberStatistics.participants": "Anzahl Teilnehmer",
@@ -408,6 +442,22 @@ const FIELD_SKIP = new Set([
   "domainIdentifier",
   "apiUrl",
   "domainType",
+  // rein technisch bzw. zum Filtern ungeeignet (mit dem Inhaber abgestimmt)
+  "appointmentId",
+  "defaultPostCommentsActive",
+  "defaultPostNotificationScope",
+  "defaultPostVisibility",
+  "dynamicGroupUpdateStarted",
+  "dynamicGroupUpdateFinished",
+  "externalPostSubscriptionsEnabled",
+  "imageAiGenerated",
+  "qrCodeCheckinAutomaticEmail",
+  "sendDefaultSignUpMail",
+  "showStreet",
+  "signUpEmailRequiredForAll",
+  "signUpNotificationSentDate",
+  "statusesCountedTowardsSeats",
+  "signUpHeadline",
 ]);
 function fieldValue(v, names) {
   if (v === null || v === undefined || v === "") return "";
