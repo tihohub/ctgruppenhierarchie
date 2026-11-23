@@ -173,7 +173,15 @@
           <div class="tools">
             <button id="expand" class="green">＋ Alle maximieren</button
             ><button id="collapse" class="red">− Alle minimieren</button
-            ><button id="print" class="light">🖨 Drucken</button>
+            ><button id="print" class="light">🖨 Drucken</button
+            ><button
+              id="editBtn"
+              class="light hidden"
+              aria-pressed="false"
+              title="Gruppen per Ziehen in CT umhängen (Version 2.0)"
+            >
+              ✎ Bearbeiten
+            </button>
           </div>
           <p id="conn" class="ok"></p>
           <div id="stats" class="stats"></div>
@@ -239,6 +247,14 @@
           </div>
           <div id="chips" class="chips"></div>
           </div>
+        </div>
+        <div id="editBar" class="edit-bar hidden">
+          <span
+            ><b>Bearbeiten:</b> Gruppe auf eine andere ziehen = dort einordnen (alles darunter zieht
+            mit). ✂ = von der Obergruppe lösen. Jede Änderung wird nach Rückfrage sofort in CT
+            gespeichert.</span
+          >
+          <div id="dropRoot" class="drop-root">⬚ Hier ablegen: keine Obergruppe</div>
         </div>
         <div class="tabs">
           <button id="tabVis" class="tab active">⌘ Visualisierung</button
@@ -343,6 +359,21 @@
           <p id="endedText"></p>
         </div>
       </div>
+      <div id="editDlg" class="modal hidden">
+        <div class="modalbox">
+          <h2 id="editTitle"></h2>
+          <div id="editChoices" class="edit-choices"></div>
+          <p class="notice">
+            Achtung: Rechte aus Obergruppen gelten auch für Untergruppen. Durch die Änderung kann
+            sich ändern, wer diese Gruppe und ihre Untergruppen sehen oder bearbeiten darf.
+          </p>
+          <p class="row">
+            <button id="editGo">Ausführen</button
+            ><button id="editCancel" class="sec">Abbrechen</button>
+          </p>
+        </div>
+      </div>
+      <div id="toast" class="toast hidden" role="status"></div>
       <div id="tooltip" class="tooltip hidden"></div>
       <footer class="footer">
         CT Gruppenhierarchie · <span class="app-version"></span> · © 2026 Tim Hofmann ·

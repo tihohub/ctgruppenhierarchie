@@ -159,6 +159,7 @@ test("Außerhalb der Extension erscheint kein Beta-Hinweis", async () => {
   await page.evaluate(() => document.getElementById("aboutBtn").click());
   assert.equal(await page.locator("#about").isVisible(), true);
   assert.equal(await page.locator("#betaNote").isVisible(), false);
+  assert.equal(await page.locator("#editBtn").isVisible(), false, "Bearbeiten nur in der Extension");
   assert.equal(await page.locator("#extPrivacy").isVisible(), false);
   assert.match(await text(page, "#about"), /vom Nutzer angegebenen CT-Instanz/);
 });
