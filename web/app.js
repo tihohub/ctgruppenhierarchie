@@ -731,6 +731,7 @@ $("cfBox").addEventListener("input", (e) => {
     cfRender();
   } else return;
   BACK = [];
+  NEEDFIT = true;
   if (M) render();
 });
 $("cfBox").addEventListener("click", (e) => {
@@ -745,6 +746,7 @@ $("cfBox").addEventListener("click", (e) => {
   else return;
   cfRender();
   BACK = [];
+  NEEDFIT = true;
   if (M) render();
 });
 
@@ -786,6 +788,7 @@ $("cfSaved").onchange = () => {
     $("cfName").value = "";
     cfMsg("");
     BACK = [];
+    NEEDFIT = true;
     if (M) render();
     return;
   }
@@ -796,6 +799,7 @@ $("cfSaved").onchange = () => {
   cfMsg("");
   cfRender();
   BACK = [];
+  NEEDFIT = true;
   if (M) render();
 };
 $("cfSave").onclick = () => {
@@ -872,7 +876,8 @@ function fitIfNeeded() {
     zoomFit();
   }
 }
-// So weit herauszoomen, dass alle Gruppenstämme ganz zu sehen sind (höchstens 100 %)
+// So weit herauszoomen, dass alle Gruppenstämme in der BREITE ganz zu sehen sind (höchstens
+// 100 %); nach unten wird gescrollt
 function zoomFit() {
   let a = vArea(),
     f = $("forest"),
@@ -880,14 +885,12 @@ function zoomFit() {
   if (!a.clientWidth) return;
   f.style.zoom = 1;
   let w = f.scrollWidth,
-    h = f.scrollHeight,
-    aw = a.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight),
-    ah = a.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    aw = a.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
   ZOOM = 1;
-  setZoom(Math.min(1, w ? aw / w : 1, h ? ah / h : 1));
+  setZoom(Math.min(1, w ? aw / w : 1));
   // Schrift wird beim Verkleinern nicht exakt mitskaliert: so lange nachregeln, bis alles passt
   for (let i = 0; i < 5; i++) {
-    let r = Math.min(a.clientWidth / a.scrollWidth, a.clientHeight / a.scrollHeight);
+    let r = a.clientWidth / a.scrollWidth;
     if (r >= 1) break;
     setZoom(ZOOM * r * 0.98);
   }
@@ -1108,6 +1111,7 @@ $("print").onclick = () => print();
 ["search", "type", "visibility", "status", "multiF"].forEach((x) =>
   $(x).addEventListener(x === "search" ? "input" : "change", () => {
     BACK = [];
+    NEEDFIT = true; // neues Ergebnis: Zoom wieder auf die Breite anpassen
     render();
   }),
 );
@@ -1227,6 +1231,7 @@ document.addEventListener("click", (e) => {
     else if (c.dataset.clear === "custom") {
       cfClear();
     } else $(c.dataset.clear).value = "";
+    NEEDFIT = true;
     render();
     return;
   }
@@ -1236,6 +1241,7 @@ document.addEventListener("click", (e) => {
     $("type").value = "";
     $("visibility").value = "";
     $("status").value = ""; // wirklich alle Gruppen (beim Start gilt weiter „aktiv“)
+    NEEDFIT = true;
     setMulti("");
     cfClear();
     render();

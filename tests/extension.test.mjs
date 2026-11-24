@@ -210,7 +210,6 @@ test("Bearbeiten: ✂ löst von der Obergruppe, Ziehen ordnet wieder ein", async
 test("Bearbeiten in der Visualisierung: Karte auf Karte ziehen", async () => {
   const { page } = await bearbeiten();
   await page.click("#tabVis");
-  for (let i = 0; i < 8; i++) await page.click("#zoomIn"); // auf etwa 100 %
   // Y (unter X) auf den Stamm C ziehen → Rückfrage, dann abbrechen. Beide liegen sichtbar
   // nebeneinander (beim Ziehen über weite Strecken scrollt der Testbrowser sonst mitten im Zug).
   await page.locator('#forest .vcard[data-gid="6"] a').first().dragTo(page.locator('#forest .stem-title[data-gid="3"] a'));

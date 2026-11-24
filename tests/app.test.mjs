@@ -236,17 +236,19 @@ test("Startansicht: Visualisierung horizontal, Reiter links, Status „aktiv“"
   assert.equal(await page.locator('#soloForest [data-gid="8"]').count(), 1);
 });
 
-test("Zoom: Start mit ganzem Stamm, Knöpfe, Strg+Mausrad, Ziehen, zwei Finger", async () => {
+test("Zoom: Start auf ganze Breite, Knöpfe, Strg+Mausrad, Ziehen, zwei Finger, Filter passt neu ein", async () => {
   const page = await openApp();
+  await page.setViewportSize({ width: 900, height: 800 }); // schmal, damit eingepasst werden muss (unter 800 px stapeln sich die Stämme)
   await connected(page);
   const zoom = () => page.evaluate(() => ZOOM);
   const area = page.locator("#visPane .visual-area").first();
-  // beim Start so weit herausgezoomt, dass alles hineinpasst
-  const passt = await page.evaluate(() => {
-    const a = document.getElementById("forest").parentElement;
-    return a.scrollWidth <= a.clientWidth + 1 && a.scrollHeight <= a.clientHeight + 1;
-  });
-  assert.ok(passt, "ganzer Stamm sichtbar");
+  const masse = () =>
+    page.evaluate(() => {
+      const a = document.getElementById("forest").parentElement;
+      return { breitePasst: a.scrollWidth <= a.clientWidth + 1, hoehePasst: a.scrollHeight <= a.clientHeight + 1 };
+    });
+  // beim Start auf die Breite eingepasst; nach unten wird gescrollt
+  assert.deepEqual(await masse(), { breitePasst: true, hoehePasst: false });
   const start = await zoom();
   assert.ok(start < 1, "herausgezoomt");
   assert.match(await text(page, "#zoomVal"), /^\d+ %$/);
@@ -273,9 +275,12 @@ test("Zoom: Start mit ganzem Stamm, Knöpfe, Strg+Mausrad, Ziehen, zwei Finger",
     a.scrollTop = 300;
   });
   const vorher = await page.evaluate(() => document.getElementById("forest").parentElement.scrollTop);
-  await page.mouse.move(box.x + 300, box.y + 300);
+  // Bereich ins Bild holen, damit Start- und Endpunkt sichtbar sind
+  await page.evaluate(() => document.getElementById("forest").parentElement.scrollIntoView({ block: "start" }));
+  const b2 = await area.boundingBox();
+  await page.mouse.move(b2.x + 300, b2.y + 150);
   await page.mouse.down();
-  await page.mouse.move(box.x + 200, box.y + 250, { steps: 5 });
+  await page.mouse.move(b2.x + 200, b2.y + 100, { steps: 5 });
   await page.mouse.up();
   const nachher = await page.evaluate(() => document.getElementById("forest").parentElement.scrollTop);
   assert.equal(nachher, vorher + 50, "nach oben ziehen zeigt weiter unten liegende Gruppen");
@@ -292,6 +297,12 @@ test("Zoom: Start mit ganzem Stamm, Knöpfe, Strg+Mausrad, Ziehen, zwei Finger",
     a.dispatchEvent(new TouchEvent("touchend", { touches: [], bubbles: true }));
   });
   assert.ok((await zoom()) > start * 1.5, "zwei Finger zoomen hinein");
+  // Filter ändern → Zoom wird für das neue Ergebnis wieder auf die Breite eingepasst
+  await openFilters(page);
+  await page.check("#multiF");
+  assert.ok((await zoom()) <= 1);
+  assert.equal((await masse()).breitePasst, true);
+  assert.notEqual(await zoom(), 2, "nicht mehr hineingezoomt");
   assert.deepEqual(page.errors, []);
 });
 
