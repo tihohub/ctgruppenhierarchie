@@ -331,8 +331,26 @@ button {
   max-width: min(640px, calc(100% - 30px));
   pointer-events: none; /* verdeckt nichts, was man anklicken oder ablegen will */
 }
+/* Fehlermeldung: weiße, gut lesbare Schrift auf kräftigem Rot (die allgemeine Klasse .bad
+   färbt Text sonst rot – hier ausdrücklich überschreiben) */
 .toast.bad {
-  background: #a40e26;
+  background: #b3261e;
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+}
+/* Bearbeiten scharfgeschaltet: roter Rahmen um Baum und Visualisierung */
+.editing #listPane > .card,
+.editing #visPane > .card {
+  border: 3px solid #cf222e;
+  box-shadow: 0 0 0 3px #cf222e22;
+}
+/* Zurück-Liste: beim Darüberfahren alles von oben bis zur Mausposition hervorheben */
+.undo-menu:has(.undo-item:hover) .undo-item {
+  background: #fde2e1;
+}
+.undo-menu .undo-item:hover ~ .undo-item {
+  background: none;
 }
 /* Zusatzinfos ausgeblendet */
 .no-meta .badge,
