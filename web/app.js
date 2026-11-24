@@ -1547,7 +1547,8 @@ function remember(op, before, after) {
   undoRender();
 }
 function undoRender() {
-  $("undoWrap").classList.toggle("hidden", !CT_WRITE || (!EDIT && !UNDO.length));
+  // Zurücknehmen nur im Bearbeiten-Modus (die Liste bleibt beim Ausschalten erhalten)
+  $("undoWrap").classList.toggle("hidden", !CT_WRITE || !EDIT);
   $("undoBtn").disabled = $("undoMenuBtn").disabled = !UNDO.length;
   $("undoBtn").title = UNDO.length
     ? "Zurücknehmen: " + UNDO[UNDO.length - 1].label

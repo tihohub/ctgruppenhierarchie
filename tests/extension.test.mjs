@@ -287,3 +287,45 @@ test("Zurück: letzte Änderung zurücknehmen, mehrere über die Liste, Prüfung
   await fetch(CT + "/_test/parents", { method: "POST", body: JSON.stringify({ group: 6, parents: [5] }) });
   assert.deepEqual(errors, []);
 });
+
+test("Bearbeiten: roter Rahmen, Zurück nur im Bearbeiten-Modus, Hervorhebung, lesbare Fehlermeldung", async () => {
+  const { page } = await bearbeiten();
+  const rahmen = () => page.locator("#listPane > .card").first().evaluate((e) => getComputedStyle(e).borderTopColor);
+  assert.equal(await rahmen(), "rgb(207, 34, 46)", "roter Rahmen im Bearbeiten-Modus");
+  // zwei Änderungen
+  for (const ziel of [2, 1]) {
+    await page.locator('#tree li[data-gid="6"] > a').first().dragTo(page.locator(`#tree li[data-gid="${ziel}"] > a`).first());
+    await page.click("#editGo");
+    await toastText(page);
+    await neuGeladen(page);
+  }
+  // Hervorhebung: Maus auf dem zweiten (älteren) Eintrag → beide markiert
+  await page.click("#undoMenuBtn");
+  await page.locator("#undoMenu .undo-item").nth(1).hover();
+  const farben = await page.$$eval("#undoMenu .undo-item", (b) => b.map((x) => getComputedStyle(x).backgroundColor));
+  assert.deepEqual(farben, ["rgb(253, 226, 225)", "rgb(253, 226, 225)"]);
+  await page.locator("#undoMenu .undo-item").nth(0).hover();
+  const farben2 = await page.$$eval("#undoMenu .undo-item", (b) => b.map((x) => getComputedStyle(x).backgroundColor));
+  assert.equal(farben2[0], "rgb(253, 226, 225)");
+  assert.notEqual(farben2[1], "rgb(253, 226, 225)", "darunter nicht markiert");
+  await page.click("#undoMenuBtn");
+  // Bearbeiten aus → kein Zurück, kein Rahmen; wieder an → Liste noch da
+  await page.click("#editBtn");
+  assert.equal(await page.isVisible("#undoBtn"), false);
+  assert.notEqual(await rahmen(), "rgb(207, 34, 46)");
+  await page.click("#editBtn");
+  assert.equal(await page.isDisabled("#undoBtn"), false);
+  // Fehlermeldung (fehlende Rechte) in weißer Schrift
+  await page.locator('#tree li[data-gid="6"] > a').first().dragTo(page.locator('#tree li[data-gid="3"] > a'));
+  await page.click('input[name="editChoice"][value="add"]');
+  await page.click("#editGo");
+  await toastText(page);
+  assert.equal(await page.locator("#toast").evaluate((e) => getComputedStyle(e).color), "rgb(255, 255, 255)");
+  await neuGeladen(page);
+  // zurück in den Ausgangszustand: beide Änderungen zurücknehmen
+  await page.click("#undoMenuBtn");
+  await page.locator("#undoMenu .undo-item").last().click();
+  await toastText(page);
+  await neuGeladen(page);
+  await page.locator('#tree li[data-gid="6"][data-pid="5"]').first().waitFor({ state: "attached" });
+});
