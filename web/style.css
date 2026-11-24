@@ -137,6 +137,22 @@ button {
 .switches .note {
   margin: 0;
 }
+/* Reiter und Werkzeuge (Alle maximieren, Drucken, Bearbeiten …) direkt über den Gruppenstämmen */
+.viewbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.viewbar .tabs {
+  margin: 0;
+}
+.card-title {
+  font-size: 16px;
+  margin: 0 0 6px;
+}
 /* Filterbereich: zwei getrennte Abschnitte */
 .fsec {
   border: 1px solid var(--line);
