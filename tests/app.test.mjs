@@ -345,24 +345,25 @@ test("Eigene Filter: Eigenschaft – Bedingung – Wert mit UND/ODER", async () 
   const cond = (i) => page.locator("#cfBox .cf-cond").nth(i);
   // Feldliste: alle Gruppenfelder aus CT inkl. eigener Felder und Anzahlen
   await page.click('#cfBox [data-cf="addc"]');
-  const felder = await cond(0).locator('[data-cf="field"] option').allTextContents();
+  assert.equal(await cond(0).locator('[data-cf="field"]').getAttribute("placeholder"), "Filter eingeben oder auswählen");
+  const felder = await page.$$eval("#cfFields option", (o) => o.map((x) => x.value));
   for (const f of ["Anzahl Leiter", "Gruppenkategorie", "Standort", "Notiz", "kostenstelle"])
     assert.ok(felder.includes(f), f);
   // Anzahl Leiter ist 0 → X und Y
-  await cond(0).locator('[data-cf="field"]').selectOption({ label: "Anzahl Leiter" });
+  await cond(0).locator('[data-cf="field"]').fill("Anzahl Leiter");
   await cond(0).locator('[data-cf="value"]').fill("0");
   assert.equal(await gruppen(), "2* / 48 Gruppen");
   // Standort ist Wiesbaden UND (Kategorie ist Jugend ODER Notiz enthält „Füll“) → nur X
-  await cond(0).locator('[data-cf="field"]').selectOption({ label: "Standort" });
+  await cond(0).locator('[data-cf="field"]').fill("Standort");
   await cond(0).locator('[data-cf="value"]').fill("wiesbaden");
   assert.equal(await gruppen(), "2* / 48 Gruppen");
   await page.locator('#cfBox > .cf-group > .cf-add [data-cf="addg"]').click();
   const sub = page.locator("#cfBox .cf-group .cf-group");
   assert.equal(await sub.locator('[data-cf="op"]').inputValue(), "or", "Untergruppe startet mit ODER");
-  await cond(1).locator('[data-cf="field"]').selectOption({ label: "Gruppenkategorie" });
+  await cond(1).locator('[data-cf="field"]').fill("Gruppenkategorie");
   await cond(1).locator('[data-cf="value"]').fill("Jugend");
   await sub.locator('[data-cf="addc"]').click();
-  await cond(2).locator('[data-cf="field"]').selectOption({ label: "Notiz" });
+  await cond(2).locator('[data-cf="field"]').fill("Notiz");
   await cond(2).locator('[data-cf="cmp"]').selectOption("has");
   await cond(2).locator('[data-cf="value"]').fill("Füll");
   assert.equal(await gruppen(), "1* / 48 Gruppen");
@@ -382,7 +383,7 @@ test("Eigene Filter: Eigenschaft – Bedingung – Wert mit UND/ODER", async () 
   assert.equal(await gruppen(), "47 / 48 Gruppen");
   // „ist leer“ braucht keinen Wert: Gruppen ohne Kategorie (aktiv: 47 − 3)
   await page.click('#cfBox [data-cf="addc"]');
-  await cond(0).locator('[data-cf="field"]').selectOption({ label: "Gruppenkategorie" });
+  await cond(0).locator('[data-cf="field"]').fill("Gruppenkategorie");
   await cond(0).locator('[data-cf="cmp"]').selectOption("empty");
   assert.equal(await cond(0).locator('[data-cf="value"]').count(), 0);
   assert.equal(await gruppen(), "44 / 48 Gruppen");
@@ -400,7 +401,7 @@ test("Eigene Filter mit Namen speichern, laden, aktualisieren und löschen", asy
   await page.click("#cfSave");
   assert.match(await text(page, "#cfMsg"), /keine vollständige Bedingung/);
   await page.click('#cfBox [data-cf="addc"]');
-  await cond(0).locator('[data-cf="field"]').selectOption({ label: "Anzahl Leiter" });
+  await cond(0).locator('[data-cf="field"]').fill("Anzahl Leiter");
   await cond(0).locator('[data-cf="value"]').fill("0");
   await page.click("#cfSave");
   assert.match(await text(page, "#cfMsg"), /„Ohne Leitung“ gespeichert/);
@@ -426,6 +427,38 @@ test("Eigene Filter mit Namen speichern, laden, aktualisieren und löschen", asy
   assert.match(await text(page, "#cfMsg"), /gelöscht/);
   assert.equal(await text(page, "#cfSaved"), "Noch keine gespeicherten Filter");
   assert.deepEqual(page.errors, []);
+});
+
+test("Filterbereich: Schnellfilter und eigene Filter getrennt, Name des gespeicherten Filters, Zurücksetzen", async () => {
+  const page = await openApp();
+  await connected(page);
+  await openFilters(page);
+  assert.deepEqual(await page.locator("#filterBody .fsec-title").allTextContents(), ["Schnellfilter", "Eigene Filter"]);
+  // „Zusatzinfos anzeigen“ sitzt bei den Gruppenstämmen, nicht mehr im Filter
+  assert.equal(await page.locator("#filterBody #showMeta").count(), 0);
+  assert.equal(await page.locator("#visPane .visual-tools #showMeta").count(), 1);
+  const gruppen = async () => (await page.locator("#stats span").first().textContent()).trim();
+  const cond = (i) => page.locator("#cfBox .cf-cond").nth(i);
+  // Tippen statt Auswählen; Groß-/Kleinschreibung egal
+  await page.click('#cfBox [data-cf="addc"]');
+  await cond(0).locator('[data-cf="field"]').fill("anzahl leiter");
+  await cond(0).locator('[data-cf="value"]').fill("0");
+  assert.equal(await gruppen(), "2* / 48 Gruppen");
+  await page.fill("#cfName", "Ohne Leitung");
+  await page.click("#cfSave");
+  assert.match(await text(page, "#chips"), /Ohne Leitung×/);
+  await cond(0).locator('[data-cf="value"]').fill("1");
+  assert.match(await text(page, "#chips"), /Ohne Leitung \(geändert\)/);
+  // leere Auswahl leert den eigenen Filter
+  await page.selectOption("#cfSaved", "Ohne Leitung");
+  assert.equal(await gruppen(), "2* / 48 Gruppen");
+  await page.selectOption("#cfSaved", "");
+  assert.equal(await page.locator("#cfBox .cf-cond").count(), 0);
+  assert.equal(await gruppen(), "47 / 48 Gruppen");
+  // „Alle Filter zurücksetzen“ entfernt auch „aktiv“ → alle 48
+  await page.click("#reset");
+  assert.equal(await gruppen(), "48 / 48 Gruppen");
+  assert.equal(await text(page, "#chips"), "");
 });
 
 test("Visualisierung ist aufgeklappt und zeigt alleinstehende Gruppen", async () => {

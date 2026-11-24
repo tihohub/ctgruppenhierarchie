@@ -40,6 +40,8 @@ function save() {
       expanded: [...expanded],
       mode,
       cf: CF,
+      cfName: CF_NAME,
+      cfBase: CF_BASE,
     }),
   );
 }
@@ -222,6 +224,8 @@ function setup(first) {
   P = prefs();
   $("search").value = P.search || "";
   CF = cfValid(P.cf) ? P.cf : cfNew("and");
+  CF_NAME = P.cfName || "";
+  CF_BASE = P.cfBase || "";
   cfRender();
   expanded = new Set((P.expanded || []).map(Number));
   facets(P.type || "", P.visibility || "", first ? activeStatus() : P.status || "", P.multi || "");
@@ -475,8 +479,7 @@ function jump(id, tab, from) {
   if (!DISPLAY.has(id)) {
     ["search", "type", "visibility", "status"].forEach((x) => ($(x).value = ""));
     setMulti("");
-    CF = cfNew("and");
-    cfRender();
+    cfClear();
     render();
   }
   ancestors(id).forEach((x) => {
@@ -538,7 +541,13 @@ function activeFilters() {
       a.push([id, l + ": " + $(id).selectedOptions[0].textContent.replace(/ \(\d+\)$/, "")]);
   if (multiV()) a.push(["multiF", "Nur Mehrfachzuordnung"]);
   let n = cfCount();
-  if (n) a.push(["custom", `Eigener Filter (${n} ${n === 1 ? "Bedingung" : "Bedingungen"})`]);
+  if (n)
+    a.push([
+      "custom",
+      CF_NAME
+        ? CF_NAME + (cfKey(CF) === CF_BASE ? "" : " (geändert)")
+        : `Eigener Filter (${n} ${n === 1 ? "Bedingung" : "Bedingungen"})`,
+    ]);
   return a;
 }
 function chips() {
@@ -555,7 +564,25 @@ function chips() {
 
 // ---- Eigene Filter: Eigenschaft – Bedingung – Wert, mit UND/ODER verschachtelbar ----
 // Aufbau: { op: "and" | "or", items: [ { field, cmp, value } | { op, items } ] }
-let CF = cfNew("and");
+let CF = cfNew("and"),
+  CF_NAME = "", // Name des geladenen bzw. zuletzt gespeicherten Filters
+  CF_BASE = ""; // sein Inhalt, um Änderungen zu erkennen
+// Inhalt ohne unvollständige Bedingungen – zum Erkennen echter Änderungen
+function cfKey(grp) {
+  let strip = (g) => ({
+    op: g.op,
+    items: g.items
+      .map((x) => (x.items ? strip(x) : cfComplete(x) ? { field: x.field, cmp: x.cmp, value: cfNoValue(x) ? "" : String(x.value).trim() } : null))
+      .filter((x) => x && (!x.items || x.items.length)),
+  });
+  return JSON.stringify(strip(grp));
+}
+function cfClear() {
+  CF = cfNew("and");
+  CF_NAME = CF_BASE = "";
+  if ($("cfSaved")) $("cfSaved").value = "";
+  cfRender();
+}
 function cfNew(op) {
   return { op, items: [] };
 }
@@ -654,25 +681,34 @@ function cfGroupHtml(grp, path) {
       "",
     )}<div class="cf-add"><button class="light" data-cf="addc">＋ Bedingung</button><button class="light" data-cf="addg" title="Bedingungen, die mit eigener UND/ODER-Verknüpfung zusammengefasst werden">＋ Untergruppe</button></div></div>`;
 }
+// Vorhandene Werte einer Eigenschaft als Vorschläge für das Wertfeld
+function cfValueOptions(key) {
+  if (!M || !key) return "";
+  let set = new Set();
+  for (let g of M.groups) if (g.fields && g.fields[key] !== undefined) set.add(String(g.fields[key]));
+  return [...set]
+    .sort((a, b) => a.localeCompare(b, "de", { numeric: true }))
+    .slice(0, 300)
+    .map((v) => `<option value="${esc(v)}"></option>`)
+    .join("");
+}
+const cfLabel = (key) => ((M ? M.fieldList : []).find((f) => f.key === key) || {}).label || "";
+// Eigenschaft zum eingetippten bzw. ausgewählten Namen (Groß-/Kleinschreibung egal)
+const cfKeyOf = (label) =>
+  ((M ? M.fieldList : []).find((f) => f.label.toLowerCase() === label.trim().toLowerCase()) || {})
+    .key || "";
 function cfCondHtml(c, path) {
-  let fields = M ? M.fieldList : [],
-    vals = [];
-  if (M && c.field) {
-    let set = new Set();
-    for (let g of M.groups) if (g.fields && g.fields[c.field] !== undefined) set.add(String(g.fields[c.field]));
-    vals = [...set].sort((a, b) => a.localeCompare(b, "de", { numeric: true })).slice(0, 300);
-  }
   let lid = "cfl-" + path.replace(/\./g, "-");
-  return `<div class="cf-cond" data-cfpath="${path}"><select data-cf="field" aria-label="Eigenschaft"><option value="">Eigenschaft wählen …</option>${cfSel(
-    c.field,
-    fields.map((f) => [f.key, f.label]),
-  )}</select><select data-cf="cmp" aria-label="Bedingung">${cfSel(c.cmp, CF_CMPS)}</select>${
+  return `<div class="cf-cond" data-cfpath="${path}"><input data-cf="field" class="cf-field" list="cfFields" aria-label="Eigenschaft" placeholder="Filter eingeben oder auswählen" value="${esc(cfLabel(c.field))}" /><select data-cf="cmp" aria-label="Bedingung">${cfSel(c.cmp, CF_CMPS)}</select>${
     cfNoValue(c)
       ? ""
-      : `<input data-cf="value" aria-label="Wert" placeholder="Wert" list="${lid}" value="${esc(c.value ?? "")}" /><datalist id="${lid}">${vals.map((v) => `<option value="${esc(v)}"></option>`).join("")}</datalist>`
+      : `<input data-cf="value" aria-label="Wert" placeholder="Wert" list="${lid}" value="${esc(c.value ?? "")}" /><datalist id="${lid}">${cfValueOptions(c.field)}</datalist>`
   }<button class="cf-del" data-cf="del" title="Bedingung entfernen">✕</button></div>`;
 }
 function cfRender() {
+  $("cfFields").innerHTML = (M ? M.fieldList : [])
+    .map((f) => `<option value="${esc(f.label)}"></option>`)
+    .join("");
   $("cfBox").innerHTML = cfGroupHtml(CF, "");
 }
 // Änderungen im Baukasten: Auswahl → neu aufbauen; Werteingabe → nur Ergebnis neu berechnen
@@ -683,7 +719,14 @@ $("cfBox").addEventListener("input", (e) => {
   let [node] = cfAt(box.dataset.cfpath),
     k = el.dataset.cf;
   if (k === "value") node.value = el.value;
-  else if (k === "field" || k === "cmp" || k === "op") {
+  else if (k === "field") {
+    // Eingabefeld zum Tippen oder Auswählen: erst ein vollständiger Name wählt die Eigenschaft
+    let key = cfKeyOf(el.value);
+    if (key === node.field) return;
+    node.field = key;
+    let dl = box.querySelector("datalist");
+    if (dl) dl.innerHTML = cfValueOptions(key);
+  } else if (k === "cmp" || k === "op") {
     node[k] = el.value;
     cfRender();
   } else return;
@@ -737,8 +780,18 @@ $("cfSaved").onchange = () => {
   let name = $("cfSaved").value,
     f = cfSavedList().find((x) => x.name === name);
   $("cfDelete").disabled = !f;
-  if (!f) return;
+  if (!f) {
+    // „Gespeicherten Filter wählen …“: eigenen Filter leeren
+    cfClear();
+    $("cfName").value = "";
+    cfMsg("");
+    BACK = [];
+    if (M) render();
+    return;
+  }
   CF = JSON.parse(JSON.stringify(f.cf));
+  CF_NAME = f.name;
+  CF_BASE = cfKey(CF);
   $("cfName").value = f.name;
   cfMsg("");
   cfRender();
@@ -756,8 +809,11 @@ $("cfSave").onclick = () => {
   else l.push(e);
   l.sort((a, b) => a.name.localeCompare(b.name, "de"));
   if (!cfSavedWrite(l)) return cfMsg("Speichern ist in diesem Browser nicht möglich.");
+  CF_NAME = name;
+  CF_BASE = cfKey(CF);
   cfSavedRender(name);
   cfMsg(i >= 0 ? `„${name}“ aktualisiert.` : `„${name}“ gespeichert.`);
+  if (M) chips();
 };
 $("cfDelete").onclick = () => {
   let name = $("cfSaved").value;
@@ -1169,8 +1225,7 @@ document.addEventListener("click", (e) => {
     BACK = [];
     if (c.dataset.clear === "multiF") setMulti("");
     else if (c.dataset.clear === "custom") {
-      CF = cfNew("and");
-      cfRender();
+      cfClear();
     } else $(c.dataset.clear).value = "";
     render();
     return;
@@ -1180,10 +1235,9 @@ document.addEventListener("click", (e) => {
     $("search").value = "";
     $("type").value = "";
     $("visibility").value = "";
-    $("status").value = activeStatus(); // Standard: nur aktive Gruppen
+    $("status").value = ""; // wirklich alle Gruppen (beim Start gilt weiter „aktiv“)
     setMulti("");
-    CF = cfNew("and");
-    cfRender();
+    cfClear();
     render();
     return;
   }

@@ -137,6 +137,29 @@ button {
 .switches .note {
   margin: 0;
 }
+/* Filterbereich: zwei getrennte Abschnitte */
+.fsec {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px 12px;
+  margin-top: 10px;
+  background: #fbfcfd;
+}
+.fsec-title {
+  font-size: 14px;
+  margin: 0 0 8px;
+}
+.meta-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  margin: 0 0 0 12px;
+}
+.meta-switch input {
+  width: auto;
+  margin: 0;
+}
 /* Eigene Filter (Baukasten) */
 .cf {
   margin-top: 12px;
@@ -180,6 +203,9 @@ button {
 }
 .cf input {
   min-width: 160px;
+}
+.cf .cf-field {
+  min-width: 260px;
 }
 .cf button {
   padding: 4px 9px;

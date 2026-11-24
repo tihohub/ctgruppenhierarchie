@@ -208,6 +208,8 @@
             <span class="ft-arrow">▸</span> Filter <span id="filterSummary" class="filter-summary"></span>
           </button>
           <div id="filterBody" class="filter-body hidden">
+          <section class="fsec">
+          <h3 class="fsec-title">Schnellfilter</h3>
           <div class="filters">
             <div>
               <label>Suche</label
@@ -235,13 +237,10 @@
               ><input id="multiF" type="checkbox" /> Nur Gruppen mit Mehrfachzuordnung
               <span id="multiCount2" class="note"></span
             ></label>
-            <label class="check"
-              ><input id="showMeta" type="checkbox" checked /> Zusatzinfos anzeigen (Gruppentyp,
-              Status, Sichtbarkeit)</label
-            >
           </div>
-          <div class="cf">
-            <div class="cf-title">Eigene Filter</div>
+          </section>
+          <section class="fsec cf">
+            <h3 class="fsec-title">Eigene Filter</h3>
             <div class="cf-saved">
               <select id="cfSaved" aria-label="Gespeicherte Filter"></select
               ><button id="cfDelete" class="cf-del" title="Ausgewählten gespeicherten Filter löschen">
@@ -255,7 +254,8 @@
               <span id="cfMsg" class="note"></span>
             </div>
             <div id="cfBox"></div>
-          </div>
+            <datalist id="cfFields"></datalist>
+          </section>
           <div id="chips" class="chips"></div>
           </div>
         </div>
@@ -302,6 +302,10 @@
               ><button id="modeV" class="mode" title="Stämme vertikal untereinander">
                 ↕ Vertikal
               </button>
+              <label class="check meta-switch"
+                ><input id="showMeta" type="checkbox" checked /> Zusatzinfos anzeigen (Gruppentyp,
+                Status, Sichtbarkeit)</label
+              >
               <span class="zoom-tools">
                 <button id="zoomOut" class="mode" title="Herauszoomen" aria-label="Herauszoomen">
                   −</button
