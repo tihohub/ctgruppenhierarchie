@@ -147,7 +147,6 @@ async function load(fresh) {
     `Nutzer-ID: <b>${esc(j.userId)}</b><br>Nutzername: <b>${esc(j.userName || "Nicht verfügbar")}</b>`;
   $("modal").classList.add("hidden");
   fitIfNeeded(); // erst jetzt ist die Ansicht sichtbar und messbar
-  if (isNew) sharedRefresh(); // gemeinsame Filter (nur Extension) im Hintergrund laden
 }
 
 // ---- Suche und Filter ----
@@ -726,45 +725,22 @@ function cfSavedWrite(l) {
     return false;
   }
 }
-// Gemeinsame Filter (nur Extension, in CT gespeichert): [{id, name, cf}]; SHARED_MSG erklärt,
-// warum sie fehlen (z. B. fehlende Rechte)
-let SHARED = [],
-  SHARED_MSG = "";
 function cfSavedRender(sel = "") {
-  let l = cfSavedList(),
-    opts = (list, val) =>
-      list
-        .map((x) => `<option value="${esc(val(x))}"${val(x) === sel ? " selected" : ""}>${esc(x.name)}</option>`)
-        .join("");
-  let mine = opts(l, (x) => x.name),
-    shared = opts(SHARED, (x) => "s:" + x.id);
+  let l = cfSavedList();
   $("cfSaved").innerHTML =
-    `<option value="">${l.length || SHARED.length ? "Gespeicherten Filter wählen …" : "Noch keine gespeicherten Filter"}</option>` +
-    (CT_WRITE
-      ? (l.length ? `<optgroup label="Auf diesem Gerät">${mine}</optgroup>` : "") +
-        (SHARED.length ? `<optgroup label="👥 Für alle freigegeben">${shared}</optgroup>` : "")
-      : mine);
+    `<option value="">${l.length ? "Gespeicherten Filter wählen …" : "Noch keine gespeicherten Filter"}</option>` +
+    l.map((x) => `<option value="${esc(x.name)}"${x.name === sel ? " selected" : ""}>${esc(x.name)}</option>`).join("");
   $("cfDelete").disabled = !sel;
-}
-// Ausgewählter Eintrag: {shared, name, cf, id}
-function cfSelected() {
-  let v = $("cfSaved").value;
-  if (!v) return null;
-  if (v.startsWith("s:")) {
-    let f = SHARED.find((x) => "s:" + x.id === v);
-    return f && { shared: true, ...f };
-  }
-  let f = cfSavedList().find((x) => x.name === v);
-  return f && { shared: false, ...f };
 }
 const cfMsg = (t) => ($("cfMsg").textContent = t);
 $("cfSaved").onchange = () => {
-  let f = cfSelected();
+  let name = $("cfSaved").value,
+    f = cfSavedList().find((x) => x.name === name);
   $("cfDelete").disabled = !f;
   if (!f) return;
   CF = JSON.parse(JSON.stringify(f.cf));
   $("cfName").value = f.name;
-  cfMsg(f.shared ? "Für alle freigegebener Filter." : "");
+  cfMsg("");
   cfRender();
   BACK = [];
   if (M) render();
@@ -783,55 +759,13 @@ $("cfSave").onclick = () => {
   cfSavedRender(name);
   cfMsg(i >= 0 ? `„${name}“ aktualisiert.` : `„${name}“ gespeichert.`);
 };
-// Version 2.0, nur Extension: Filter für alle freigeben (in CT speichern)
-async function sharedRefresh(sel) {
-  if (!CT_WRITE) return;
-  try {
-    SHARED = await sharedList();
-    SHARED_MSG = "";
-  } catch (e) {
-    SHARED = [];
-    SHARED_MSG = "Gemeinsame Filter sind nicht verfügbar: " + e.message;
-  }
-  cfSavedRender(sel !== undefined ? sel : $("cfSaved").value);
-  if (SHARED_MSG && !$("cfMsg").textContent) cfMsg(SHARED_MSG);
-}
-$("cfShare").onclick = async () => {
-  let name = $("cfName").value.trim();
-  if (!name) return cfMsg("Bitte einen Namen eingeben.");
-  if (!cfCount()) return cfMsg("Der Filter hat noch keine vollständige Bedingung.");
-  $("cfShare").disabled = true;
-  cfMsg("Wird in CT gespeichert …");
-  try {
-    let how = await sharedSave(name, JSON.parse(JSON.stringify(CF)));
-    await sharedRefresh();
-    let f = SHARED.find((x) => x.name === name);
-    cfSavedRender(f ? "s:" + f.id : "");
-    cfMsg(how === "updated" ? `„${name}“ für alle aktualisiert.` : `„${name}“ für alle freigegeben.`);
-  } catch (e) {
-    cfMsg("✗ " + e.message);
-  } finally {
-    $("cfShare").disabled = false;
-  }
-};
-$("cfDelete").onclick = async () => {
-  let f = cfSelected();
-  if (!f) return;
-  if (f.shared) {
-    try {
-      await sharedDelete(f.id);
-      await sharedRefresh("");
-      cfMsg(`„${f.name}“ ist nicht mehr für alle freigegeben. Der Filter selbst bleibt aktiv, bis du ihn leerst.`);
-    } catch (e) {
-      cfMsg("✗ " + e.message);
-    }
-    return;
-  }
-  cfSavedWrite(cfSavedList().filter((x) => x.name !== f.name));
+$("cfDelete").onclick = () => {
+  let name = $("cfSaved").value;
+  if (!name) return;
+  cfSavedWrite(cfSavedList().filter((x) => x.name !== name));
   cfSavedRender();
-  cfMsg(`„${f.name}“ gelöscht. Der Filter selbst bleibt aktiv, bis du ihn leerst.`);
+  cfMsg(`„${name}“ gelöscht. Der Filter selbst bleibt aktiv, bis du ihn leerst.`);
 };
-if (CT_WRITE) $("cfShare").classList.remove("hidden");
 cfSavedRender();
 
 // ---- Visualisierung ----
