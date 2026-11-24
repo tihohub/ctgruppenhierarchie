@@ -2,7 +2,7 @@
 
 Eine kleine Anwendung, die die Gruppenstruktur einer CT-Instanz übersichtlich darstellt: als aufklappbaren Baum, als Visualisierung der Gruppenstämme und als Arbeitsliste für Gruppen mit mehreren Obergruppen.
 
-Die Anwendung **liest nur** und verändert keine Daten in CT.
+Webseite, Desktop-App und Python-Version **lesen nur** und verändern keine Daten in CT. In der **CT-Extension** (ab Version 2.0) lassen sich Gruppen zusätzlich **per Ziehen umhängen**: Das ändert ausschließlich, welche Gruppe unter welcher Obergruppe hängt – nur im eingeschalteten Bearbeiten-Modus, nach Rückfrage und jederzeit umkehrbar.
 
 > Unabhängiges Community-Tool. Keine offizielle Anwendung von ChurchTools Innovations GmbH.
 
@@ -45,11 +45,13 @@ Die App läuft als Erweiterung innerhalb von CT. Nutzer öffnen sie wie jeden an
 
 1. Unter [Releases](https://github.com/tihohub/ctgruppenhierarchie/releases/latest) die Datei `ct-gruppenhierarchie-extension-….zip` herunterladen (nicht entpacken).
 2. In CT: **Admin-Einstellungen → Erweiterungen** → **Erweiterung hinzufügen**.
-3. Name: z. B. `Gruppenhierarchie`. **Kürzel: genau `gruppenhierarchie`** (sonst bleibt die Seite leer). Bei Bedarf „im Menü anzeigen“ anhaken.
+3. Name: z. B. `Gruppenhierarchie`. **Kürzel: genau `gruppenhierarchie`** (sonst bleibt die Seite leer). Bei Bedarf „im Menü anzeigen“ anhaken. **Alle Felder des Formulars ausfüllen**, auch die nicht als Pflicht markierten – sonst meldet CT „Die eingegebenen Daten waren nicht korrekt“.
 4. Die ZIP-Datei hochladen und speichern.
 5. Aufrufen über das Menü oder unter `https://eure-gemeinde.church.tools/ccm/gruppenhierarchie/`.
 
 **Update:** Die Erweiterung in CT über den Stift öffnen, die ZIP-Datei der neuen Version hochladen und speichern. Seit v28 lädt der Browser die neue Version danach von selbst (vorher war Strg+Shift+R nötig). Die Extension aktualisiert sich nicht von selbst, ein CT-Admin muss das neue ZIP hochladen.
+
+**Gruppen umhängen (ab Version 2.0):** Knopf **„✎ Bearbeiten“** einschalten – ein roter Rahmen zeigt, dass Änderungen jetzt in CT gespeichert werden. Dann eine Gruppe in Übersicht oder Visualisierung auf eine andere ziehen. Es folgt eine Rückfrage: **Verschieben** (von der bisherigen zur neuen Obergruppe), **Zusätzlich einordnen** (bisherige Obergruppe bleibt) oder **Abbrechen**. Alle Untergruppen ziehen mit. **✂** an einer Untergruppe bzw. die Fläche „Hier ablegen: keine Obergruppe“ löst eine Gruppe von ihrer Obergruppe. **„↶ Zurück“** nimmt die letzte Änderung zurück, **▾** zeigt alle Änderungen dieser Sitzung zum Zurücknehmen bis zu einem bestimmten Schritt (gilt bis zum Neuladen der Seite). Vor jeder Änderung prüft die App, ob jemand anderes die Gruppe inzwischen in CT geändert hat; dann wird nichts geschrieben. Hinweis: Rechte aus Obergruppen gelten in CT auch für Untergruppen – durch das Umhängen kann sich ändern, wer eine Gruppe sehen oder bearbeiten darf.
 
 Hinweis: Erweiterungen sind nicht in jedem CT-Paket verfügbar. Fehlt der Menüpunkt „Erweiterungen“, eine der anderen Varianten nutzen.
 
@@ -125,6 +127,8 @@ Der Login-Token gewährt Zugriff mit den Rechten des Benutzers. **Nicht an ander
 
 ### Welche Rechte werden benötigt?
 
+**Zum Umhängen in der CT-Extension** braucht man in CT das Recht, die betroffenen Gruppen zu bearbeiten (Gruppen-Admin, „Gruppe bearbeiten“ für die Gruppe oder „Gruppen dieses Typs bearbeiten“). Gruppenleiter allein dürfen das nicht. Fehlen Rechte, meldet die App das verständlich und ändert nichts.
+
 Die Anwendung sieht genau das, was der Benutzer in CT sehen darf. Empfehlung: einen eigenen CT-Benutzer anlegen, der Gruppen nur **sehen** darf, und dessen Login-Token verwenden. Der Token hat nämlich alle Rechte seines Benutzers, nicht nur Leserechte – auch wenn die App selbst nur liest. Gruppen ohne Berechtigung erscheinen nicht. Ist eine Obergruppe nicht sichtbar, wird sie ausgegraut mit 🔒 angezeigt (mit Namen, falls CT ihn liefert, sonst mit ID), damit die sichtbaren Untergruppen an ihrem ursprünglichen Stamm bleiben.
 
 ## Funktionen
@@ -134,8 +138,10 @@ Die Anwendung sieht genau das, was der Benutzer in CT sehen darf. Empfehlung: ei
 - Eigener Bereich für alleinstehende Gruppen (ohne Ober- und Untergruppen).
 - Klick auf einen Gruppennamen öffnet die Gruppe in CT.
 
-**Visualisierung**
-- Gruppenstämme als Karten, wahlweise horizontal (Stämme nebeneinander) oder vertikal (Stämme untereinander). Nach dem Verbinden ist alles aufgeklappt.
+**Visualisierung** (Startansicht)
+- Gruppenstämme als Karten, wahlweise horizontal (Stämme nebeneinander, Standard) oder vertikal (Stämme untereinander). Nach dem Verbinden ist alles aufgeklappt.
+- Zoomen: Knöpfe −/＋, Strg + Mausrad oder zwei Finger; **„⤢ Ganzer Stamm“** passt die Breite ein (auch automatisch nach dem Laden und nach jeder Filteränderung). Ziehen mit der Maus verschiebt die Ansicht.
+- **„Zusatzinfos anzeigen“** blendet Gruppentyp, Status und Sichtbarkeit an allen Gruppen ein oder aus.
 - Alleinstehende Gruppen in einem eigenen Bereich im gleichen Kartenstil.
 
 **Mehrfachzuordnungen**
@@ -147,8 +153,9 @@ Die Anwendung sieht genau das, was der Benutzer in CT sehen darf. Empfehlung: ei
 - Nicht sichtbare Obergruppen (🔒) zählen bei der Mehrfachzuordnung mit.
 
 **Suche, Filter, Statistik**
-- Volltextsuche über Name, Beschreibung, Typ, Status, Sichtbarkeit, Homepage, Kategorie, Campus und Treffzeit, mit Hervorhebung der Treffer.
-- Filter nach Gruppentyp, Sichtbarkeit, Gruppenstatus und Mehrfachzuordnung, jeweils mit Anzahl.
+- Der Filterbereich lässt sich über **„▸ Filter“** auf- und zuklappen; zugeklappt zeigt die Zeile, welche Filter gerade wirken.
+- **Schnellfilter:** Volltextsuche über Name, Beschreibung, Typ, Status, Sichtbarkeit, Homepage, Kategorie, Campus und Treffzeit (mit Hervorhebung der Treffer); Auswahl nach Gruppentyp, Sichtbarkeit und Gruppenstatus, jeweils mit Anzahl; Hakenkästchen „Nur Gruppen mit Mehrfachzuordnung“. Beim Start steht der Gruppenstatus auf „aktiv“; „Alle Filter zurücksetzen“ zeigt alle Gruppen.
+- **Eigene Filter:** Bedingungen aus *Eigenschaft – Bedingung – Wert* (z. B. „Anzahl Leiter ist 0“, „Standort ist Mainz“), verknüpft mit „Alle (UND)“ oder „Mindestens eine (ODER)“ und über „＋ Untergruppe“ verschachtelbar. Zur Auswahl stehen alle Gruppenfelder, die CT liefert (mit verständlichen Namen), dazu Anzahl Leiter und Mitglieder. Eigene Filter lassen sich mit Namen **auf dem eigenen Gerät** speichern und wieder auswählen.
 - Obergruppen eines Treffers werden ausgegraut als Kontext eingeblendet.
 - Statistik: Anzahl Gruppen, hierarchische und alleinstehende Gruppen, Gruppenstämme, Gruppen mit mehreren Obergruppen, Beziehungen. Alle Zahlen beziehen sich auf die aktuelle Suche und die Filter; ausgegraut eingeblendete Obergruppen zählen nicht mit.
 - Jede Gruppe wird nur einmal gezählt, auch wenn sie unter mehreren Obergruppen erscheint.
@@ -164,9 +171,9 @@ Die Anwendung sieht genau das, was der Benutzer in CT sehen darf. Empfehlung: ei
 - **Webseite:** Die Seite selbst wird von GitHub Pages geladen; GitHub sieht dabei wie bei jedem Webseitenaufruf technische Verbindungsdaten. CT-Daten und Login-Token gehen nicht an GitHub, sondern direkt an CT.
 - **Desktop-App:** Sucht beim Start bei GitHub nach neuen Versionen (abschaltbar unter ⓘ Über). GitHub sieht dabei technische Verbindungsdaten, aber keine CT-Daten und keinen Login-Token.
 - **CT-Extension:** Läuft innerhalb von CT mit der bestehenden Anmeldung; es wird kein Login-Token eingegeben und keine Verbindung zu anderen Servern aufgebaut. Abmeldung und Sitzungsdauer regelt CT.
-- **Nur lesend:** An CT werden ausschließlich Leseabfragen gesendet.
+- **Nur lesend** in Webseite, Desktop-App und Python-Version: An CT werden ausschließlich Leseabfragen gesendet. Die **CT-Extension** (ab 2.0) ändert im Bearbeiten-Modus nach Rückfrage ausschließlich die Zuordnung von Gruppen zu Obergruppen – keine anderen Daten, nichts wird gelöscht.
 - Der **Login-Token wird nicht gespeichert.** Er existiert nur während der laufenden Sitzung.
-- Im Browser gespeichert werden nur Oberflächeneinstellungen: CT-Adresse, Suche, Filter, aufgeklappte Gruppen und Darstellungsart.
+- Im Browser gespeichert werden nur Oberflächeneinstellungen: CT-Adresse, Suche, Filter, eigene gespeicherte Filter, aufgeklappte Gruppen, Darstellung und ob der Filterbereich offen ist. Sie bleiben auf dem Gerät.
 - **„Trennen“** löscht alle geladenen Daten, den Token, Suche, Filter und aufgeklappte Gruppen. Eine neue Verbindung löscht zuerst alle Daten der vorherigen. Auf gemeinsam genutzten Rechnern nach dem Trennen zusätzlich den Browser-Tab schließen.
 - **Sitzungs-Timeout** (nicht in der CT-Extension): Nach 58 Minuten ohne Benutzung (Maus, Tastatur, Scrollen) erscheint eine Warnung mit dem Knopf „Weiterarbeiten“. Nach 60 Minuten werden geladene Daten und Token automatisch gelöscht, wie bei „Trennen“.
 - **Python-Version:** Der lokale Server ist nur vom eigenen Rechner aus erreichbar (`127.0.0.1`) und nimmt nur Anfragen der eigenen Seite an.
@@ -213,7 +220,9 @@ Auf GitHub laufen die Tests bei jedem Pull Request automatisch.
 
 **Neue Version veröffentlichen:** Auf GitHub unter *Actions → Release → Run workflow* die neue Versionsnummer eingeben (z. B. `v1.1`) und starten. GitHub führt dann die Tests aus, baut alle Pakete (Extension, Webseite, Desktop-App, Python-Version) und legt Tag und Release an. Für die Desktop-App muss das Repo-Secret `TAURI_SIGNING_PRIVATE_KEY` (Update-Schlüssel) hinterlegt sein. Alternativ einen Tag `v…` setzen.
 
-**Versionsnummern:** `v1.0`, `v1.1`, … (eine Nachkommastelle). Die erste Zahl ist die Generation: 1 = nur lesend, 2 = schreibend (geplant, Entwicklung im Branch `v2`). Die zweite Zahl zählt jeden Release dieser Generation. Bis v28 wurde einfach hochgezählt; v1.0 entspricht inhaltlich v28. Wer die Desktop-App in v28 oder älter installiert hat, installiert v1.0 einmal von Hand, danach funktionieren automatische Updates wieder.
+**Versionsnummern:** `v1.0`, `v1.1`, … (eine Nachkommastelle). Die erste Zahl ist die Generation: 1 = nur lesend, 2 = schreibend (in Entwicklung im Branch `v2`, noch nicht veröffentlicht). Die zweite Zahl zählt jeden Release dieser Generation. Bis v28 wurde einfach hochgezählt; v1.0 entspricht inhaltlich v28. Wer die Desktop-App in v28 oder älter installiert hat, installiert v1.0 einmal von Hand, danach funktionieren automatische Updates wieder.
+
+**Testversion der 2.0 (CT-Extension):** Bei jeder Änderung im Branch `v2` baut GitHub automatisch eine Testversion (*Actions → Testversion Extension → Artifacts*, 30 Tage). Sie ist kein Release. In CT als **zweite** Erweiterung mit dem Kürzel genau `gruppenhierarchietest` hochladen; die echte Erweiterung bleibt unberührt. Die Testversion ändert nur Gruppen unterhalb einer Gruppe namens **„Test Gruppenhierarchie“** – echte Gruppen sind beim Ausprobieren gesperrt.
 
 Direkt aus dem Repo starten (ohne Release) geht mit `python3 python/ct_gruppenhierarchie.py`; die App zeigt dann „Entwicklungsversion“.
 

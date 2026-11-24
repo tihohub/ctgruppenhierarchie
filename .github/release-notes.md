@@ -10,11 +10,11 @@
 
 **Desktop-App Windows:** Das Programm ist nicht digital signiert (das würde Geld kosten). Beim ersten Start meldet Windows deshalb „Der Computer wurde durch Windows geschützt“. Auf **Weitere Informationen → Trotzdem ausführen** klicken. Die Desktop-App sucht selbst nach neuen Versionen und bietet sie zur Installation an (abschaltbar unter ⓘ Über). **Wechsel auf v1.0:** Wer v28 oder älter installiert hat, installiert v1.0 einmal von Hand (ggf. Hinweis auf „neuere Version“ bestätigen); danach laufen automatische Updates wieder.
 
-**CT-Extension:** In CT unter Admin-Einstellungen → Erweiterungen → „Erweiterung hinzufügen“ (bzw. Stift bei vorhandener Erweiterung), Kürzel genau `gruppenhierarchie`, ZIP hochladen (nicht entpacken). Anleitung im README.
+**CT-Extension:** In CT unter Admin-Einstellungen → Erweiterungen → „Erweiterung hinzufügen“ (bzw. Stift bei vorhandener Erweiterung), Kürzel genau `gruppenhierarchie`, alle Formularfelder ausfüllen, ZIP hochladen (nicht entpacken). Anleitung im README.
 *Beta-Hinweis:* CT kennzeichnet Erweiterungen derzeit als Beta-Funktion ohne Support durch CT. Änderungen an CT können die Extension jederzeit beeinträchtigen; dann eine der anderen Varianten nutzen.
 
 **Python-Version:** ZIP entpacken, dann unter Windows Doppelklick auf `start_windows.bat`, unter macOS/Linux im Terminal `python3 ct_gruppenhierarchie.py`.
 
 Ausführliche Anleitung: siehe `README.md` im Paket.
 
-Die App greift nur lesend auf CT zu, speichert keine Login-Tokens und sendet keine Daten an Dritte.
+Webseite, Desktop-App und Python-Version greifen nur lesend auf CT zu. Die CT-Extension ändert ab Version 2.0 im Bearbeiten-Modus nach Rückfrage ausschließlich die Zuordnung von Gruppen zu Obergruppen. Die App speichert keine Login-Tokens und sendet keine Daten an Dritte.

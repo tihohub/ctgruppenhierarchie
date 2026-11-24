@@ -58,6 +58,7 @@ verständlich erklären. Sprache in Oberfläche, Doku und Kommunikation: Deutsch
 
 ## Feste Grundsätze der App
 - Die App greift **nur lesend** auf die CT-API zu (ausschließlich GET-Anfragen an CT).
+  Einzige Ausnahme: Version 2.0 im Branch `v2`, siehe „Schreiben in CT“.
 - Login-Tokens werden **nicht dauerhaft gespeichert**, nur im Arbeitsspeicher der
   laufenden Sitzung.
 - Es werden **keine Daten an Dritte** gesendet: keine Telemetrie, kein Tracking,
