@@ -275,9 +275,12 @@ test("Zoom: Start auf ganze Breite, Knöpfe, Strg+Mausrad, Ziehen, zwei Finger, 
     a.scrollTop = 300;
   });
   const vorher = await page.evaluate(() => document.getElementById("forest").parentElement.scrollTop);
-  await page.mouse.move(box.x + 300, box.y + 300);
+  // Bereich ins Bild holen, damit Start- und Endpunkt sichtbar sind
+  await page.evaluate(() => document.getElementById("forest").parentElement.scrollIntoView({ block: "start" }));
+  const b2 = await area.boundingBox();
+  await page.mouse.move(b2.x + 300, b2.y + 150);
   await page.mouse.down();
-  await page.mouse.move(box.x + 200, box.y + 250, { steps: 5 });
+  await page.mouse.move(b2.x + 200, b2.y + 100, { steps: 5 });
   await page.mouse.up();
   const nachher = await page.evaluate(() => document.getElementById("forest").parentElement.scrollTop);
   assert.equal(nachher, vorher + 50, "nach oben ziehen zeigt weiter unten liegende Gruppen");
