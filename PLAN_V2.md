@@ -35,9 +35,7 @@ Branch `v2`. Version 2.0 wird hier entwickelt und **noch nicht veröffentlicht**
    - Zusätzlich „Anzahl Leiter“ und „Anzahl Mitglieder“, ohne Namen. Diese Zahlen werden
      nur geladen, wenn ein Filter sie benutzt.
    - Mit Namen speichern und per Klick auswählen.
-   - Webseite, Desktop-App, Python-Version: gespeichert auf dem eigenen Gerät.
-   - Extension: wenn CT es hergibt, gespeichert in CT. Jeder hat eigene Filter und kann
-     einzelne für alle freigeben. Sonst auf dem eigenen Gerät.
+   - Gespeichert nur auf dem eigenen Gerät, in allen Varianten (siehe Entscheidung 19).
 
 ### Schreiben in CT
 10. **Varianten:** zuerst nur die Extension (CT-Anmeldung, CT prüft die Rechte). Webseite,
@@ -64,9 +62,9 @@ Branch `v2`. Version 2.0 wird hier entwickelt und **noch nicht veröffentlicht**
     verweisen.
 
 ### Ergänzt nach der technischen Prüfung (Schritt 2)
-19. **Speicherort der Filter:** Eigene Filter immer auf dem eigenen Gerät. „Für alle
-    freigeben“ legt einen Filter in die Datenablage der Extension in CT. Ändern/löschen
-    dürfen ihn nur Personen, denen ein CT-Admin das Recht für diesen Bereich gibt.
+19. **Speicherort der Filter:** nur eigene Filter auf dem eigenen Gerät. Das zunächst gebaute
+    „Für alle freigeben“ (Speichern in der Datenablage der Extension in CT) wurde nach dem
+    Test auf Wunsch des Inhabers wieder entfernt – zu kompliziert.
 20. **Rechte-Hinweis in der Rückfrage:** allgemeiner Satz, dass Rechte aus Obergruppen auch
     für Untergruppen gelten und sich durch das Verschieben ändern kann, wer die Gruppe und
     ihre Untergruppen sehen oder bearbeiten darf. Keine konkrete Rechte-Anzeige.
@@ -119,7 +117,7 @@ der Instanz selbst (`/api`) war aus der Entwicklungsumgebung nicht erreichbar.
 5. Eigene Filter mit UND/ODER und Speichern auf dem Gerät.
 6. Bearbeiten-Modus, Drag-and-drop, Rückfrage, Lösen, Prüfen des aktuellen Stands.
 7. Zurück-Knopf mit Liste.
-8. Filter in CT speichern (abhängig von Schritt 2).
+8. ~~Filter in CT speichern~~ – gebaut und wieder entfernt (Entscheidung 19).
 
 ## Testen
 - Schritte 3–5 schreiben nichts in CT.

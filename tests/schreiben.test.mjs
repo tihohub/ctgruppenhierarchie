@@ -12,13 +12,13 @@ let ct;
 
 // ct-daten.js so laden, als liefe es unter der angegebenen Adresse (Extension, Testversion …);
 // Anfragen gehen an den Schein-CT, mit angemeldeter CT-Sitzung
-function laden(pathname, ct = CT) {
+function laden(pathname) {
   const ctx = {
     URLSearchParams,
     console,
-    location: { hostname: "127.0.0.1", port: "", origin: ct, pathname },
+    location: { hostname: "127.0.0.1", port: String(CT_PORT), origin: CT, pathname },
     fetch: (url, opts = {}) =>
-      fetch(url.startsWith("/") ? ct + url : url, {
+      fetch(url.startsWith("/") ? CT + url : url, {
         ...opts,
         headers: { ...(opts.headers || {}), Cookie: "ct_session=angemeldet" },
       }),
@@ -27,8 +27,7 @@ function laden(pathname, ct = CT) {
   vm.runInContext(readFileSync("web/ct-daten.js", "utf8"), ctx);
   const fn = (name) => async (...a) => {
     try {
-      const r = await vm.runInContext(name, ctx)(...a);
-      return r === undefined ? r : JSON.parse(JSON.stringify(r));
+      return JSON.parse(JSON.stringify(await vm.runInContext(name, ctx)(...a)));
     } catch (e) {
       throw Object.assign(new Error(e.message), { kind: e.kind, parents: e.parents });
     }
@@ -37,9 +36,6 @@ function laden(pathname, ct = CT) {
     load: fn("loadGroupData"),
     change: fn("ctChangeParents"),
     parents: fn("ctParents"),
-    list: fn("sharedList"),
-    share: fn("sharedSave"),
-    unshare: fn("sharedDelete"),
   };
 }
 const schreibAnfragen = async () =>
@@ -123,47 +119,4 @@ test("Außerhalb der Extension wird nie geschrieben", async () => {
   // Webseite: die Prüfung liest noch, aber jede Schreibanfrage wird abgelehnt
   await assert.rejects(w.change(m, 6, [2], [], [5]));
   assert.equal((await schreibAnfragen()).length, vorher);
-});
-
-test("Gemeinsame Filter: freigeben, für andere sichtbar, aktualisieren, löschen", async () => {
-  const a = laden("/ccm/gruppenhierarchie/");
-  assert.deepEqual(await a.list(), [], "noch kein Bereich, keine Filter");
-  const cf = { op: "and", items: [{ field: "memberStatistics.leaders", cmp: "is", value: "0" }] };
-  assert.equal(await a.share("Ohne Leitung", cf), "created");
-  // eine andere Person (eigener Ablauf) sieht den Filter
-  const b = laden("/ccm/gruppenhierarchie/");
-  const l = await b.list();
-  assert.deepEqual(l.map((x) => x.name), ["Ohne Leitung"]);
-  assert.deepEqual(l[0].cf, cf);
-  // gleicher Name aktualisiert statt doppelt anzulegen
-  const cf2 = { op: "or", items: cf.items };
-  assert.equal(await b.share("Ohne Leitung", cf2), "updated");
-  assert.equal((await a.list()).length, 1);
-  assert.deepEqual((await a.list())[0].cf, cf2);
-  await a.unshare(l[0].id);
-  assert.deepEqual(await a.list(), []);
-});
-
-test("Gemeinsame Filter: fehlende Rechte verständlich, außerhalb der Extension nie", async () => {
-  const port = CT_PORT + 20,
-    p = spawn("python3", ["tests/fake_ct.py", String(port)], {
-      env: { ...process.env, CTG_KEINE_FILTERRECHTE: "1", CTG_EXT_KUERZEL: "gruppenhierarchie" },
-      stdio: "pipe",
-    });
-  try {
-    for (let i = 0; i < 100; i++) {
-      try {
-        await fetch(`http://127.0.0.1:${port}/_test/requests`);
-        break;
-      } catch {
-        await new Promise((r) => setTimeout(r, 100));
-      }
-    }
-    const x = laden("/ccm/gruppenhierarchie/", `http://127.0.0.1:${port}`);
-    await assert.rejects(x.share("F", { op: "and", items: [] }), (e) => e.kind === "rights" && /Rechte/.test(e.message));
-  } finally {
-    p.kill();
-  }
-  const w = laden("/");
-  await assert.rejects(w.share("F", { op: "and", items: [] }));
 });

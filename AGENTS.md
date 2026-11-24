@@ -74,10 +74,8 @@ Ausnahme vom Grundsatz „nur lesend“, gilt nur für Version 2.0 im Branch `v2
   Webseite, Desktop-App und Python-Version bleiben nur lesend, bis der Inhaber das
   ausdrücklich ändert.
 - Erlaubt sind nur die in `PLAN_V2.md` festgelegten Änderungen: Obergruppen einer Gruppe
-  ändern (verschieben, zusätzlich einordnen, lösen) und – falls CT es anbietet – eigene
-  Filter in der Datenablage für Erweiterungen speichern. Keine anderen Daten verändern,
-  nichts löschen – einzige Ausnahme: einen gemeinsamen Filter in der eigenen Datenablage der
-  Extension wieder entfernen („nicht mehr für alle freigeben“).
+  ändern (verschieben, zusätzlich einordnen, lösen). Keine anderen Daten verändern, nichts
+  löschen. Gespeicherte Filter liegen nur auf dem eigenen Gerät, nicht in CT.
 - Geschrieben wird nur im eingeschalteten Bearbeiten-Modus und erst nach einer Rückfrage.
 - Vor jedem Schreiben den aktuellen Stand in CT prüfen; weicht er von der Anzeige ab, nichts
   schreiben.

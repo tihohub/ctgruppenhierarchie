@@ -530,17 +530,9 @@ async function ctCsrf(fresh) {
   return CSRF_TOKEN;
 }
 
-// Die einzigen erlaubten Schreibanfragen: Obergruppen ändern und die gemeinsamen Filter in der
-// eigenen Datenablage der Extension pflegen
-const WRITE_ALLOWED = [
-  [/^\/groups\/\d+\/parents\/\d+$/, ["PUT", "DELETE"]],
-  [/^\/custommodules\/\d+\/customdatacategories$/, ["POST"]],
-  [/^\/custommodules\/\d+\/customdatacategories\/\d+\/customdatavalues$/, ["POST"]],
-  [/^\/custommodules\/\d+\/customdatacategories\/\d+\/customdatavalues\/\d+$/, ["PUT", "DELETE"]],
-];
-async function ctSend(method, path, body) {
+async function ctSend(method, path) {
   if (!CT_WRITE) throw writeError("error", "Schreiben ist nur in der CT-Extension möglich.");
-  if (!WRITE_ALLOWED.some(([re, m]) => re.test(path) && m.includes(method)))
+  if (!["PUT", "DELETE"].includes(method) || !/^\/groups\/\d+\/parents\/\d+$/.test(path))
     throw writeError("error", "Nicht erlaubte Änderung: " + method + " " + path);
   const send = async (fresh) =>
     fetch("/api" + path, {
@@ -552,7 +544,7 @@ async function ctSend(method, path, body) {
         "Content-Type": "application/json",
         "CSRF-Token": await ctCsrf(fresh),
       },
-      body: body !== undefined ? JSON.stringify(body) : method === "PUT" ? "{}" : undefined,
+      body: method === "PUT" ? "{}" : undefined,
     });
   try {
     let r = await send(false);
@@ -637,81 +629,4 @@ async function ctChangeParents(model, gid, add, remove, expected) {
       ". Die Ansicht wird aktualisiert.",
     after,
   );
-}
-
-// ---- Gemeinsame Filter (Version 2.0, nur Extension) ----
-// Liegen in der Datenablage der Extension in CT („Custom Module“ mit dem Kürzel der Extension),
-// im Bereich „filter“. Jeder Filter ist ein Eintrag mit JSON {name, cf}. Rechte vergibt ein
-// CT-Admin pro Bereich (sehen, anlegen, bearbeiten, löschen); einen Schutz pro Eintrag gibt es
-// in CT nicht. Ein Eintrag fasst höchstens 10.000 Zeichen.
-const EXT_KEY = (location.pathname.match(/^\/ccm\/([^/]+)/) || [])[1] || "";
-const SHARED_CAT = "filter";
-const dataOf = (j) => (isObj(j) && j.data !== undefined ? j.data : j);
-async function sharedPlace(create) {
-  const mods = dataOf(await ctGetSession("/custommodules"));
-  const mod = (Array.isArray(mods) ? mods : []).find((m) => m && m.shorty === EXT_KEY);
-  if (!mod) throw writeError("rights", "Die Datenablage der Erweiterung ist in CT nicht verfügbar.");
-  const cats = dataOf(await ctGetSession(`/custommodules/${mod.id}/customdatacategories`));
-  let cat = (Array.isArray(cats) ? cats : []).find((c) => c && c.shorty === SHARED_CAT);
-  if (!cat && create) {
-    const r = await ctSend("POST", `/custommodules/${mod.id}/customdatacategories`, {
-      customModuleId: mod.id,
-      name: "Gemeinsame Filter",
-      shorty: SHARED_CAT,
-      description: "Für alle freigegebene Filter der Gruppenhierarchie",
-    });
-    if (!r.ok) throw sharedError(r);
-    cat = dataOf(await r.json().catch(() => ({})));
-    if (!cat || cat.id == null) return sharedPlace(false);
-  }
-  return { mid: mod.id, cid: cat ? cat.id : null };
-}
-function sharedError(r) {
-  return r.status === 401 || r.status === 403
-    ? writeError(
-        "rights",
-        "Dafür fehlen dir in CT die Rechte für die gemeinsamen Filter. Ein CT-Admin kann sie bei den Berechtigungen der Erweiterung vergeben.",
-      )
-    : writeError("error", `CT hat die Änderung abgelehnt (HTTP ${r.status}).`);
-}
-// Alle gemeinsamen Filter: [{id, name, cf}]
-async function sharedList() {
-  const { mid, cid } = await sharedPlace(false);
-  if (cid == null) return [];
-  const vals = dataOf(
-    await ctGetSession(`/custommodules/${mid}/customdatacategories/${cid}/customdatavalues`),
-  );
-  const out = [];
-  for (const v of Array.isArray(vals) ? vals : []) {
-    try {
-      const j = JSON.parse(v.value);
-      if (j && typeof j.name === "string" && j.cf) out.push({ id: v.id, name: j.name, cf: j.cf });
-    } catch {
-      // fremder oder beschädigter Eintrag: überspringen
-    }
-  }
-  return out.sort((a, b) => a.name.localeCompare(b.name, "de"));
-}
-// Speichert (bzw. aktualisiert bei gleichem Namen) einen gemeinsamen Filter
-async function sharedSave(name, cf) {
-  const value = JSON.stringify({ name, cf });
-  if (value.length > 10000) throw writeError("error", "Der Filter ist zu groß zum Freigeben.");
-  const { mid, cid } = await sharedPlace(true);
-  const base = `/custommodules/${mid}/customdatacategories/${cid}/customdatavalues`;
-  const old = (await sharedList()).find((x) => x.name === name);
-  const r = old
-    ? await ctSend("PUT", `${base}/${old.id}`, { id: old.id, dataCategoryId: cid, value })
-    : await ctSend("POST", base, { dataCategoryId: cid, value });
-  if (!r.ok) throw sharedError(r);
-  // nachlesen: ein „erfolgreich“ von CT allein ist kein Beleg
-  const now = (await sharedList()).find((x) => x.name === name);
-  if (!now || JSON.stringify(now.cf) !== JSON.stringify(cf))
-    throw writeError("error", "Der Filter wurde von CT nicht gespeichert.");
-  return old ? "updated" : "created";
-}
-async function sharedDelete(id) {
-  const { mid, cid } = await sharedPlace(false);
-  if (cid == null) return;
-  const r = await ctSend("DELETE", `/custommodules/${mid}/customdatacategories/${cid}/customdatavalues/${id}`);
-  if (!r.ok && r.status !== 404) throw sharedError(r);
 }
