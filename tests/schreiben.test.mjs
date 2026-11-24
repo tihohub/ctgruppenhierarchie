@@ -1,5 +1,5 @@
 // Tests der Schreibfunktionen (Version 2.0) in web/ct-daten.js gegen den Schein-CT:
-// Obergruppen ändern, Prüfung des aktuellen Stands, fehlende Rechte, Sperre der Testversion.
+// Obergruppen ändern, Prüfung des aktuellen Stands, fehlende Rechte.
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
@@ -95,21 +95,13 @@ test("Fehlende Rechte: verständliche Meldung, Teiländerung wird gemeldet", asy
   await setzen(5, [2, 3]);
 });
 
-test("Testversion: nur unterhalb von „Test Gruppenhierarchie“", async () => {
+test("Testversion schreibt wie die Extension, auch bei echten Gruppen (keine Sperre mehr)", async () => {
   const t = laden("/ccm/gruppenhierarchietest/");
   const m = await t.load(CT, "");
-  // Test C (203) von Test A (201) nach Test B (202): erlaubt
+  // Testgruppe und echte Gruppe Y: beides erlaubt
   assert.deepEqual(await t.change(m, 203, [202], [201], [201]), [202]);
-  // direkt unter den Teststamm: erlaubt
-  assert.deepEqual(await t.change(m, 203, [200], [202], [202]), [200]);
-  const vorher = (await schreibAnfragen()).length;
-  // echte Gruppe Y: gesperrt
-  await assert.rejects(t.change(m, 6, [2], [5], [5]), (e) => e.kind === "lock");
-  // Testgruppe unter echte Gruppe A: gesperrt
-  await assert.rejects(t.change(m, 203, [1], [], [200]), (e) => e.kind === "lock");
-  // den Teststamm selbst verschieben: gesperrt
-  await assert.rejects(t.change(m, 200, [1], [], []), (e) => e.kind === "lock");
-  assert.equal((await schreibAnfragen()).length, vorher, "gesperrt heißt: keine Schreibanfrage");
+  assert.deepEqual(await t.change(m, 6, [2], [5], [5]), [2]);
+  assert.deepEqual(await t.change(m, 6, [5], [2], [2]), [5]);
 });
 
 test("Außerhalb der Extension wird nie geschrieben", async () => {

@@ -222,7 +222,7 @@ Auf GitHub laufen die Tests bei jedem Pull Request automatisch.
 
 **Versionsnummern:** `v1.0`, `v1.1`, … (eine Nachkommastelle). Die erste Zahl ist die Generation: 1 = nur lesend, 2 = schreibend (in Entwicklung im Branch `v2`, noch nicht veröffentlicht). Die zweite Zahl zählt jeden Release dieser Generation. Bis v28 wurde einfach hochgezählt; v1.0 entspricht inhaltlich v28. Wer die Desktop-App in v28 oder älter installiert hat, installiert v1.0 einmal von Hand, danach funktionieren automatische Updates wieder.
 
-**Testversion der 2.0 (CT-Extension):** Bei jeder Änderung im Branch `v2` baut GitHub automatisch eine Testversion (*Actions → Testversion Extension → Artifacts*, 30 Tage). Sie ist kein Release. In CT als **zweite** Erweiterung mit dem Kürzel genau `gruppenhierarchietest` hochladen; die echte Erweiterung bleibt unberührt. Die Testversion ändert nur Gruppen unterhalb einer Gruppe namens **„Test Gruppenhierarchie“** – echte Gruppen sind beim Ausprobieren gesperrt.
+**Testversion der 2.0 (CT-Extension):** Bei jeder Änderung im Branch `v2` baut GitHub automatisch eine Testversion (*Actions → Testversion Extension → Artifacts*, 30 Tage). Sie ist kein Release. In CT als **zweite** Erweiterung mit dem Kürzel genau `gruppenhierarchietest` hochladen; die echte Erweiterung bleibt unberührt. Achtung: Die Testversion schreibt wie die fertige Extension und kann **alle Gruppen** umhängen, für die man in CT Rechte hat (die frühere Sperre auf „Test Gruppenhierarchie“ ist entfallen).
 
 Direkt aus dem Repo starten (ohne Release) geht mit `python3 python/ct_gruppenhierarchie.py`; die App zeigt dann „Entwicklungsversion“.
 

@@ -507,12 +507,8 @@ function fieldList(groups) {
 // Erlaubt ist ausschließlich: eine Obergruppe einer Gruppe hinzufügen (PUT) oder entfernen
 // (DELETE). Webseite, Desktop-App und Python-Version schreiben nicht.
 const CT_WRITE = CT_MODE === "extension";
-// Testversion der Extension (Kürzel „gruppenhierarchietest“): Änderungen nur an Gruppen
-// unterhalb der Gruppe „Test Gruppenhierarchie“ – Schutz echter Gruppen beim Ausprobieren
-const CT_TEST = /^\/ccm\/gruppenhierarchietest(\/|$)/.test(location.pathname);
-const TEST_ROOT = "Test Gruppenhierarchie";
 
-// Fehler beim Schreiben mit Art: "lock", "conflict", "rights", "partial", "error"
+// Fehler beim Schreiben mit Art: "conflict", "rights", "partial", "error"
 function writeError(kind, msg, parents) {
   const e = new Error(msg);
   e.kind = kind;
@@ -563,31 +559,12 @@ async function ctParents(gid) {
   return sortedNums((Array.isArray(d) ? d : []).map((p) => ref(p, new Map())).filter((x) => x !== null));
 }
 
-// Testversion: Liegt die Gruppe unterhalb (oder ist sie selbst, wenn self erlaubt) der Gruppe
-// „Test Gruppenhierarchie“?
-function belowTestRoot(model, id, self) {
-  const roots = new Set(model.groups.filter((g) => g.name.trim() === TEST_ROOT).map((g) => g.id));
-  if (roots.has(id)) return self;
-  const seen = new Set(),
-    stack = [...((model.byId[id] || {}).parentIds || [])];
-  while (stack.length) {
-    const p = stack.pop();
-    if (roots.has(p)) return true;
-    if (seen.has(p)) continue;
-    seen.add(p);
-    stack.push(...((model.byId[p] || {}).parentIds || []));
-  }
-  return false;
-}
-
 const sameNums = (a, b) => a.length === b.length && sortedNums(a).every((x, i) => x === sortedNums(b)[i]);
 
 // Ändert die Obergruppen einer Gruppe: add/remove sind Listen von Gruppen-IDs.
 // expected sind die Obergruppen, wie sie gerade angezeigt werden: Weicht CT davon ab, wird
 // nichts geschrieben (jemand anderes hat inzwischen geändert). Liefert die neuen Obergruppen.
 async function ctChangeParents(model, gid, add, remove, expected) {
-  if (CT_TEST && !(belowTestRoot(model, gid, false) && [...add, ...remove].every((p) => belowTestRoot(model, p, true))))
-    throw writeError("lock", `Die Testversion ändert nur Gruppen unterhalb von „${TEST_ROOT}“.`);
   const before = await ctParents(gid);
   if (!sameNums(before, expected))
     throw writeError(

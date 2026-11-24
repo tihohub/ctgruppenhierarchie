@@ -124,6 +124,9 @@ der Instanz selbst (`/api`) war aus der Entwicklungsumgebung nicht erreichbar.
 - Ab Schritt 6: zuerst mit dem Schein-CT (`tests/fake_ct.py`, um Schreib-Anfragen erweitern),
   dann mit Testgruppen bzw. einer Test-Instanz, nie zuerst mit echten Gruppen. Vorher mit dem
   Inhaber klären, welche Test-Möglichkeit es gibt.
+- Die Testversion war anfangs auf Gruppen unterhalb von „Test Gruppenhierarchie“ gesperrt.
+  Nach erfolgreichem Test hat der Inhaber die Sperre aufheben lassen (24. November 2026);
+  seitdem schreibt die Testversion wie die fertige Extension.
 
 ## Offen
 - Release-Ablauf für Vorab-Releases (z. B. `v2.0-beta1`), die die Desktop-App nicht
