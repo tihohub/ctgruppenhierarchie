@@ -1,9 +1,12 @@
 Datenschutzhinweis - CT Gruppenhierarchie
-Stand: 20. November 2026
+Stand: 24. November 2026 (Version 2.0)
 
 Grundsatz
-Die Anwendung liest Gruppendaten nur lesend aus der vom Nutzer angegebenen CT-Instanz und
-verarbeitet sie ausschliesslich im Browser bzw. Programm auf dem Geraet des Nutzers. Der
+Die Anwendung liest Gruppendaten aus der vom Nutzer angegebenen CT-Instanz und verarbeitet
+sie ausschliesslich im Browser bzw. Programm auf dem Geraet des Nutzers. Webseite,
+Desktop-App und Python-Version lesen nur. Die CT-Extension kann ab Version 2.0 im
+eingeschalteten Bearbeiten-Modus und nach Rueckfrage die Zuordnung von Gruppen zu
+Obergruppen in CT aendern; andere Daten werden nicht veraendert und nichts wird geloescht. Der
 Entwickler betreibt keinen Server, der CT-Daten oder Login-Tokens empfaengt oder verarbeitet.
 Es gibt keine Telemetrie und kein Tracking.
 
@@ -15,13 +18,16 @@ verwendet keinen Login-Token, sondern die bestehende Anmeldung in CT.
 
 Gespeicherte Einstellungen
 Im Browser bzw. in der Desktop-App gespeichert werden nur Oberflaecheneinstellungen:
-CT-Adresse, Filter, Suche, aufgeklappte Gruppen und Darstellungsart, in der Desktop-App
-zusaetzlich die Einstellung zur Update-Suche. Sie verlassen das Geraet nicht.
+CT-Adresse, Filter, Suche, eigene gespeicherte Filter, aufgeklappte Gruppen und
+Darstellung, in der Desktop-App zusaetzlich die Einstellung zur Update-Suche. Sie verlassen
+das Geraet nicht. Mitglieder- und Leiterzahlen werden nur als Anzahl ohne Namen abgerufen.
 
 Varianten
 - CT-Extension: Die App wird von der eigenen CT-Instanz ausgeliefert und laeuft innerhalb
   von CT mit der bestehenden Anmeldung des Nutzers. Es wird kein Login-Token eingegeben,
-  und es werden keine Verbindungen zu anderen Servern aufgebaut.
+  und es werden keine Verbindungen zu anderen Servern aufgebaut. Aenderungen (nur
+  Obergruppen von Gruppen) prueft CT anhand der Rechte des Nutzers; wer was geaendert hat,
+  protokolliert CT selbst.
 - Webseite (https://tihohub.github.io/ctgruppenhierarchie/): Die Seite selbst (HTML, CSS,
   JavaScript) wird von GitHub Pages ausgeliefert. Dabei erhaelt GitHub wie bei jedem
   Webseitenaufruf technische Verbindungsdaten (z. B. IP-Adresse). CT-Daten und Login-Token
