@@ -172,30 +172,7 @@
       </div>
       <div id="app" class="hidden">
         <div class="card">
-          <div class="tools">
-            <button id="expand" class="green">＋ Alle maximieren</button
-            ><button id="collapse" class="red">− Alle minimieren</button
-            ><button id="print" class="light">🖨 Drucken</button
-            ><button
-              id="editBtn"
-              class="light hidden"
-              aria-pressed="false"
-              title="Gruppen per Ziehen in CT umhängen (Version 2.0)"
-            >
-              ✎ Bearbeiten</button
-            ><span id="undoWrap" class="undo-wrap hidden"
-              ><button id="undoBtn" class="light" disabled>↶ Zurück</button
-              ><button
-                id="undoMenuBtn"
-                class="light"
-                disabled
-                aria-label="Liste der Änderungen"
-                title="Liste der Änderungen"
-              >
-                ▾</button
-              ><span id="undoMenu" class="undo-menu hidden"></span
-            ></span>
-          </div>
+          <h2 class="card-title">Statistik</h2>
           <p id="conn" class="ok"></p>
           <div id="stats" class="stats"></div>
         </div>
@@ -261,6 +238,37 @@
           <div id="chips" class="chips"></div>
           </div>
         </div>
+        <div class="viewbar">
+          <div class="tabs">
+            <button id="tabVis" class="tab active">⌘ Visualisierung</button
+            ><button id="tabList" class="tab">☷ Übersicht</button
+            ><button id="tabMulti" class="tab">🔗 Mehrfachzuordnungen</button>
+          </div>
+          <div class="tools">
+            <button id="expand" class="green">＋ Alle maximieren</button
+            ><button id="collapse" class="red">− Alle minimieren</button
+            ><button id="print" class="light">🖨 Drucken</button
+            ><button
+              id="editBtn"
+              class="light hidden"
+              aria-pressed="false"
+              title="Gruppen per Ziehen in CT umhängen (Version 2.0)"
+            >
+              ✎ Bearbeiten</button
+            ><span id="undoWrap" class="undo-wrap hidden"
+              ><button id="undoBtn" class="light" disabled>↶ Zurück</button
+              ><button
+                id="undoMenuBtn"
+                class="light"
+                disabled
+                aria-label="Liste der Änderungen"
+                title="Liste der Änderungen"
+              >
+                ▾</button
+              ><span id="undoMenu" class="undo-menu hidden"></span
+            ></span>
+          </div>
+        </div>
         <div id="editBar" class="edit-bar hidden">
           <span
             ><b>Bearbeiten:</b> Gruppe auf eine andere ziehen = dort einordnen (alles darunter zieht
@@ -268,11 +276,6 @@
             gespeichert.</span
           >
           <div id="dropRoot" class="drop-root">⬚ Hier ablegen: keine Obergruppe</div>
-        </div>
-        <div class="tabs">
-          <button id="tabVis" class="tab active">⌘ Visualisierung</button
-          ><button id="tabList" class="tab">☷ Übersicht</button
-          ><button id="tabMulti" class="tab">🔗 Mehrfachzuordnungen</button>
         </div>
         <div id="listPane" class="hidden">
           <div class="card">

@@ -472,6 +472,18 @@ test("Filterbereich: Schnellfilter und eigene Filter getrennt, Name des gespeich
   assert.equal(await text(page, "#chips"), "");
 });
 
+test("Anordnung: Statistik oben, dann Filter, dann Reiter mit Werkzeugen direkt über den Gruppenstämmen", async () => {
+  const page = await openApp();
+  await connected(page);
+  assert.equal(await text(page, "#app > .card:first-child .card-title"), "Statistik");
+  const reihenfolge = await page.evaluate(() =>
+    [...document.querySelectorAll("#app > *")].map((e) => e.id || e.className.split(" ").pop()),
+  );
+  assert.ok(reihenfolge.indexOf("filters-card") < reihenfolge.indexOf("viewbar"));
+  assert.ok(reihenfolge.indexOf("viewbar") < reihenfolge.indexOf("visPane"));
+  assert.equal(await page.locator(".viewbar .tools #expand").count(), 1, "Werkzeuge bei den Gruppenstämmen");
+});
+
 test("Visualisierung ist aufgeklappt und zeigt alleinstehende Gruppen", async () => {
   const page = await openApp();
   await connected(page);
